@@ -12,8 +12,6 @@ services:
       - key: VITE_SUPABASE_URL
         value: https://uhlncqrevycxtxtdydav.supabase.co
       - key: VITE_SUPABASE_ANON_KEY
-        sync: false # Set this in your Render Dashboard Environment tab
-      - key: VITE_SUPABASE_RESOLUTIONS_TABLE
-        value: gov-res
+        sync: false # Set your public anon key in the Render Environment tab
       - key: VITE_SUPABASE_USERS_TABLE
         value: gov-users-v2
