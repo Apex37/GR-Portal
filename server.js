@@ -108,37 +108,44 @@ function isPasswordMatch(inputPassword, storedPassword, dob, firstName) {
   return candidates.includes(normInput);
 }
 
-// Resilient upsert that supports both extended columns and JSON interests column
+// Resilient upsert that automatically strips any missing columns (e.g. dob, interests, first_name)
 async function upsertUserRecord(payload) {
   if (!supabase) return payload;
 
-  const { data, error } = await supabase
-    .from(USERS_TABLE)
-    .upsert(payload, { onConflict: "phone" })
-    .select()
-    .single();
+  let currentPayload = { ...payload };
 
-  if (!error) return data;
-
-  // If Supabase PGRST204 column missing error, fallback to base columns
-  if (error.code === "PGRST204" || /column/i.test(error.message)) {
-    const basePayload = { ...payload };
-    delete basePayload.first_name;
-    delete basePayload.last_name;
-    delete basePayload.dob;
-    delete basePayload.password;
-
-    const { data: baseData, error: baseErr } = await supabase
+  for (let attempt = 0; attempt < 6; attempt++) {
+    const { data, error } = await supabase
       .from(USERS_TABLE)
-      .upsert(basePayload, { onConflict: "phone" })
+      .upsert(currentPayload, { onConflict: "phone" })
       .select()
       .single();
 
-    if (baseErr) throw baseErr;
-    return baseData;
+    if (!error) return data;
+
+    // Check if error is about any missing column in the schema cache
+    const missingColMatch = error.message && error.message.match(/Could not find the '([^']+)' column/i);
+    if (missingColMatch && missingColMatch[1]) {
+      const missingCol = missingColMatch[1];
+      console.warn(`Column '${missingCol}' not found in ${USERS_TABLE}. Stripping and retrying.`);
+      delete currentPayload[missingCol];
+      continue;
+    }
+
+    // Fallback for general PGRST204 schema mismatch
+    if (error.code === "PGRST204" || /column/i.test(error.message)) {
+      delete currentPayload.first_name;
+      delete currentPayload.last_name;
+      delete currentPayload.dob;
+      delete currentPayload.password;
+      delete currentPayload.interests;
+      continue;
+    }
+
+    throw error;
   }
 
-  throw error;
+  throw new Error("Failed to save record to Supabase table.");
 }
 
 // -----------------------------------------------------------------------------
