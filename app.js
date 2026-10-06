@@ -825,6 +825,15 @@
         password: state.user.password || null,
       };
 
+      // Derive divisions from selected districts
+      const activeDivisions = new Set(state.preferredDivisions);
+      if (state.preferredDistricts.length > 0 && state.config?.districts) {
+        state.preferredDistricts.forEach((dName) => {
+          const match = state.config.districts.find((d) => d.name === dName);
+          if (match && match.division) activeDivisions.add(match.division);
+        });
+      }
+
       const dbPayload = {
         phone: String(state.user.phone).slice(-10),
         full_name: state.user.full_name || `${state.user.first_name || ""} ${state.user.last_name || ""}`.trim() || null,
@@ -834,7 +843,7 @@
         preferred_audiences: state.preferredAudiences,
         preferred_beneficiaries: state.preferredBeneficiaries,
         preferred_regions: state.preferredRegions,
-        preferred_divisions: state.preferredDivisions,
+        preferred_divisions: Array.from(activeDivisions),
         preferred_districts: state.preferredDistricts,
         exclude_amendments: state.excludeAmendments,
         is_active: state.isActive,
