@@ -1,17 +1,14 @@
 services:
   - type: web
     name: gr-portal
-    env: static
-    buildCommand: npm install && npm run build
-    staticPublishPath: ./dist
-    routes:
-      - type: rewrite
-        source: /*
-        destination: /index.html
+    env: node
+    plan: free
+    buildCommand: npm install
+    startCommand: npm start
     envVars:
-      - key: VITE_SUPABASE_URL
+      - key: SUPABASE_URL
         value: https://uhlncqrevycxtxtdydav.supabase.co
-      - key: VITE_SUPABASE_ANON_KEY
-        sync: false # Set your public anon key in the Render Environment tab
-      - key: VITE_SUPABASE_USERS_TABLE
+      - key: SUPABASE_SERVICE_ROLE_KEY
+        sync: false # Set your private Supabase secret key in the Render Environment tab
+      - key: SUPABASE_GOV_USERS_TABLE
         value: gov-users-v2

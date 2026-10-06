@@ -642,74 +642,33 @@
       if (ymdMatch) {
         dobFormatted = `${ymdMatch[3]}${ymdMatch[2]}${ymdMatch[1]}`;
       }
-      const generatedPassword = `${dobFormatted}${firstName}`;
+      const response = await fetch("/api/auth/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          phone: rawPhone,
+          first_name: firstName,
+          last_name: lastName,
+          dob: dob,
+        }),
+      });
 
-      const client = getSupabase();
-      if (client) {
-        const { data: existing } = await client
-          .from("gov-users-v2")
-          .select("*")
-          .eq("phone", rawPhone)
-          .maybeSingle();
+      const resData = await response.json();
 
-        if (existing && (existing.first_name || existing.full_name)) {
+      if (!response.ok) {
+        if (response.status === 409) {
           showGlobalBanner("An account already exists with this phone number. Please log in.", "error");
           switchAuthTab("login");
           el.loginPhone.value = rawPhone;
           el.loginPassword.focus();
           return;
         }
-
-        const newUserPayload = {
-          phone: rawPhone,
-          first_name: firstName,
-          last_name: lastName,
-          dob: dob,
-          full_name: `${firstName} ${lastName}`.trim(),
-          role_preset: "CITIZEN_PUBLIC",
-          is_active: true,
-          exclude_amendments: true,
-          interests: JSON.stringify({
-            first_name: firstName,
-            last_name: lastName,
-            dob: dob,
-            password: generatedPassword,
-          }),
-        };
-
-        const { data: savedUser, error: saveErr } = await client
-          .from("gov-users-v2")
-          .upsert(newUserPayload, { onConflict: "phone" })
-          .select()
-          .single();
-
-        if (saveErr) throw saveErr;
-
-        const userObj = {
-          ...savedUser,
-          first_name: firstName,
-          last_name: lastName,
-          dob: dob,
-          password: generatedPassword,
-        };
-
-        showGlobalBanner(`🎉 Profile created! Your permanent password is: ${generatedPassword}. You are now logged in.`, "success");
-        logUserIn(userObj);
-      } else {
-        const localUser = {
-          phone: rawPhone,
-          first_name: firstName,
-          last_name: lastName,
-          dob: dob,
-          password: generatedPassword,
-          full_name: `${firstName} ${lastName}`.trim(),
-          role_preset: "CITIZEN_PUBLIC",
-          is_active: true,
-          exclude_amendments: true,
-        };
-        showGlobalBanner(`🎉 Profile created! Your permanent password is: ${generatedPassword}. You are now logged in.`, "success");
-        logUserIn(localUser);
+        throw new Error(resData.error || "Could not create profile. Please try again.");
       }
+
+      const generatedPassword = resData.password || `${dobFormatted}${firstName}`;
+      showGlobalBanner(`🎉 Profile created! Your permanent password is: ${generatedPassword}. You are now logged in.`, "success");
+      logUserIn(resData.user);
     } catch (err) {
       console.error("Registration error:", err);
       const isFetchErr = /failed to fetch|networkerror|load failed/i.test(String(err && err.message));
@@ -725,7 +684,7 @@
           is_active: true,
           exclude_amendments: true,
         };
-        showGlobalBanner(`⚠️ Cloud sync paused (AdBlocker/Shields active). Saved locally! Password: ${generatedPassword}.`, "success");
+        showGlobalBanner(`🎉 Profile created! Saved offline. Password: ${generatedPassword}.`, "success");
         logUserIn(localUser);
         return;
       }
@@ -757,94 +716,29 @@
     showGlobalBanner("", "");
 
     try {
-      const client = getSupabase();
-      if (client) {
-        const { data: user, error: loginErr } = await client
-          .from("gov-users-v2")
-          .select("*")
-          .eq("phone", rawPhone)
-          .maybeSingle();
+      const response = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          phone: rawPhone,
+          password: password,
+        }),
+      });
 
-        if (loginErr) throw loginErr;
-        if (!user) {
+      const resData = await response.json();
+
+      if (!response.ok) {
+        if (response.status === 404) {
           showGlobalBanner("No profile found with this mobile number. Please create a new profile.", "error");
           switchAuthTab("register");
           el.regPhone.value = rawPhone;
           return;
         }
-
-        let storedPassword = user.password || "";
-        let computedPassword = "";
-        let firstName = user.first_name || "";
-        let lastName = user.last_name || "";
-        let dob = user.dob || "";
-
-        if (user.interests) {
-          try {
-            const meta = JSON.parse(user.interests);
-            if (meta.password) storedPassword = meta.password;
-            if (meta.first_name) firstName = meta.first_name;
-            if (meta.last_name) lastName = meta.last_name;
-            if (meta.dob) dob = meta.dob;
-          } catch {}
-        }
-
-        if (dob && firstName) {
-          const m = String(dob).match(/^(\d{4})-(\d{2})-(\d{2})$/);
-          const dobFormatted = m ? `${m[3]}${m[2]}${m[1]}` : "";
-          computedPassword = `${dobFormatted}${firstName}`.toLowerCase();
-        }
-
-        const inputPwd = password.trim().toLowerCase();
-        const normInput = inputPwd.replace(/[\/\-_]/g, "");
-        const normStored = (storedPassword || "").toLowerCase().replace(/[\/\-_]/g, "");
-        const normComputed = (computedPassword || "").toLowerCase().replace(/[\/\-_]/g, "");
-        const normUserPwd = (user.password || "").toLowerCase().replace(/[\/\-_]/g, "");
-
-        const isMatch = (normStored && normInput === normStored) ||
-                        (normComputed && normInput === normComputed) ||
-                        (normUserPwd && normInput === normUserPwd) ||
-                        (storedPassword && inputPwd === storedPassword.toLowerCase()) ||
-                        (computedPassword && inputPwd === computedPassword);
-
-        if (!isMatch) {
-          throw new Error("Incorrect password. Note: Password is your Date of Birth followed by your First Name (e.g. 07/11/2003Vishal).");
-        }
-
-        const loggedInUser = {
-          ...user,
-          first_name: firstName || user.first_name,
-          last_name: lastName || user.last_name,
-          dob: dob || user.dob,
-          password: storedPassword || computedPassword || password,
-        };
-
-        showGlobalBanner("Welcome back! Your preferences have been loaded.", "success");
-        logUserIn(loggedInUser);
-      } else {
-        const rawSaved = localStorage.getItem("maha_gr_user");
-        let savedUser = null;
-        if (rawSaved) {
-          try { savedUser = JSON.parse(rawSaved); } catch {}
-        }
-
-        if (savedUser && savedUser.phone === rawPhone) {
-          showGlobalBanner("Welcome back! Your preferences have been loaded.", "success");
-          logUserIn(savedUser);
-        } else {
-          const defaultUser = {
-            phone: rawPhone,
-            first_name: "Citizen",
-            full_name: "Citizen User",
-            password: password,
-            role_preset: "CITIZEN_PUBLIC",
-            is_active: true,
-            exclude_amendments: true,
-          };
-          showGlobalBanner("Welcome! Preferences loaded.", "success");
-          logUserIn(defaultUser);
-        }
+        throw new Error(resData.error || "Login failed. Please check your credentials.");
       }
+
+      showGlobalBanner("Welcome back! Your preferences have been loaded.", "success");
+      logUserIn(resData.user);
     } catch (err) {
       console.error("Login error:", err);
       const isFetchErr = /failed to fetch|networkerror|load failed/i.test(String(err && err.message));
@@ -855,12 +749,10 @@
           try { savedUser = JSON.parse(rawSaved); } catch {}
         }
         if (savedUser && String(savedUser.phone).slice(-10) === rawPhone) {
-          showGlobalBanner("Welcome back! Loaded profile from offline cache (Network / AdBlocker detected).", "success");
+          showGlobalBanner("Welcome back! Loaded profile from offline cache.", "success");
           logUserIn(savedUser);
           return;
         }
-        showGlobalBanner("Unable to connect to database (Failed to fetch). If you are using Brave Shields or an Ad Blocker, please disable it for this site, or check your internet connection.", "error");
-        return;
       }
       showGlobalBanner(err.message || "Could not log in. Please try again.", "error");
     } finally {
@@ -951,17 +843,17 @@
       };
 
       let savedUser = null;
-      const client = getSupabase();
-      if (client) {
-        const { data, error } = await client
-          .from("gov-users-v2")
-          .upsert(dbPayload, { onConflict: "phone" })
-          .select()
-          .single();
-
-        if (error) throw error;
-        savedUser = { ...data, ...authMeta };
-      } else {
+      try {
+        const response = await fetch("/api/preferences", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(dbPayload),
+        });
+        const resData = await response.json();
+        if (!response.ok) throw new Error(resData.error || "Failed to save preferences.");
+        savedUser = { ...resData.user, ...authMeta };
+      } catch (saveNetErr) {
+        console.warn("Backend save failed, using local copy:", saveNetErr);
         savedUser = { ...state.user, ...dbPayload };
       }
 
@@ -1093,10 +985,11 @@
     }
 
     try {
-      const client = getSupabase();
-      if (client) {
-        await client.from("gov-users-v2").delete().eq("phone", phone);
-      }
+      await fetch("/api/profile", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ phone }),
+      });
       localStorage.removeItem("maha_gr_user");
       state.user = null;
       showGlobalBanner(`Your profile (+91 ${phone}) has been removed. You will no longer receive alerts.`, "success");
