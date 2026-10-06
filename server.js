@@ -353,25 +353,47 @@ app.post("/api/preferences", async (req, res) => {
     }
 
     const standardPhone = `91${last10}`;
+
+    // Fetch existing user to preserve auth metadata & interests
+    let existingUser = null;
+    if (supabase) {
+      const phoneVariants = getPhoneVariants(last10);
+      const { data } = await supabase.from(USERS_TABLE).select("*").in("phone", phoneVariants).maybeSingle();
+      if (data) existingUser = data;
+    }
+
+    let mergedInterests = {};
+    if (existingUser && existingUser.interests) {
+      try {
+        mergedInterests = typeof existingUser.interests === "string" ? JSON.parse(existingUser.interests) : existingUser.interests;
+      } catch {}
+    }
+    if (payload.interests) {
+      try {
+        const incoming = typeof payload.interests === "string" ? JSON.parse(payload.interests) : payload.interests;
+        mergedInterests = { ...mergedInterests, ...incoming };
+      } catch {}
+    }
+
     const dbPayload = {
       phone: standardPhone,
-      role_preset: payload.role_preset || "CITIZEN_PUBLIC",
-      preferred_departments: Array.isArray(payload.preferred_departments) ? payload.preferred_departments : [],
-      preferred_intents: Array.isArray(payload.preferred_intents) ? payload.preferred_intents : [],
-      preferred_audiences: Array.isArray(payload.preferred_audiences) ? payload.preferred_audiences : [],
-      preferred_districts: Array.isArray(payload.preferred_districts) ? payload.preferred_districts : [],
-      preferred_divisions: Array.isArray(payload.preferred_divisions) ? payload.preferred_divisions : [],
-      preferred_beneficiaries: Array.isArray(payload.preferred_beneficiaries) ? payload.preferred_beneficiaries : [],
-      exclude_amendments: payload.exclude_amendments !== false,
-      is_active: payload.is_active !== false,
-      interests: typeof payload.interests === "object" ? JSON.stringify(payload.interests) : (payload.interests || "{}"),
+      role_preset: payload.role_preset || existingUser?.role_preset || "CITIZEN_PUBLIC",
+      preferred_departments: Array.isArray(payload.preferred_departments) ? payload.preferred_departments : (existingUser?.preferred_departments || []),
+      preferred_intents: Array.isArray(payload.preferred_intents) ? payload.preferred_intents : (existingUser?.preferred_intents || []),
+      preferred_audiences: Array.isArray(payload.preferred_audiences) ? payload.preferred_audiences : (existingUser?.preferred_audiences || []),
+      preferred_districts: Array.isArray(payload.preferred_districts) ? payload.preferred_districts : (existingUser?.preferred_districts || []),
+      preferred_divisions: Array.isArray(payload.preferred_divisions) ? payload.preferred_divisions : (existingUser?.preferred_divisions || []),
+      preferred_beneficiaries: Array.isArray(payload.preferred_beneficiaries) ? payload.preferred_beneficiaries : (existingUser?.preferred_beneficiaries || []),
+      exclude_amendments: payload.exclude_amendments !== undefined ? payload.exclude_amendments : (existingUser?.exclude_amendments ?? true),
+      is_active: payload.is_active !== undefined ? payload.is_active : (existingUser?.is_active ?? true),
+      interests: JSON.stringify(mergedInterests),
       updated_at: new Date().toISOString(),
     };
 
-    if (payload.first_name) dbPayload.first_name = payload.first_name;
-    if (payload.last_name) dbPayload.last_name = payload.last_name;
-    if (payload.full_name) dbPayload.full_name = payload.full_name;
-    if (payload.dob) dbPayload.dob = payload.dob;
+    if (payload.first_name || existingUser?.first_name) dbPayload.first_name = payload.first_name || existingUser?.first_name;
+    if (payload.last_name || existingUser?.last_name) dbPayload.last_name = payload.last_name || existingUser?.last_name;
+    if (payload.full_name || existingUser?.full_name) dbPayload.full_name = payload.full_name || existingUser?.full_name;
+    if (payload.dob || existingUser?.dob) dbPayload.dob = payload.dob || existingUser?.dob;
 
     if (!supabase) {
       return res.json({ success: true, user: dbPayload, offline: true });
