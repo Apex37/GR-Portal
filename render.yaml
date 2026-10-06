@@ -1,0 +1,19 @@
+services:
+  - type: web
+    name: gr-portal
+    env: static
+    buildCommand: npm install && npm run build
+    staticPublishPath: ./dist
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
+    envVars:
+      - key: VITE_SUPABASE_URL
+        value: https://uhlncqrevycxtxtdydav.supabase.co
+      - key: VITE_SUPABASE_ANON_KEY
+        sync: false # Set this in your Render Dashboard Environment tab
+      - key: VITE_SUPABASE_RESOLUTIONS_TABLE
+        value: gov-res
+      - key: VITE_SUPABASE_USERS_TABLE
+        value: gov-users-v2
