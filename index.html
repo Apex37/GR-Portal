@@ -1,17 +1,816 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='46' fill='%230f172a' stroke='%23f59e0b' stroke-width='4'/><text x='50' y='58' font-size='38' text-anchor='middle' fill='%23f59e0b'>🏛️</text></svg>" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="description" content="Maharashtra Government Resolutions (GR) Intelligence Portal. Instant 5D AI-tagged government orders, filtered by your district, role, and industry with instant WhatsApp alerts." />
-    <title>Maharashtra GR Portal • शासन निर्णय नागरिक व व्यवसाय पोर्टल</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-  </head>
-  <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.jsx"></script>
-  </body>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>महाराष्ट्र शासन निर्णय (GR) अलर्ट्स • Maharashtra Government Resolutions Alert Service</title>
+  <meta name="description" content="Official real-time WhatsApp alert service for Maharashtra Government Resolutions (GRs). Login or create a profile to customize alerts for Farmers, Businesses, Students, and Citizens.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+
+  <!-- Top Institutional Civic Header -->
+  <header class="app-header">
+    <div class="header-container">
+      <div class="brand-group">
+        <div class="brand-emblem" aria-hidden="true">🏛️</div>
+        <div class="brand-text">
+          <div class="brand-title">महाराष्ट्र शासन निर्णय (GR) अलर्ट्स</div>
+          <div class="brand-subtitle">Maharashtra Government Resolutions Alert Service • Official Portal Monitor</div>
+        </div>
+      </div>
+      <div class="header-actions">
+        <span class="live-status-pill">
+          <span class="live-dot"></span>
+          <span>Scraper Active • Live Updates</span>
+        </span>
+
+        <!-- Shown when NOT logged in -->
+        <div id="header-guest-actions">
+          <button id="header-login-btn" class="header-action-btn" type="button">Log In</button>
+          <button id="header-register-btn" class="header-action-btn primary" type="button">Create Profile</button>
+        </div>
+
+        <!-- Shown when LOGGED IN -->
+        <div id="header-user-actions" class="header-user-group hidden">
+          <div class="user-pill">
+            <span class="user-avatar-icon">👤</span>
+            <span id="header-user-name" class="user-display-name">Citizen</span>
+          </div>
+          <button id="header-logout-btn" class="header-action-btn outline" type="button">Log Out</button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Info Modal Dialog for (i) Buttons -->
+  <div id="info-modal" class="modal-backdrop hidden" role="dialog" aria-modal="true" aria-labelledby="info-modal-title">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <div class="modal-icon">ℹ️</div>
+        <h3 id="info-modal-title">Information</h3>
+        <button id="close-info-modal-btn" class="modal-close-btn" type="button" aria-label="Close dialog">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p id="info-modal-text"></p>
+        <div id="info-modal-tip" class="modal-tip-box hidden"></div>
+      </div>
+      <div class="modal-footer">
+        <button id="dismiss-info-modal-btn" class="btn btn-primary btn-sm" type="button">Got it</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Content Container -->
+  <main class="page-container">
+
+    <!-- Global Alert / Status Feedback Banner -->
+    <div id="global-feedback-banner" class="status-banner hidden"></div>
+
+    <!-- =========================================================================
+         VIEW 1: AUTH VIEW (LOGIN / REGISTER) - Shown when user is not logged in
+         ========================================================================= -->
+    <section id="auth-view" class="auth-section">
+
+      <!-- Auth Hero Banner -->
+      <div class="hero-banner auth-hero">
+        <div class="hero-tag">
+          <span class="hero-tag-dot"></span>
+          <span>Public Citizen Governance Service</span>
+          <button type="button" class="info-btn" data-info="hero_overview" title="About this service">ⓘ</button>
+        </div>
+        <h1 class="hero-title">Government Resolutions, Delivered to Your WhatsApp</h1>
+        <p class="hero-subtext">
+          Create your profile to receive instant, verified Maharashtra Government Resolution summaries. 
+          Use your phone number and generated password to modify your topics and districts anytime.
+        </p>
+      </div>
+
+      <!-- Auth Form Card Container -->
+      <div class="auth-card-wrapper">
+        <div class="auth-card">
+
+          <!-- Auth Tab Switcher -->
+          <div class="auth-tabs" role="tablist">
+            <button type="button" id="tab-btn-login" class="auth-tab-btn active" role="tab" aria-selected="true">
+              <span>🔑 Log In</span>
+            </button>
+            <button type="button" id="tab-btn-register" class="auth-tab-btn" role="tab" aria-selected="false">
+              <span>👤 Create Profile</span>
+            </button>
+          </div>
+
+          <!-- TAB PANE 1: LOG IN -->
+          <div id="pane-login" class="auth-pane active">
+            <form id="login-form" novalidate>
+              <div class="auth-form-intro">
+                <h2 class="auth-pane-title">Welcome Back</h2>
+                <p class="auth-pane-sub">Log in with your WhatsApp number and password to view or change your alert preferences.</p>
+              </div>
+
+              <!-- Phone Input -->
+              <div class="form-group">
+                <label for="login-phone" class="form-label">
+                  WhatsApp Mobile Number <span class="required-star">*</span>
+                </label>
+                <div class="phone-input-box">
+                  <div class="country-badge">
+                    <span class="country-code">+91</span>
+                  </div>
+                  <input 
+                    type="tel" 
+                    id="login-phone" 
+                    class="phone-text-input" 
+                    placeholder="9876543210" 
+                    maxlength="10" 
+                    required 
+                    autocomplete="tel-national" 
+                    inputmode="numeric"
+                  >
+                </div>
+              </div>
+
+              <!-- Password Input -->
+              <div class="form-group" style="margin-top: 1.15rem;">
+                <label for="login-password" class="form-label">
+                  Password <span class="required-star">*</span>
+                </label>
+                <div class="password-input-box">
+                  <input 
+                    type="password" 
+                    id="login-password" 
+                    class="standard-text-input password-input" 
+                    placeholder="e.g. 17062004Vedant" 
+                    required 
+                    autocomplete="current-password"
+                  >
+                  <button type="button" id="toggle-login-password-btn" class="password-toggle-btn" aria-label="Show password">👁️</button>
+                </div>
+                <div class="password-hint-box">
+                  <span class="hint-icon">💡</span>
+                  <span><strong>Password Format:</strong> Date of Birth (DDMMYYYY) + First Name (e.g. <code>17062004Vedant</code>).</span>
+                </div>
+              </div>
+
+              <!-- Login CTA -->
+              <div class="auth-submit-area">
+                <button type="submit" id="login-submit-btn" class="btn btn-primary btn-large btn-block">
+                  <span class="btn-text">Log In & Manage My Alerts →</span>
+                  <span class="btn-spinner hidden" aria-hidden="true"></span>
+                </button>
+              </div>
+
+              <!-- Switch to Register Link -->
+              <div class="auth-switch-prompt">
+                <span>New to Maha GR Alerts?</span>
+                <button type="button" id="switch-to-register-btn" class="text-link-btn font-bold">Create a new profile</button>
+              </div>
+            </form>
+          </div>
+
+          <!-- TAB PANE 2: CREATE PROFILE (REGISTER) -->
+          <div id="pane-register" class="auth-pane hidden">
+            <form id="register-form" novalidate>
+              <div class="auth-form-intro">
+                <h2 class="auth-pane-title">Create Your Alert Profile</h2>
+                <p class="auth-pane-sub">Register your phone number and details. We will automatically generate your secure login password.</p>
+              </div>
+
+              <!-- Mobile Number (Primary Key) -->
+              <div class="form-group">
+                <label for="reg-phone" class="form-label">
+                  WhatsApp Mobile Number <span class="required-star">*</span>
+                  <span class="primary-key-badge">Primary Key</span>
+                </label>
+                <div class="phone-input-box">
+                  <div class="country-badge">
+                    <span class="country-code">+91</span>
+                  </div>
+                  <input 
+                    type="tel" 
+                    id="reg-phone" 
+                    class="phone-text-input" 
+                    placeholder="9876543210" 
+                    maxlength="10" 
+                    required 
+                    autocomplete="tel-national" 
+                    inputmode="numeric"
+                  >
+                </div>
+                <span class="input-hint">Your 10-digit phone number is your unique account identifier.</span>
+              </div>
+
+              <!-- Names Row -->
+              <div class="form-row-two" style="margin-top: 1.15rem;">
+                <div class="form-group">
+                  <label for="reg-firstname" class="form-label">
+                    First Name <span class="required-star">*</span>
+                  </label>
+                  <input 
+                    type="text" 
+                    id="reg-firstname" 
+                    class="standard-text-input" 
+                    placeholder="First name" 
+                    required 
+                    autocomplete="given-name"
+                  >
+                </div>
+                <div class="form-group">
+                  <label for="reg-lastname" class="form-label">
+                    Last Name <span class="required-star">*</span>
+                  </label>
+                  <input 
+                    type="text" 
+                    id="reg-lastname" 
+                    class="standard-text-input" 
+                    placeholder="Last name" 
+                    required 
+                    autocomplete="family-name"
+                  >
+                </div>
+              </div>
+
+              <!-- Date of Birth (DOB) -->
+              <div class="form-group" style="margin-top: 1.15rem;">
+                <label for="reg-dob" class="form-label">
+                  Date of Birth (DOB) <span class="required-star">*</span>
+                </label>
+                <input 
+                  type="date" 
+                  id="reg-dob" 
+                  class="standard-text-input date-input" 
+                  required
+                >
+                <span class="input-hint">Used to generate your secure, memorable login password.</span>
+              </div>
+
+              <!-- Generated Password Preview Callout -->
+              <div class="generated-password-card">
+                <div class="gen-pass-top">
+                  <span class="gen-pass-icon">🔒</span>
+                  <span class="gen-pass-title">Your Auto-Generated Login Password:</span>
+                </div>
+                <div class="gen-pass-display">
+                  <span id="preview-generated-password" class="gen-pass-value">DDMMYYYYFirstName</span>
+                </div>
+                <div class="gen-pass-explanation">
+                  Format: <strong>Date of Birth (DDMMYYYY)</strong> followed by <strong>First Name</strong>. You will use this password to log in and modify your alert preferences later.
+                </div>
+              </div>
+
+              <!-- Register CTA -->
+              <div class="auth-submit-area">
+                <button type="submit" id="register-submit-btn" class="btn btn-whatsapp btn-large btn-block">
+                  <span class="wa-btn-icon">💬</span>
+                  <span class="btn-text">Create Profile & Set Preferences →</span>
+                  <span class="btn-spinner hidden" aria-hidden="true"></span>
+                </button>
+              </div>
+
+              <!-- Switch to Login Link -->
+              <div class="auth-switch-prompt">
+                <span>Already have a profile?</span>
+                <button type="button" id="switch-to-login-btn" class="text-link-btn font-bold">Log in here</button>
+              </div>
+            </form>
+          </div>
+
+        </div>
+
+        <!-- Trust Highlights below Auth card -->
+        <div class="auth-trust-highlights">
+          <div class="trust-highlight-item">
+            <span class="trust-icon">⚡</span>
+            <div>
+              <strong>Instant WhatsApp Alerts</strong>
+              <p>Sent as soon as resolutions are signed and published.</p>
+            </div>
+          </div>
+          <div class="trust-highlight-item">
+            <span class="trust-icon">🏛️</span>
+            <div>
+              <strong>Official State Data</strong>
+              <p>Direct from gr.maharashtra.gov.in with verified PDF links.</p>
+            </div>
+          </div>
+          <div class="trust-highlight-item">
+            <span class="trust-icon">🔒</span>
+            <div>
+              <strong>No Spam Guarantee</strong>
+              <p>Free civic service. Modify or pause anytime with your password.</p>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+    </section>
+
+    <!-- =========================================================================
+         VIEW 2: PREFERENCES & INTEREST DASHBOARD - Shown when user is logged in
+         ========================================================================= -->
+    <section id="dashboard-view" class="dashboard-section hidden">
+
+      <!-- Logged-in User Welcome Strip -->
+      <div class="user-welcome-strip">
+        <div class="user-info-col">
+          <div class="welcome-heading-row">
+            <h1 class="welcome-greeting">
+              Namaskar, <span id="dash-user-name">Citizen</span>!
+            </h1>
+            <span class="account-active-badge">● Active Alert Profile</span>
+          </div>
+          <p class="welcome-subtext">
+            Personalize which Government Resolutions you want delivered to <strong id="dash-user-phone">+91 XXXXXXXXXX</strong>.
+          </p>
+        </div>
+        <div class="user-creds-col">
+          <div class="creds-pill">
+            <span class="creds-label">Your Login Password:</span>
+            <code id="dash-user-password" class="creds-code">••••••••</code>
+          </div>
+          <span class="creds-format-note">Format: DOB (DDMMYYYY) + First Name</span>
+        </div>
+      </div>
+
+      <!-- Layout Grid: Preferences Form (Left) & Preview/Summary (Right) -->
+      <div class="main-layout-grid">
+
+        <!-- LEFT: Preferences Customization Form -->
+        <section class="form-wrapper">
+          <form id="preferences-form" class="clean-form-card" novalidate>
+
+            <!-- Feedback Status Banner -->
+            <div id="preferences-feedback-banner" class="status-banner hidden"></div>
+
+            <!-- STEP 1: Role / Topic Selection -->
+            <div class="form-step-block">
+              <div class="step-label-row">
+                <span class="step-badge">Step 1 of 3</span>
+                <div class="step-title-group">
+                  <h2 class="step-heading">What are you interested in?</h2>
+                  <button type="button" class="info-btn" data-info="roles_overview" title="How roles work">ⓘ</button>
+                </div>
+              </div>
+              <p class="step-helper">Choose the category that matches your daily work or interests. You can fine-tune this anytime.</p>
+
+              <div class="role-grid">
+
+                <!-- Role 1: Citizen & Farmer -->
+                <div class="role-card active" data-preset="CITIZEN_PUBLIC" tabindex="0" role="button" aria-pressed="true">
+                  <div class="role-card-top">
+                    <span class="role-emoji">🌾</span>
+                    <div class="role-radio-circle"></div>
+                  </div>
+                  <div class="role-card-content">
+                    <div class="role-title">Farmers & Agriculture</div>
+                    <div class="role-marathi">शेतकरी, कृषी व ग्रामीण कल्याण</div>
+                    <p class="role-description">Crop loans, solar pumps, drip irrigation, drought relief & welfare schemes.</p>
+                    <div class="role-meta">
+                      <span class="role-rate-tag">~4–8 alerts / wk</span>
+                      <button type="button" class="info-btn" data-info="preset_citizen" title="More info">ⓘ</button>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Role 2: Business & Contractor -->
+                <div class="role-card" data-preset="COMMERCIAL_VENDOR" tabindex="0" role="button" aria-pressed="false">
+                  <div class="role-card-top">
+                    <span class="role-emoji">💼</span>
+                    <div class="role-radio-circle"></div>
+                  </div>
+                  <div class="role-card-content">
+                    <div class="role-title">Contractors & Business</div>
+                    <div class="role-marathi">कंत्राटदार, निविदा व व्यावसायिक</div>
+                    <p class="role-description">PWD infrastructure, e-tenders, procurement, water resources & industry orders.</p>
+                    <div class="role-meta">
+                      <span class="role-rate-tag">~5–10 alerts / wk</span>
+                      <button type="button" class="info-btn" data-info="preset_vendor" title="More info">ⓘ</button>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Role 3: Students & Education -->
+                <div class="role-card" data-preset="STUDENTS_EDUCATION" tabindex="0" role="button" aria-pressed="false">
+                  <div class="role-card-top">
+                    <span class="role-emoji">🎓</span>
+                    <div class="role-radio-circle"></div>
+                  </div>
+                  <div class="role-card-content">
+                    <div class="role-title">Students & Education</div>
+                    <div class="role-marathi">विद्यार्थी, शिक्षक व शिक्षण क्षेत्र</div>
+                    <p class="role-description">Scholarships, teacher recruitments, university circulars & school education.</p>
+                    <div class="role-meta">
+                      <span class="role-rate-tag">~3–6 alerts / wk</span>
+                      <button type="button" class="info-btn" data-info="preset_students" title="More info">ⓘ</button>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Role 4: Civil Service & Officers -->
+                <div class="role-card" data-preset="BUREAUCRACY_OFFICIALS" tabindex="0" role="button" aria-pressed="false">
+                  <div class="role-card-top">
+                    <span class="role-emoji">🏛️</span>
+                    <div class="role-radio-circle"></div>
+                  </div>
+                  <div class="role-card-content">
+                    <div class="role-title">Govt Officers & Employees</div>
+                    <div class="role-marathi">शासकीय अधिकारी व कर्मचारी</div>
+                    <p class="role-description">Transfers, cadre seniority lists, service rules, pay commission & inquiries.</p>
+                    <div class="role-meta">
+                      <span class="role-rate-tag">~2–5 alerts / wk</span>
+                      <button type="button" class="info-btn" data-info="preset_officer" title="More info">ⓘ</button>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Role 5: Banking & Finance -->
+                <div class="role-card" data-preset="BANKING_FINANCE" tabindex="0" role="button" aria-pressed="false">
+                  <div class="role-card-top">
+                    <span class="role-emoji">🏦</span>
+                    <div class="role-radio-circle"></div>
+                  </div>
+                  <div class="role-card-content">
+                    <div class="role-title">Banking & Finance</div>
+                    <div class="role-marathi">बँकिंग, पतपुरवठा व कर्ज योजना</div>
+                    <p class="role-description">Co-operative banks, loan waivers, institutional credit & state financial sanctions.</p>
+                    <div class="role-meta">
+                      <span class="role-rate-tag">~3–7 alerts / wk</span>
+                      <button type="button" class="info-btn" data-info="preset_banking" title="More info">ⓘ</button>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Role 6: All Decisions / Leadership -->
+                <div class="role-card" data-preset="POLITICAL_LEADERSHIP" tabindex="0" role="button" aria-pressed="false">
+                  <div class="role-card-top">
+                    <span class="role-emoji">📜</span>
+                    <div class="role-radio-circle"></div>
+                  </div>
+                  <div class="role-card-content">
+                    <div class="role-title">Cabinet & Public Policy</div>
+                    <div class="role-marathi">सर्व प्रमुख शासन धोरण व मंत्रीमंडळ निर्णय</div>
+                    <p class="role-description">State cabinet decisions, major budgetary sanctions & high-level governance policy.</p>
+                    <div class="role-meta">
+                      <span class="role-rate-tag">~3–6 alerts / wk</span>
+                      <button type="button" class="info-btn" data-info="preset_political" title="More info">ⓘ</button>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Role 7: All Resolutions (Full Feed) -->
+                <div class="role-card" data-preset="ALL_RESOLUTIONS" tabindex="0" role="button" aria-pressed="false">
+                  <div class="role-card-top">
+                    <span class="role-emoji">🌐</span>
+                    <div class="role-radio-circle"></div>
+                  </div>
+                  <div class="role-card-content">
+                    <div class="role-title">All Resolutions (Full Feed)</div>
+                    <div class="role-marathi">सर्व शासन निर्णय (संपूर्ण प्रवाह)</div>
+                    <p class="role-description">Receive every official GR published across all 34 ministries without any filters.</p>
+                    <div class="role-meta">
+                      <span class="role-rate-tag">~50–150 alerts / wk</span>
+                      <button type="button" class="info-btn" data-info="preset_all" title="More info">ⓘ</button>
+                    </div>
+                  </div>
+                </div>
+
+              </div>
+            </div>
+
+            <!-- STEP 2: Geographic Scope -->
+            <div class="form-step-block">
+              <div class="step-label-row">
+                <span class="step-badge">Step 2 of 3</span>
+                <div class="step-title-group">
+                  <h2 class="step-heading">Select Your Location</h2>
+                  <button type="button" class="info-btn" data-info="geo_scope" title="How location filtering works">ⓘ</button>
+                </div>
+              </div>
+              <p class="step-helper">Statewide policy orders will always reach you. You can narrow down local orders to your specific area.</p>
+
+              <!-- Segment Switcher -->
+              <div class="segmented-control" role="radiogroup" aria-label="Geographic Scope">
+                <label class="segment-btn active" id="segment-statewide">
+                  <input type="radio" name="geo-scope" value="statewide" checked>
+                  <span class="segment-label">
+                    <span class="segment-icon">🌐</span>
+                    <span>Whole State (All Maharashtra)</span>
+                  </span>
+                </label>
+                <label class="segment-btn" id="segment-specific">
+                  <input type="radio" name="geo-scope" value="specific">
+                  <span class="segment-label">
+                    <span class="segment-icon">📍</span>
+                    <span>My District or Division</span>
+                  </span>
+                </label>
+              </div>
+
+              <!-- Specific District/Division Panel -->
+              <div id="district-selector-panel" class="district-panel hidden">
+                <div class="division-section">
+                  <div class="division-header-row">
+                    <span class="field-subheading">Choose Administrative Division:</span>
+                    <span class="field-help-text">Click a division to see its districts</span>
+                  </div>
+                  <div id="division-tabs-row" class="division-pill-row">
+                    <!-- Dynamically populated 6 divisions -->
+                  </div>
+                </div>
+
+                <div class="districts-section">
+                  <div class="districts-header-row">
+                    <span class="field-subheading">Districts in <strong id="active-division-title">Pune Division</strong>:</span>
+                    <div class="district-quick-links">
+                      <button type="button" id="select-all-districts-btn" class="text-link-btn">Select All in Division</button>
+                      <span class="link-divider">•</span>
+                      <button type="button" id="clear-districts-btn" class="text-link-btn">Clear</button>
+                    </div>
+                  </div>
+                  <div id="districts-grid-container" class="districts-badge-grid">
+                    <!-- Dynamically populated districts -->
+                  </div>
+                </div>
+
+                <!-- Selected Summary Tag -->
+                <div id="selected-districts-summary" class="selected-districts-bar hidden">
+                  <span class="bar-title">Active Filters:</span>
+                  <span id="selected-districts-list" class="bar-list"></span>
+                </div>
+              </div>
+            </div>
+
+            <!-- CUSTOMISATION: Fine-Tune Ministries & Filters (Accordion) -->
+            <div class="accordion-section" style="margin-top: 1.75rem; margin-bottom: 2rem;">
+              <button type="button" id="advanced-toggle-btn" class="accordion-trigger" aria-expanded="false">
+                <div class="accordion-trigger-left">
+                  <div class="accordion-icon-wrap" aria-hidden="true">
+                    <span>⚙️</span>
+                  </div>
+                  <div class="accordion-trigger-text">
+                    <div class="accordion-title-row">
+                      <span class="accordion-trigger-title">Want to customize specific Ministries or Topics?</span>
+                      <span class="customisation-pill">✨ Customisation</span>
+                    </div>
+                    <span class="accordion-trigger-sub">Search across all 34 Government Ministries and fine-tune operational intents</span>
+                  </div>
+                </div>
+                <div class="accordion-trigger-right">
+                  <span class="accordion-cta-btn">
+                    <span>Fine-Tune</span>
+                    <span class="accordion-chevron" aria-hidden="true">▼</span>
+                  </span>
+                </div>
+              </button>
+
+              <div id="advanced-accordion-content" class="accordion-body hidden">
+
+                <!-- Ministries / Departments Selector -->
+                <div class="accordion-block">
+                  <div class="accordion-block-header">
+                    <div>
+                      <h3 class="block-title">Government Ministries (34 Departments)</h3>
+                      <p class="block-sub">Filter resolutions by issuing departments</p>
+                    </div>
+                    <div class="block-actions">
+                      <span id="dept-count-badge" class="selection-pill">All 34 Ministries</span>
+                      <button type="button" class="info-btn" data-info="departments_info">ⓘ</button>
+                    </div>
+                  </div>
+                  <div class="search-filter-bar">
+                    <input type="text" id="dept-search-input" class="search-input" placeholder="Search departments (e.g. Agriculture, PWD, Finance, Health)...">
+                    <div class="quick-filter-links">
+                      <button type="button" id="select-all-depts-btn" class="text-link-btn">Select All</button>
+                      <span class="link-divider">•</span>
+                      <button type="button" id="clear-depts-btn" class="text-link-btn">Clear</button>
+                    </div>
+                  </div>
+                  <div id="departments-list" class="departments-scroll-list">
+                    <!-- Dynamically populated 34 departments -->
+                  </div>
+                </div>
+
+                <!-- Intent Selector -->
+                <div class="accordion-block">
+                  <div class="accordion-block-header">
+                    <div>
+                      <h3 class="block-title">Operational Action & Intent</h3>
+                      <p class="block-sub">Filter by the legal nature of the resolution</p>
+                    </div>
+                    <div class="block-actions">
+                      <span id="intent-count-badge" class="selection-pill">All Actions</span>
+                      <button type="button" class="info-btn" data-info="intents_info">ⓘ</button>
+                    </div>
+                  </div>
+                  <div class="quick-filter-links block-level">
+                    <button type="button" id="select-all-intents-btn" class="text-link-btn">Select All</button>
+                    <span class="link-divider">•</span>
+                    <button type="button" id="clear-intents-btn" class="text-link-btn">Reset</button>
+                  </div>
+                  <div id="intents-grid" class="tags-checkbox-grid">
+                    <!-- Dynamically populated intents -->
+                  </div>
+                </div>
+
+                <!-- Quality & Noise Safeguards -->
+                <div class="accordion-block">
+                  <div class="accordion-block-header">
+                    <div>
+                      <h3 class="block-title">Quality & Noise Safeguard</h3>
+                      <p class="block-sub">Keep your inbox free of routine clerical amendments</p>
+                    </div>
+                    <button type="button" class="info-btn" data-info="corrigendum_info">ⓘ</button>
+                  </div>
+                  <div class="switch-row">
+                    <div class="switch-label-col">
+                      <strong>Skip Corrigendums (शुद्धीपत्रक)</strong>
+                      <p>Silently drops routine typo corrections and clerical date extensions. Strongly recommended.</p>
+                    </div>
+                    <label class="toggle-switch">
+                      <input type="checkbox" id="exclude-amendments-toggle" checked>
+                      <span class="toggle-slider"></span>
+                    </label>
+                  </div>
+
+                  <div class="switch-row" style="margin-top: 1rem;">
+                    <div class="switch-label-col">
+                      <strong>Active Alert Status</strong>
+                      <p>Temporarily pause alerts without losing your configured preferences.</p>
+                    </div>
+                    <label class="toggle-switch">
+                      <input type="checkbox" id="is-active-toggle" checked>
+                      <span class="toggle-slider"></span>
+                    </label>
+                  </div>
+                </div>
+
+              </div>
+            </div>
+
+            <!-- STEP 3: Delivery Preferences & Save -->
+            <div class="form-step-block">
+              <div class="step-label-row">
+                <span class="step-badge">Step 3 of 3</span>
+                <div class="step-title-group">
+                  <h2 class="step-heading">Save Preferences</h2>
+                </div>
+              </div>
+              <p class="step-helper">Updates are applied immediately to your WhatsApp notification stream.</p>
+
+              <!-- Submit Action Area -->
+              <div class="submit-action-area">
+                <button type="submit" id="save-preferences-btn" class="btn btn-whatsapp btn-large">
+                  <span class="wa-btn-icon" id="save-btn-icon">💾</span>
+                  <span class="btn-text" id="save-btn-text">Save & Update WhatsApp Alerts</span>
+                  <span class="btn-spinner hidden" aria-hidden="true"></span>
+                </button>
+                <!-- Direct Inline Save Feedback Alert -->
+                <div id="save-inline-feedback" class="save-inline-feedback hidden" role="status" aria-live="polite"></div>
+                <p class="form-disclaimer">
+                  🔒 Official Maharashtra Government Resolution monitor. Modify or pause your alerts anytime.
+                </p>
+              </div>
+
+              <!-- Profile Management Bar -->
+              <div class="management-actions-bar">
+                <div class="management-status-col">
+                  <span class="active-sub-label">Profile Status: Active</span>
+                  <span id="management-subnote" class="management-subnote">Alerts are active for your number</span>
+                </div>
+                <div class="action-buttons-group">
+                  <button type="button" id="pause-alerts-btn" class="btn btn-secondary btn-sm">Pause Alerts</button>
+                  <button type="button" id="delete-sub-btn" class="btn btn-danger-link btn-sm">Delete Profile</button>
+                </div>
+              </div>
+            </div>
+
+          </form>
+        </section>
+
+        <!-- RIGHT: Sticky WhatsApp Live Preview & Expected Volume -->
+        <aside class="sidebar-wrapper">
+          <div class="sticky-sidebar">
+
+            <!-- Alert Volume Guidance Card -->
+            <div class="sidebar-card volume-card">
+              <div class="sidebar-card-header">
+                <span class="card-eyebrow">ESTIMATED FREQUENCY</span>
+                <button type="button" class="info-btn" data-info="volume_guidance">ⓘ</button>
+              </div>
+              <div class="volume-display-row">
+                <div class="volume-number" id="volume-estimate-number">~4–8</div>
+                <div class="volume-text-col">
+                  <span class="volume-unit">Alerts / Week</span>
+                  <span class="volume-subtext" id="volume-summary-text">Thoughtfully filtered to protect your attention</span>
+                </div>
+              </div>
+              <div class="volume-progress-bar">
+                <div id="meter-fill" class="progress-fill" style="width: 35%;"></div>
+              </div>
+              <div class="progress-labels">
+                <span>Very Focused</span>
+                <span>Balanced</span>
+                <span>High Volume</span>
+              </div>
+            </div>
+
+            <!-- WhatsApp Chat Mockup Card -->
+            <div class="sidebar-card whatsapp-mockup-card">
+              <div class="wa-header-bar">
+                <div class="wa-avatar">🏛️</div>
+                <div class="wa-contact-meta">
+                  <div class="wa-contact-name">
+                    <span>Maha GR Alerts</span>
+                  </div>
+                  <div class="wa-contact-status">Civic Alert Bot • WhatsApp Updates</div>
+                </div>
+              </div>
+
+              <div class="wa-chat-canvas">
+                <div class="wa-bubble">
+                  <div class="wa-msg-header" id="wa-preview-header">🏛️ *महाराष्ट्र शासन निर्णय (GR Alert)*</div>
+                  
+                  <div class="wa-msg-summary" id="wa-preview-summary">
+                    📌 *Summary / सारांश:*<br>
+                    Administrative sanction of ₹42.50 Cr for drought relief and drip irrigation subsidies across selected districts.
+                  </div>
+
+                  <div class="wa-msg-details">
+                    <div>🏢 *Department:* <span id="wa-preview-dept">Agriculture & Farmers Welfare</span></div>
+                    <div>⚡ *Category:* <span id="wa-preview-intent">💰 Subsidy & Fund Sanction</span></div>
+                    <div>📍 *Region:* <span id="wa-preview-geo">All Maharashtra (Statewide)</span></div>
+                    <div>🎯 *Audience:* <span id="wa-preview-audience">🌾 Farmers & Agrarian Community</span></div>
+                  </div>
+
+                  <div class="wa-msg-divider"></div>
+
+                  <div class="wa-msg-footer-info">
+                    <div class="wa-gr-ref">📅 Ref: 20261005121409 • 05-Oct-2026</div>
+                    <div class="wa-gr-title">📝 _राज्यस्तरीय ठिबक सिंचन योजना निधी वितरण मंजुरी बाबत._</div>
+                    <div class="wa-gr-link">🔗 *Official PDF:* <span class="wa-link-text">gr.maharashtra.gov.in/PDF/...</span></div>
+                  </div>
+
+                  <div class="wa-msg-meta-row">
+                    <span class="wa-time">10:15 AM</span>
+                    <span class="wa-ticks">✓✓</span>
+                  </div>
+                </div>
+              </div>
+              <div class="mockup-caption">
+                <span>Live preview based on your current settings</span>
+              </div>
+            </div>
+
+            <!-- Quick FAQ / Trust Note -->
+            <div class="trust-box">
+              <div class="trust-title">Why customize your alerts?</div>
+              <ul class="trust-list">
+                <li>Receive only relevant ministerial decisions</li>
+                <li>Zero noise from irrelevant district transfers</li>
+                <li>Instant verified summaries on your phone</li>
+                <li>Modify preferences or pause anytime</li>
+              </ul>
+            </div>
+
+          </div>
+        </aside>
+
+      </div>
+
+    </section>
+
+  </main>
+
+  <!-- Official Footer -->
+  <footer class="app-footer">
+    <div class="footer-container">
+      <div class="footer-brand">
+        <span class="footer-emblem">🏛️</span>
+        <div>
+          <div class="footer-title">महाराष्ट्र शासन निर्णय (GR) अलर्ट सर्व्हिस</div>
+          <div class="footer-subtitle">Civic Open Governance & Automated Resolution Intelligence</div>
+        </div>
+      </div>
+      <p class="footer-legal">
+        Official government resolutions are publicly published by the Government of Maharashtra at <a href="https://gr.maharashtra.gov.in" target="_blank" rel="noopener">gr.maharashtra.gov.in</a>. This service provides structured notifications and does not represent official political endorsement.
+      </p>
+    </div>
+  </footer>
+
+  <!-- Floating Toast Notification for Immediate Action Confirmation -->
+  <div id="toast-notification" class="toast-notification hidden" role="status" aria-live="polite">
+    <div class="toast-content">
+      <span class="toast-icon" id="toast-icon">✅</span>
+      <span class="toast-message" id="toast-message">Preferences saved successfully!</span>
+    </div>
+    <button type="button" class="toast-close-btn" id="toast-close-btn" aria-label="Dismiss notification">✕</button>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="/app.js"></script>
+</body>
 </html>
