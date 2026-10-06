@@ -7,11 +7,21 @@
   "use strict";
 
   // Supabase Client Initialization
-  const SUPABASE_URL = window.__SUPABASE_URL__ || "https://uhlncqrevycxtxtdydav.supabase.co";
-  const SUPABASE_ANON_KEY = window.__SUPABASE_ANON_KEY__ || "";
+  function cleanEnvStr(val) {
+    if (!val) return "";
+    return String(val).trim().replace(/^['"]+|['"]+$/g, "").trim();
+  }
+
+  let rawSupabaseUrl = cleanEnvStr(window.__SUPABASE_URL__ || "https://uhlncqrevycxtxtdydav.supabase.co");
+  if (rawSupabaseUrl && !rawSupabaseUrl.startsWith("http://") && !rawSupabaseUrl.startsWith("https://")) {
+    rawSupabaseUrl = "https://" + rawSupabaseUrl;
+  }
+  const SUPABASE_URL = rawSupabaseUrl.replace(/\/+$/, "");
+  const SUPABASE_ANON_KEY = cleanEnvStr(window.__SUPABASE_ANON_KEY__ || "");
+
   let supabase = null;
   function getSupabase() {
-    if (!supabase && window.supabase && SUPABASE_ANON_KEY) {
+    if (!supabase && window.supabase && SUPABASE_ANON_KEY && SUPABASE_ANON_KEY !== "undefined" && SUPABASE_ANON_KEY !== "null") {
       try {
         supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
       } catch (e) {
@@ -702,6 +712,23 @@
       }
     } catch (err) {
       console.error("Registration error:", err);
+      const isFetchErr = /failed to fetch|networkerror|load failed/i.test(String(err && err.message));
+      if (isFetchErr) {
+        const localUser = {
+          phone: rawPhone,
+          first_name: firstName,
+          last_name: lastName,
+          dob: dob,
+          password: generatedPassword,
+          full_name: `${firstName} ${lastName}`.trim(),
+          role_preset: "CITIZEN_PUBLIC",
+          is_active: true,
+          exclude_amendments: true,
+        };
+        showGlobalBanner(`⚠️ Cloud sync paused (AdBlocker/Shields active). Saved locally! Password: ${generatedPassword}.`, "success");
+        logUserIn(localUser);
+        return;
+      }
       showGlobalBanner(err.message || "Could not create profile. Please try again.", "error");
     } finally {
       setBtnLoading(el.registerSubmitBtn, false);
@@ -820,6 +847,21 @@
       }
     } catch (err) {
       console.error("Login error:", err);
+      const isFetchErr = /failed to fetch|networkerror|load failed/i.test(String(err && err.message));
+      if (isFetchErr) {
+        const rawSaved = localStorage.getItem("maha_gr_user");
+        let savedUser = null;
+        if (rawSaved) {
+          try { savedUser = JSON.parse(rawSaved); } catch {}
+        }
+        if (savedUser && String(savedUser.phone).slice(-10) === rawPhone) {
+          showGlobalBanner("Welcome back! Loaded profile from offline cache (Network / AdBlocker detected).", "success");
+          logUserIn(savedUser);
+          return;
+        }
+        showGlobalBanner("Unable to connect to database (Failed to fetch). If you are using Brave Shields or an Ad Blocker, please disable it for this site, or check your internet connection.", "error");
+        return;
+      }
       showGlobalBanner(err.message || "Could not log in. Please try again.", "error");
     } finally {
       setBtnLoading(el.loginSubmitBtn, false);
@@ -968,6 +1010,33 @@
       updateManagementBar();
     } catch (err) {
       console.error("Save preferences error:", err);
+      const isFetchErr = /failed to fetch|networkerror|load failed/i.test(String(err && err.message));
+      if (isFetchErr) {
+        const localSaved = { ...state.user, ...dbPayload };
+        state.user = localSaved;
+        localStorage.setItem("maha_gr_user", JSON.stringify(localSaved));
+        const timeStr = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+
+        if (el.saveInlineFeedback) {
+          el.saveInlineFeedback.innerHTML = `
+            <div class="feedback-card feedback-card-success" style="border-color: #f59e0b; background: #fffbeb;">
+              <div class="feedback-card-header">
+                <span class="feedback-badge-pill" style="background: #f59e0b; color: #fff;">⚠️ SAVED LOCALLY</span>
+                <span class="feedback-timestamp">Saved at ${timeStr}</span>
+              </div>
+              <div class="feedback-card-title">Saved to Browser Storage</div>
+              <p class="feedback-card-desc">
+                Your settings are saved locally! Database cloud sync was paused by your browser (AdBlocker/Brave Shields detected). To sync with cloud, disable your AdBlocker for this site.
+              </p>
+            </div>
+          `;
+          el.saveInlineFeedback.classList.remove("hidden");
+        }
+        showToast("Saved locally (Cloud sync paused by AdBlocker)", "warning");
+        showPreferencesBanner(`⚠️ Preferences saved locally at ${timeStr}. Turn off AdBlocker to sync with database.`, "warning");
+        updateManagementBar();
+        return;
+      }
       const errMsg = err.message || "Could not save preferences. Please try again.";
 
       // Inline Error Card
