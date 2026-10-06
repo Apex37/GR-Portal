@@ -77,7 +77,31 @@ function formatDobDDMMYYYY(dob) {
   return digits.length >= 8 ? digits.slice(0, 8) : "01012000";
 }
 
+function extractBirthYear(val) {
+  if (!val) return "";
+  const str = String(val).trim();
+  const yMatch = str.match(/\b(19\d\d|20\d\d)\b/);
+  if (yMatch) return yMatch[1];
+  const ymdMatch = str.match(/^(\d{4})-\d{2}-\d{2}/);
+  if (ymdMatch) return ymdMatch[1];
+  const dmyMatch = str.match(/\d{2}[-/]\d{2}[-/](\d{4})/);
+  if (dmyMatch) return dmyMatch[1];
+  const digits = str.replace(/\D/g, "");
+  if (digits.length === 8) {
+    const endYear = digits.slice(4, 8);
+    if (/^(19|20)\d\d$/.test(endYear)) return endYear;
+    const startYear = digits.slice(0, 4);
+    if (/^(19|20)\d\d$/.test(startYear)) return startYear;
+  }
+  if (digits.length === 4 && /^(19|20)\d\d$/.test(digits)) {
+    return digits;
+  }
+  return "";
+}
+
 function computeStandardPassword(dob, firstName) {
+  const year = extractBirthYear(dob);
+  if (year) return year;
   const d = formatDobDDMMYYYY(dob);
   const name = String(firstName || "").trim().replace(/\s+/g, "");
   return `${d}${name}`;
@@ -88,24 +112,39 @@ function normalizePasswordForCompare(pwd) {
 }
 
 function isPasswordMatch(inputPassword, storedPassword, dob, firstName) {
-  const normInput = normalizePasswordForCompare(inputPassword);
-  if (!normInput) return false;
+  const rawInput = String(inputPassword || "").trim();
+  if (!rawInput) return false;
 
-  const candidates = [];
-  if (storedPassword) {
-    candidates.push(normalizePasswordForCompare(storedPassword));
+  const normInput = normalizePasswordForCompare(rawInput);
+
+  // 1. Birth Year Match (e.g. "2000" or "1998")
+  const inputYear = extractBirthYear(rawInput);
+  if (inputYear) {
+    const dobYear = extractBirthYear(dob);
+    if (dobYear && dobYear === inputYear) return true;
+
+    const pwdYear = extractBirthYear(storedPassword);
+    if (pwdYear && pwdYear === inputYear) return true;
   }
+
+  // 2. Direct exact or normalized match
+  if (storedPassword && normalizePasswordForCompare(storedPassword) === normInput) {
+    return true;
+  }
+
+  // 3. Legacy composite password match (DOB + First Name)
   if (dob && firstName) {
-    const computed = computeStandardPassword(dob, firstName);
-    candidates.push(normalizePasswordForCompare(computed));
-    // also with slash format DD/MM/YYYYName
+    const computed = normalizePasswordForCompare(computeStandardPassword(dob, firstName));
+    if (computed === normInput) return true;
     const ymdMatch = String(dob).match(/^(\d{4})-(\d{2})-(\d{2})$/);
     if (ymdMatch) {
-      candidates.push(normalizePasswordForCompare(`${ymdMatch[3]}/${ymdMatch[2]}/${ymdMatch[1]}${firstName}`));
+      if (normalizePasswordForCompare(`${ymdMatch[3]}/${ymdMatch[2]}/${ymdMatch[1]}${firstName}`) === normInput) {
+        return true;
+      }
     }
   }
 
-  return candidates.includes(normInput);
+  return false;
 }
 
 // Resilient upsert that automatically strips any missing columns (e.g. dob, interests, first_name)
@@ -323,10 +362,34 @@ app.post("/api/auth/login", async (req, res) => {
       } catch {}
     }
 
-    const matched = isPasswordMatch(password, storedPassword, dob, firstName);
+    let matched = isPasswordMatch(password, storedPassword, dob, firstName);
+    const inputYear = extractBirthYear(password);
+
+    // If existing account has no password or DOB saved, accept 4-digit birth year and save it
+    if (!matched && !storedPassword && !dob && inputYear) {
+      matched = true;
+      dob = inputYear;
+      storedPassword = inputYear;
+      if (supabase) {
+        try {
+          const authMeta = {
+            first_name: firstName,
+            last_name: lastName,
+            dob: inputYear,
+            password: inputYear,
+          };
+          await supabase.from(USERS_TABLE).update({
+            interests: JSON.stringify(authMeta),
+          }).eq("phone", user.phone);
+        } catch (updateErr) {
+          console.warn("Could not backfill birth year:", updateErr.message);
+        }
+      }
+    }
+
     if (!matched) {
       return res.status(401).json({
-        error: "Incorrect password. Note: Password is your Date of Birth followed by your First Name (e.g. 07/11/2003Vishal).",
+        error: "Incorrect login key. Please enter your 4-digit Birth Year (e.g. 1998 or 2000).",
       });
     }
 

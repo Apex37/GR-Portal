@@ -39,4 +39,18 @@ fs.writeFileSync(path.join(distDir, 'index.html'), html, 'utf8');
 fs.writeFileSync(path.join(distDir, 'style.css'), css, 'utf8');
 fs.writeFileSync(path.join(distDir, 'app.js'), js, 'utf8');
 
+// Copy public directory to dist if it exists
+if (fs.existsSync('public')) {
+  fs.cpSync('public', distDir, { recursive: true });
+}
+
+// Ensure key logo assets in root are copied to dist
+const rootAssets = ['mitra-emblem-clean.png', 'mitra-logo.png', 'mitra-banner.png'];
+rootAssets.forEach((file) => {
+  if (fs.existsSync(file)) {
+    fs.copyFileSync(file, path.join(distDir, file));
+  }
+});
+
 console.log('✓ Successfully built Maharashtra GR Portal into dist/');
+

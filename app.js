@@ -152,6 +152,8 @@
   const state = {
     user: null, // Logged in user object
     rolePreset: "CITIZEN_PUBLIC",
+    selectedPresets: ["CITIZEN_PUBLIC"], // Array of multiple selected presets
+    activeHeaderTab: "preferences", // "preferences" | "profile"
     geoScopeMode: "statewide", // "statewide" | "specific"
     preferredDepartments: [],
     preferredIntents: [],
@@ -299,7 +301,7 @@
       tip: "Pre-selects School Education, Higher & Technical Education, and Sports departments."
     },
     preset_officer: {
-      title: "Govt Officers & Employees Profile",
+      title: "Govt Officers & Consultants Profile",
       text: "Notifies civil servants and administrative staff about officer transfers, cadre seniority lists, dearness allowance (DA) revisions, pension rules, and administrative inquiries.",
       tip: "Pre-selects General Administration (GAD) and Finance departments."
     },
@@ -347,9 +349,14 @@
     // Views
     el.authView = document.getElementById("auth-view");
     el.dashboardView = document.getElementById("dashboard-view");
+    el.profileStatusView = document.getElementById("profile-status-view");
     el.globalBanner = document.getElementById("global-feedback-banner");
 
-    // Header Actions
+    // Header Actions & Tabs
+    el.headerNavTabs = document.getElementById("header-nav-tabs");
+    el.tabNavPreferences = document.getElementById("tab-nav-preferences");
+    el.tabNavProfile = document.getElementById("tab-nav-profile");
+    el.headerStatusBadge = document.getElementById("header-status-badge");
     el.headerGuestActions = document.getElementById("header-guest-actions");
     el.headerUserActions = document.getElementById("header-user-actions");
     el.headerUserName = document.getElementById("header-user-name");
@@ -410,9 +417,20 @@
     el.selectedDistrictsSummary = document.getElementById("selected-districts-summary");
     el.selectedDistrictsList = document.getElementById("selected-districts-list");
 
+    // Profile Status Management Elements
+    el.profileStatusBox = document.getElementById("profile-status-box");
+    el.profileMainStatusLabel = document.getElementById("profile-main-status-label");
+    el.profileSubStatusLabel = document.getElementById("profile-sub-status-label");
+    el.profileStatusPillBadge = document.getElementById("profile-status-pill-badge");
+    el.profileDetailPhone = document.getElementById("profile-detail-phone");
+    el.profileDetailName = document.getElementById("profile-detail-name");
+    el.profileDetailPassword = document.getElementById("profile-detail-password");
+    el.profileDetailPresets = document.getElementById("profile-detail-presets");
     el.pauseAlertsBtn = document.getElementById("pause-alerts-btn");
+    el.pauseBtnIcon = document.getElementById("pause-btn-icon");
+    el.pauseBtnText = document.getElementById("pause-btn-text");
     el.deleteSubBtn = document.getElementById("delete-sub-btn");
-    el.managementSubnote = document.getElementById("management-subnote");
+    el.btnBackToPreferences = document.getElementById("btn-back-to-preferences");
 
     // Optional Accordion
     el.advancedToggleBtn = document.getElementById("advanced-toggle-btn");
@@ -498,9 +516,11 @@
   function showAuthView(tab = "login") {
     el.authView.classList.remove("hidden");
     el.dashboardView.classList.add("hidden");
+    if (el.profileStatusView) el.profileStatusView.classList.add("hidden");
 
     el.headerGuestActions.classList.remove("hidden");
     el.headerUserActions.classList.add("hidden");
+    if (el.headerNavTabs) el.headerNavTabs.classList.add("hidden");
 
     switchAuthTab(tab);
   }
@@ -508,9 +528,11 @@
   function showDashboardView() {
     el.authView.classList.add("hidden");
     el.dashboardView.classList.remove("hidden");
+    if (el.profileStatusView) el.profileStatusView.classList.add("hidden");
 
     el.headerGuestActions.classList.add("hidden");
     el.headerUserActions.classList.remove("hidden");
+    if (el.headerNavTabs) el.headerNavTabs.classList.remove("hidden");
 
     if (state.user) {
       const displayName = state.user.first_name 
@@ -520,10 +542,32 @@
       el.headerUserName.textContent = displayName;
       el.dashUserName.textContent = displayName;
       el.dashUserPhone.textContent = `+91 ${String(state.user.phone).slice(-10)}`;
-      el.dashUserPassword.textContent = state.user.password || "••••••••";
+      const birthYear = (state.user.dob && String(state.user.dob).match(/\b(19\d\d|20\d\d)\b/)?.[1]) 
+        || (state.user.password && String(state.user.password).match(/\b(19\d\d|20\d\d)\b/)?.[1])
+        || state.user.password 
+        || "••••";
+      el.dashUserPassword.textContent = birthYear;
 
-      // Load user preferences into state
-      state.rolePreset = state.user.role_preset || "CITIZEN_PUBLIC";
+      // Load user presets (support multi-select)
+      let loadedPresets = null;
+      if (state.user.interests) {
+        try {
+          const meta = typeof state.user.interests === "string" ? JSON.parse(state.user.interests) : state.user.interests;
+          if (Array.isArray(meta.selected_presets) && meta.selected_presets.length > 0) {
+            loadedPresets = meta.selected_presets;
+          }
+        } catch {}
+      }
+      if (!loadedPresets && state.user.role_preset) {
+        if (state.user.role_preset.includes(",")) {
+          loadedPresets = state.user.role_preset.split(",").map((s) => s.trim());
+        } else {
+          loadedPresets = [state.user.role_preset];
+        }
+      }
+      state.selectedPresets = loadedPresets || ["CITIZEN_PUBLIC"];
+      state.rolePreset = state.selectedPresets.length === 1 ? state.selectedPresets[0] : "CUSTOM";
+
       state.preferredDepartments = state.user.preferred_departments || [];
       state.preferredIntents = state.user.preferred_intents || [];
       state.preferredAudiences = state.user.preferred_audiences || [];
@@ -545,8 +589,110 @@
         setGeoScope("statewide");
       }
 
-      applyPreset(state.rolePreset);
-      updateManagementBar();
+      applySelectedPresets();
+      updateProfileStatusView();
+      switchHeaderTab("preferences");
+    }
+  }
+
+  // Header Tab Switcher (Alert Preferences vs Profile Status)
+  function switchHeaderTab(tab = "preferences") {
+    state.activeHeaderTab = tab;
+    const isPref = tab === "preferences";
+
+    if (el.tabNavPreferences) el.tabNavPreferences.classList.toggle("active", isPref);
+    if (el.tabNavProfile) el.tabNavProfile.classList.toggle("active", !isPref);
+
+    if (el.dashboardView) el.dashboardView.classList.toggle("hidden", !isPref);
+    if (el.profileStatusView) el.profileStatusView.classList.toggle("hidden", isPref);
+
+    if (!isPref) {
+      updateProfileStatusView();
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+  }
+
+  // Update Profile Status Card Details & Badges
+  function updateProfileStatusView() {
+    if (!state.user) return;
+
+    if (el.profileDetailPhone) {
+      el.profileDetailPhone.textContent = `+91 ${String(state.user.phone).slice(-10)}`;
+    }
+
+    if (el.profileDetailName) {
+      const displayName = state.user.first_name 
+        ? `${state.user.first_name} ${state.user.last_name || ""}`.trim()
+        : state.user.full_name || "Citizen";
+      el.profileDetailName.textContent = displayName;
+    }
+
+    if (el.profileDetailPassword) {
+      const birthYear = (state.user.dob && String(state.user.dob).match(/\b(19\d\d|20\d\d)\b/)?.[1]) 
+        || (state.user.password && String(state.user.password).match(/\b(19\d\d|20\d\d)\b/)?.[1])
+        || state.user.password 
+        || "••••";
+      el.profileDetailPassword.textContent = birthYear;
+    }
+
+    if (el.profileDetailPresets) {
+      const presetNameMap = {
+        CITIZEN_PUBLIC: "Farmers & Agriculture",
+        COMMERCIAL_VENDOR: "Contractors & Business",
+        STUDENTS_EDUCATION: "Students & Education",
+        BUREAUCRACY_OFFICIALS: "Govt Officers & Consultants",
+        BANKING_FINANCE: "Banking & Finance",
+        POLITICAL_LEADERSHIP: "Cabinet & Public Policy",
+        ALL_RESOLUTIONS: "All Resolutions (Full Feed)",
+      };
+      const names = state.selectedPresets.map((p) => presetNameMap[p] || p);
+      el.profileDetailPresets.textContent = names.join(" • ") || "Farmers & Agriculture";
+    }
+
+    if (el.profileStatusBox) {
+      el.profileStatusBox.classList.toggle("paused", !state.isActive);
+    }
+
+    if (el.profileMainStatusLabel) {
+      el.profileMainStatusLabel.textContent = state.isActive ? "Profile Status: Active" : "Profile Status: Paused";
+    }
+
+    if (el.profileSubStatusLabel) {
+      el.profileSubStatusLabel.textContent = state.isActive 
+        ? "Alerts are currently active for your number" 
+        : "Alerts are temporarily paused (configured preferences preserved)";
+    }
+
+    if (el.profileStatusPillBadge) {
+      el.profileStatusPillBadge.textContent = state.isActive ? "Active" : "Paused";
+    }
+
+    if (el.pauseBtnText) {
+      el.pauseBtnText.textContent = state.isActive ? "Pause Alerts" : "Resume Alerts";
+    }
+
+    if (el.pauseBtnIcon) {
+      el.pauseBtnIcon.textContent = state.isActive ? "⏸️" : "▶️";
+    }
+
+    if (el.headerStatusBadge) {
+      el.headerStatusBadge.textContent = state.isActive ? "Active" : "Paused";
+      el.headerStatusBadge.className = `header-status-badge ${state.isActive ? "active" : "paused"}`;
+    }
+
+    const welcomeBadge = document.getElementById("welcome-status-badge") || document.querySelector(".account-active-badge");
+    if (welcomeBadge) {
+      if (state.isActive) {
+        welcomeBadge.textContent = "● Active Alert Profile";
+        welcomeBadge.className = "account-active-badge";
+      } else {
+        welcomeBadge.textContent = "⏸ Alerts Paused";
+        welcomeBadge.className = "account-active-badge paused";
+      }
+    }
+
+    if (el.pauseAlertsBtn) {
+      el.pauseAlertsBtn.classList.toggle("paused", !state.isActive);
     }
   }
 
@@ -566,25 +712,14 @@
     showGlobalBanner("", "");
   }
 
-  // Calculate live DOBFirstName password
+  // Calculate live Birth Year preview
   function calculatePasswordPreview() {
-    const firstName = el.regFirstName.value.trim().replace(/\s+/g, "");
-    const dobValue = el.regDob.value.trim(); // YYYY-MM-DD
-
-    if (!dobValue && !firstName) {
-      el.previewGeneratedPassword.textContent = "DDMMYYYYFirstName";
-      return;
+    const rawVal = el.regDob ? el.regDob.value.trim() : "";
+    const yMatch = rawVal.match(/\b(19\d\d|20\d\d)\b/) || rawVal.match(/^(\d{4})/);
+    const year = yMatch ? yMatch[1] : (rawVal.length === 4 ? rawVal : "YYYY");
+    if (el.previewGeneratedPassword) {
+      el.previewGeneratedPassword.textContent = year;
     }
-
-    let dobFormatted = "DDMMYYYY";
-    const ymdMatch = dobValue.match(/^(\d{4})-(\d{2})-(\d{2})$/);
-    if (ymdMatch) {
-      const [, y, m, d] = ymdMatch;
-      dobFormatted = `${d}${m}${y}`;
-    }
-
-    const nameFormatted = firstName || "FirstName";
-    el.previewGeneratedPassword.textContent = `${dobFormatted}${nameFormatted}`;
   }
 
   // Log in user helper
@@ -627,7 +762,7 @@
       return;
     }
     if (!dob) {
-      showGlobalBanner("Please select your Date of Birth (DOB).", "error");
+      showGlobalBanner("Please enter your 4-digit Birth Year (e.g. 1998).", "error");
       el.regDob.focus();
       return;
     }
@@ -636,12 +771,8 @@
     showGlobalBanner("", "");
 
     try {
-      // Calculate password DDMMYYYYFirstName
-      let dobFormatted = "01012000";
-      const ymdMatch = dob.match(/^(\d{4})-(\d{2})-(\d{2})$/);
-      if (ymdMatch) {
-        dobFormatted = `${ymdMatch[3]}${ymdMatch[2]}${ymdMatch[1]}`;
-      }
+      const birthYearMatch = dob.match(/\b(19\d\d|20\d\d)\b/) || dob.match(/^(\d{4})/);
+      const cleanBirthYear = birthYearMatch ? birthYearMatch[1] : dob;
       const response = await fetch("/api/auth/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -666,8 +797,8 @@
         throw new Error(resData.error || "Could not create profile. Please try again.");
       }
 
-      const generatedPassword = resData.password || `${dobFormatted}${firstName}`;
-      showGlobalBanner(`🎉 Profile created! Your permanent password is: ${generatedPassword}. You are now logged in.`, "success");
+      const generatedPassword = resData.password || cleanBirthYear;
+      showGlobalBanner(`🎉 Profile created! Your login key is your Birth Year: ${generatedPassword}. You are now logged in.`, "success");
       logUserIn(resData.user);
     } catch (err) {
       console.error("Registration error:", err);
@@ -677,14 +808,14 @@
           phone: rawPhone,
           first_name: firstName,
           last_name: lastName,
-          dob: dob,
-          password: generatedPassword,
+          dob: cleanBirthYear,
+          password: cleanBirthYear,
           full_name: `${firstName} ${lastName}`.trim(),
           role_preset: "CITIZEN_PUBLIC",
           is_active: true,
           exclude_amendments: true,
         };
-        showGlobalBanner(`🎉 Profile created! Saved offline. Password: ${generatedPassword}.`, "success");
+        showGlobalBanner(`🎉 Profile created! Saved offline. Login Key (Birth Year): ${cleanBirthYear}.`, "success");
         logUserIn(localUser);
         return;
       }
@@ -707,7 +838,7 @@
       return;
     }
     if (!password) {
-      showGlobalBanner("Please enter your password (DOBFirstName, e.g. 07/11/2003Vishal).", "error");
+      showGlobalBanner("Please enter your 4-digit Birth Year (e.g. 1998 or 2000).", "error");
       el.loginPassword.focus();
       return;
     }
@@ -823,6 +954,7 @@
         last_name: state.user.last_name || null,
         dob: state.user.dob || null,
         password: state.user.password || null,
+        selected_presets: state.selectedPresets,
       };
 
       // Derive divisions from selected districts
@@ -834,10 +966,14 @@
         });
       }
 
+      const derivedRolePreset = state.selectedPresets.length === 1 
+        ? state.selectedPresets[0] 
+        : (state.selectedPresets.includes("ALL_RESOLUTIONS") ? "ALL_RESOLUTIONS" : "CUSTOM");
+
       const dbPayload = {
         phone: String(state.user.phone).slice(-10),
         full_name: state.user.full_name || `${state.user.first_name || ""} ${state.user.last_name || ""}`.trim() || null,
-        role_preset: state.rolePreset,
+        role_preset: derivedRolePreset,
         preferred_departments: state.preferredDepartments,
         preferred_intents: state.preferredIntents,
         preferred_audiences: state.preferredAudiences,
@@ -868,6 +1004,7 @@
 
       state.user = savedUser;
       localStorage.setItem("maha_gr_user", JSON.stringify(savedUser));
+      updateProfileStatusView();
 
       const timeStr = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
 
@@ -981,6 +1118,8 @@
     if (!state.user) return;
     state.isActive = !state.isActive;
     if (el.isActiveToggle) el.isActiveToggle.checked = state.isActive;
+    updateProfileStatusView();
+    showToast(state.isActive ? "Alerts resumed." : "Alerts temporarily paused.", "success");
     await handleSavePreferences({ preventDefault: () => {} });
   }
 
@@ -1009,14 +1148,7 @@
   }
 
   function updateManagementBar() {
-    if (!el.pauseAlertsBtn || !el.managementSubnote) return;
-    if (state.isActive) {
-      el.pauseAlertsBtn.textContent = "Pause Alerts";
-      el.managementSubnote.textContent = "Alerts are currently active";
-    } else {
-      el.pauseAlertsBtn.textContent = "Resume Alerts";
-      el.managementSubnote.textContent = "Alerts are currently paused";
-    }
+    updateProfileStatusView();
   }
 
   // Render Administrative Divisions
@@ -1175,28 +1307,82 @@
     updateUI();
   }
 
-  // Apply Role Preset
-  function applyPreset(presetName) {
-    state.rolePreset = presetName;
-    const p = PRESET_CONFIGS[presetName] || PRESET_CONFIGS.CITIZEN_PUBLIC;
+  // Toggle a Preset for Multi-Select
+  function togglePreset(presetName) {
+    if (presetName === "ALL_RESOLUTIONS") {
+      if (state.selectedPresets.includes("ALL_RESOLUTIONS")) {
+        state.selectedPresets = ["CITIZEN_PUBLIC"];
+      } else {
+        state.selectedPresets = ["ALL_RESOLUTIONS"];
+      }
+    } else {
+      // Remove ALL_RESOLUTIONS if picking specific categories
+      state.selectedPresets = state.selectedPresets.filter((p) => p !== "ALL_RESOLUTIONS");
 
-    state.preferredDepartments = [...p.departments];
-    state.preferredIntents = [...p.intents];
-    state.preferredAudiences = [...p.audiences];
-    state.preferredBeneficiaries = [...p.beneficiaries];
-    state.excludeAmendments = p.excludeAmendments;
+      const idx = state.selectedPresets.indexOf(presetName);
+      if (idx > -1) {
+        if (state.selectedPresets.length > 1) {
+          state.selectedPresets.splice(idx, 1);
+        } else {
+          showToast("At least one interest category must remain selected.", "warning");
+          return;
+        }
+      } else {
+        state.selectedPresets.push(presetName);
+      }
+    }
+
+    applySelectedPresets();
+    updateProfileStatusView();
+  }
+
+  // Apply Selected Presets across 5D Dimensions
+  function applySelectedPresets() {
+    const combinedDepts = new Set();
+    const combinedIntents = new Set();
+    const combinedAudiences = new Set();
+    const combinedBeneficiaries = new Set();
+    let excludeAmendments = true;
+
+    state.selectedPresets.forEach((pName) => {
+      const conf = PRESET_CONFIGS[pName] || PRESET_CONFIGS.CITIZEN_PUBLIC;
+      conf.departments.forEach((d) => combinedDepts.add(d));
+      conf.intents.forEach((i) => combinedIntents.add(i));
+      conf.audiences.forEach((a) => combinedAudiences.add(a));
+      conf.beneficiaries.forEach((b) => combinedBeneficiaries.add(b));
+      if (conf.excludeAmendments === false) {
+        excludeAmendments = false;
+      }
+    });
+
+    state.preferredDepartments = Array.from(combinedDepts);
+    state.preferredIntents = Array.from(combinedIntents);
+    state.preferredAudiences = Array.from(combinedAudiences);
+    state.preferredBeneficiaries = Array.from(combinedBeneficiaries);
+    state.excludeAmendments = excludeAmendments;
+
+    state.rolePreset = state.selectedPresets.length === 1 
+      ? state.selectedPresets[0] 
+      : (state.selectedPresets.includes("ALL_RESOLUTIONS") ? "ALL_RESOLUTIONS" : "CUSTOM");
 
     if (el.excludeAmendmentsToggle) {
       el.excludeAmendmentsToggle.checked = state.excludeAmendments;
     }
 
+    // Highlight all active cards
     el.roleCards.forEach((card) => {
-      const isActive = card.dataset.preset === presetName;
-      card.classList.toggle("active", isActive);
-      card.setAttribute("aria-pressed", String(isActive));
+      const isSelected = state.selectedPresets.includes(card.dataset.preset);
+      card.classList.toggle("active", isSelected);
+      card.setAttribute("aria-pressed", String(isSelected));
+      card.setAttribute("aria-checked", String(isSelected));
     });
 
     updateUI();
+  }
+
+  // For backward compatibility
+  function applyPreset(presetName) {
+    togglePreset(presetName);
   }
 
   // Update All Synchronized UI State
@@ -1237,6 +1423,7 @@
     // 5. Update Volume Estimate & WhatsApp Mockup
     updateVolumeEstimate();
     updateWhatsAppPreview();
+    updateProfileStatusView();
   }
 
   // Calculate Volume Estimate
@@ -1250,27 +1437,36 @@
     const hasSpecificDistricts = state.preferredDistricts.length > 0;
     const deptCount = state.preferredDepartments.length;
     const intentCount = state.preferredIntents.length;
+    const presetCount = state.selectedPresets.length;
 
-    if (hasSpecificDistricts && deptCount > 0 && deptCount <= 3) {
+    if (state.selectedPresets.includes("ALL_RESOLUTIONS")) {
+      estimate = "~50–150";
+      width = 100;
+      summary = "Complete statewide feed: All 34 ministries and all official resolutions";
+    } else if (hasSpecificDistricts && deptCount > 0 && deptCount <= 3) {
       estimate = "~1–3";
       width = 18;
       summary = "Laser-focused alerts for your specific district and ministry";
+    } else if (presetCount > 2) {
+      estimate = "~12–25";
+      width = 65;
+      summary = `Multi-category stream covering ${presetCount} selected interest areas`;
+    } else if (presetCount === 2) {
+      estimate = "~8–16";
+      width = 50;
+      summary = "Combined updates for your selected sectors";
     } else if (hasSpecificDistricts) {
       estimate = "~2–5";
       width = 28;
       summary = "Focused exclusively on your local district and statewide decisions";
-    } else if (state.rolePreset === "COMMERCIAL_VENDOR") {
+    } else if (state.selectedPresets.includes("COMMERCIAL_VENDOR")) {
       estimate = "~5–10";
-      width = 50;
+      width = 45;
       summary = "Active coverage of tenders, public works, and procurement deadlines";
-    } else if (state.rolePreset === "CITIZEN_PUBLIC") {
+    } else if (state.selectedPresets.includes("CITIZEN_PUBLIC")) {
       estimate = "~4–8";
       width = 38;
       summary = "Subsidies, agriculture, and citizen welfare schemes";
-    } else if (state.rolePreset === "ALL_RESOLUTIONS") {
-      estimate = "~50–150";
-      width = 100;
-      summary = "Complete statewide feed: All 34 ministries and all official resolutions";
     } else if (deptCount === 0 && intentCount === 0 && !hasSpecificDistricts) {
       estimate = "~25–40";
       width = 85;
@@ -1284,7 +1480,8 @@
 
   // Update WhatsApp Chat Mockup
   function updateWhatsAppPreview() {
-    const p = PRESET_CONFIGS[state.rolePreset] || PRESET_CONFIGS.CITIZEN_PUBLIC;
+    const primaryPreset = state.selectedPresets[0] || "CITIZEN_PUBLIC";
+    const p = PRESET_CONFIGS[primaryPreset] || PRESET_CONFIGS.CITIZEN_PUBLIC;
 
     if (el.waPreviewHeader) {
       el.waPreviewHeader.textContent = state.excludeAmendments
@@ -1293,7 +1490,11 @@
     }
 
     if (el.waPreviewSummary) {
-      el.waPreviewSummary.innerHTML = `📌 *Summary / सारांश:*<br>${p.sampleSummary}`;
+      if (state.selectedPresets.length > 1) {
+        el.waPreviewSummary.innerHTML = `📌 *Summary / सारांश:*<br>${p.sampleSummary}<br><br><span style="font-size:0.8rem; color:#475569;"><em>(Multi-category stream: +${state.selectedPresets.length - 1} other active sector${state.selectedPresets.length > 2 ? 's' : ''})</em></span>`;
+      } else {
+        el.waPreviewSummary.innerHTML = `📌 *Summary / सारांश:*<br>${p.sampleSummary}`;
+      }
     }
 
     if (el.waPreviewDept) {
@@ -1328,20 +1529,16 @@
   }
 
   function setGeoScope(mode) {
-    state.geoScopeMode = mode;
+    state.geoScopeMode = mode || "specific";
     const isStatewide = mode === "statewide";
 
-    el.segmentStatewide.classList.toggle("active", isStatewide);
-    el.segmentSpecific.classList.toggle("active", !isStatewide);
+    if (el.segmentStatewide) el.segmentStatewide.classList.toggle("active", isStatewide);
+    if (el.segmentSpecific) el.segmentSpecific.classList.toggle("active", !isStatewide);
 
     const radio = document.querySelector(`input[name="geo-scope"][value="${mode}"]`);
     if (radio) radio.checked = true;
 
-    if (isStatewide) {
-      el.districtPanel.classList.add("hidden");
-      state.preferredDistricts = [];
-      state.preferredDivisions = [];
-    } else {
+    if (el.districtPanel) {
       el.districtPanel.classList.remove("hidden");
     }
 
@@ -1432,29 +1629,46 @@
     el.registerForm.addEventListener("submit", handleRegister);
     el.preferencesForm.addEventListener("submit", handleSavePreferences);
 
-    // Role Card Clicks
+    // Role Card Clicks (Multi-Select toggle)
     el.roleCards.forEach((card) => {
       card.addEventListener("click", (e) => {
         if (e.target.closest(".info-btn")) return;
-        applyPreset(card.dataset.preset);
+        togglePreset(card.dataset.preset);
       });
       card.addEventListener("keydown", (e) => {
         if (e.key === "Enter" || e.key === " ") {
           e.preventDefault();
-          applyPreset(card.dataset.preset);
+          togglePreset(card.dataset.preset);
         }
       });
     });
 
-    // Geographic Scope Switcher
-    el.geoRadios.forEach((radio) => {
-      radio.addEventListener("change", (e) => {
-        setGeoScope(e.target.value);
-      });
-    });
+    // Header Navigation Tabs
+    if (el.tabNavPreferences) {
+      el.tabNavPreferences.addEventListener("click", () => switchHeaderTab("preferences"));
+    }
+    if (el.tabNavProfile) {
+      el.tabNavProfile.addEventListener("click", () => switchHeaderTab("profile"));
+    }
+    if (el.btnBackToPreferences) {
+      el.btnBackToPreferences.addEventListener("click", () => switchHeaderTab("preferences"));
+    }
 
-    el.segmentStatewide.addEventListener("click", () => setGeoScope("statewide"));
-    el.segmentSpecific.addEventListener("click", () => setGeoScope("specific"));
+    // Geographic Scope Switcher
+    if (el.geoRadios) {
+      el.geoRadios.forEach((radio) => {
+        radio.addEventListener("change", (e) => {
+          setGeoScope(e.target.value);
+        });
+      });
+    }
+
+    if (el.segmentStatewide) {
+      el.segmentStatewide.addEventListener("click", () => setGeoScope("statewide"));
+    }
+    if (el.segmentSpecific) {
+      el.segmentSpecific.addEventListener("click", () => setGeoScope("specific"));
+    }
 
     // District Quick Actions
     el.selectAllDistrictsBtn.addEventListener("click", () => {
@@ -1513,18 +1727,27 @@
     });
 
     // Quality Switches
-    el.excludeAmendmentsToggle.addEventListener("change", (e) => {
-      state.excludeAmendments = e.target.checked;
-      updateUI();
-    });
+    if (el.excludeAmendmentsToggle) {
+      el.excludeAmendmentsToggle.addEventListener("change", (e) => {
+        state.excludeAmendments = e.target.checked;
+        updateUI();
+      });
+    }
 
-    el.isActiveToggle.addEventListener("change", (e) => {
-      state.isActive = e.target.checked;
-    });
+    if (el.isActiveToggle) {
+      el.isActiveToggle.addEventListener("change", (e) => {
+        state.isActive = e.target.checked;
+        updateProfileStatusView();
+      });
+    }
 
     // Pause & Delete Buttons
-    el.pauseAlertsBtn.addEventListener("click", handlePauseAlerts);
-    el.deleteSubBtn.addEventListener("click", handleDeleteProfile);
+    if (el.pauseAlertsBtn) {
+      el.pauseAlertsBtn.addEventListener("click", handlePauseAlerts);
+    }
+    if (el.deleteSubBtn) {
+      el.deleteSubBtn.addEventListener("click", handleDeleteProfile);
+    }
 
     // Info Dialog Triggers
     document.addEventListener("click", (e) => {

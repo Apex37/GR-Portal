@@ -16,12 +16,26 @@
   <header class="app-header">
     <div class="header-container">
       <div class="brand-group">
-        <div class="brand-emblem" aria-hidden="true">🏛️</div>
+        <img src="/mitra-emblem-clean.png" alt="MITRA Maharashtra Official Logo" class="brand-logo-img">
         <div class="brand-text">
-          <div class="brand-title">महाराष्ट्र शासन निर्णय (GR) अलर्ट्स</div>
-          <div class="brand-subtitle">Maharashtra Government Resolutions Alert Service • Official Portal Monitor</div>
+          <div class="brand-title">MahaSanket</div>
+          <div class="brand-subtitle">Maharashtra Institution for Transformation (MITRA) • Planning Department</div>
         </div>
       </div>
+
+      <!-- Header Nav Tabs (Visible when logged in) -->
+      <nav id="header-nav-tabs" class="header-nav-tabs hidden" aria-label="Portal Navigation">
+        <button type="button" id="tab-nav-preferences" class="header-tab-btn active">
+          <span class="tab-btn-icon">📋</span>
+          <span>Alert Preferences</span>
+        </button>
+        <button type="button" id="tab-nav-profile" class="header-tab-btn">
+          <span class="tab-btn-icon">⚙️</span>
+          <span>Profile Status</span>
+          <span id="header-status-badge" class="header-status-badge active">Active</span>
+        </button>
+      </nav>
+
       <div class="header-actions">
         <span class="live-status-pill">
           <span class="live-dot"></span>
@@ -133,25 +147,27 @@
                 </div>
               </div>
 
-              <!-- Password Input -->
+              <!-- Birth Year (Login Key) Input -->
               <div class="form-group" style="margin-top: 1.15rem;">
                 <label for="login-password" class="form-label">
-                  Password <span class="required-star">*</span>
+                  Birth Year (YYYY) <span class="required-star">*</span>
                 </label>
                 <div class="password-input-box">
                   <input 
                     type="password" 
                     id="login-password" 
                     class="standard-text-input password-input" 
-                    placeholder="e.g. 07/11/2003Vishal" 
+                    placeholder="e.g. 1998" 
+                    maxlength="4" 
                     required 
                     autocomplete="current-password"
+                    inputmode="numeric"
                   >
                   <button type="button" id="toggle-login-password-btn" class="password-toggle-btn" aria-label="Show password">👁️</button>
                 </div>
                 <div class="password-hint-box">
                   <span class="hint-icon">💡</span>
-                  <span><strong>Password Format:</strong> Date of Birth (DDMMYYYY) + First Name (e.g. <code>07/11/2003Vishal</code>).</span>
+                  <span><strong>Quick Login:</strong> Enter your 4-digit Birth Year (e.g. <code>1998</code> or <code>2000</code>).</span>
                 </div>
               </div>
 
@@ -233,31 +249,35 @@
                 </div>
               </div>
 
-              <!-- Date of Birth (DOB) -->
+              <!-- Birth Year -->
               <div class="form-group" style="margin-top: 1.15rem;">
                 <label for="reg-dob" class="form-label">
-                  Date of Birth (DOB) <span class="required-star">*</span>
+                  Birth Year (YYYY) <span class="required-star">*</span>
                 </label>
                 <input 
-                  type="date" 
+                  type="number" 
                   id="reg-dob" 
-                  class="standard-text-input date-input" 
+                  class="standard-text-input" 
+                  placeholder="e.g. 1998" 
+                  min="1930" 
+                  max="2025" 
                   required
+                  inputmode="numeric"
                 >
-                <span class="input-hint">Used to generate your secure, memorable login password.</span>
+                <span class="input-hint">Your 4-digit birth year is your quick, memorable login key.</span>
               </div>
 
               <!-- Generated Password Preview Callout -->
               <div class="generated-password-card">
                 <div class="gen-pass-top">
                   <span class="gen-pass-icon">🔒</span>
-                  <span class="gen-pass-title">Your Auto-Generated Login Password:</span>
+                  <span class="gen-pass-title">Your Quick Login Key (Birth Year):</span>
                 </div>
                 <div class="gen-pass-display">
-                  <span id="preview-generated-password" class="gen-pass-value">DDMMYYYYFirstName</span>
+                  <span id="preview-generated-password" class="gen-pass-value">YYYY</span>
                 </div>
                 <div class="gen-pass-explanation">
-                  Format: <strong>Date of Birth (DDMMYYYY)</strong> followed by <strong>First Name</strong>. You will use this password to log in and modify your alert preferences later.
+                  Format: <strong>4-Digit Birth Year (YYYY)</strong>. You will use this year to log in and modify your alert preferences anytime.
                 </div>
               </div>
 
@@ -321,7 +341,7 @@
             <h1 class="welcome-greeting">
               Namaskar, <span id="dash-user-name">Citizen</span>!
             </h1>
-            <span class="account-active-badge">● Active Alert Profile</span>
+            <span class="account-active-badge" id="welcome-status-badge">● Active Alert Profile</span>
           </div>
           <p class="welcome-subtext">
             Personalize which Government Resolutions you want delivered to <strong id="dash-user-phone">+91 XXXXXXXXXX</strong>.
@@ -329,10 +349,10 @@
         </div>
         <div class="user-creds-col">
           <div class="creds-pill">
-            <span class="creds-label">Your Login Password:</span>
-            <code id="dash-user-password" class="creds-code">••••••••</code>
+            <span class="creds-label">Your Login Key:</span>
+            <code id="dash-user-password" class="creds-code">••••</code>
           </div>
-          <span class="creds-format-note">Format: DOB (DDMMYYYY) + First Name</span>
+          <span class="creds-format-note">4-digit Birth Year (YYYY)</span>
         </div>
       </div>
 
@@ -349,13 +369,13 @@
             <!-- STEP 1: Role / Topic Selection -->
             <div class="form-step-block">
               <div class="step-label-row">
-                <span class="step-badge">Step 1 of 3</span>
+                <span class="guide-dot" aria-hidden="true"></span>
                 <div class="step-title-group">
                   <h2 class="step-heading">What are you interested in?</h2>
                   <button type="button" class="info-btn" data-info="roles_overview" title="How roles work">ⓘ</button>
                 </div>
               </div>
-              <p class="step-helper">Choose the category that matches your daily work or interests. You can fine-tune this anytime.</p>
+              <p class="step-helper">Choose the categories that match your daily work or interests.</p>
 
               <div class="role-grid">
 
@@ -363,7 +383,7 @@
                 <div class="role-card active" data-preset="CITIZEN_PUBLIC" tabindex="0" role="button" aria-pressed="true">
                   <div class="role-card-top">
                     <span class="role-emoji">🌾</span>
-                    <div class="role-radio-circle"></div>
+                    <div class="role-checkbox-box"><span class="check-icon">✓</span></div>
                   </div>
                   <div class="role-card-content">
                     <div class="role-title">Farmers & Agriculture</div>
@@ -380,7 +400,7 @@
                 <div class="role-card" data-preset="COMMERCIAL_VENDOR" tabindex="0" role="button" aria-pressed="false">
                   <div class="role-card-top">
                     <span class="role-emoji">💼</span>
-                    <div class="role-radio-circle"></div>
+                    <div class="role-checkbox-box"><span class="check-icon">✓</span></div>
                   </div>
                   <div class="role-card-content">
                     <div class="role-title">Contractors & Business</div>
@@ -397,7 +417,7 @@
                 <div class="role-card" data-preset="STUDENTS_EDUCATION" tabindex="0" role="button" aria-pressed="false">
                   <div class="role-card-top">
                     <span class="role-emoji">🎓</span>
-                    <div class="role-radio-circle"></div>
+                    <div class="role-checkbox-box"><span class="check-icon">✓</span></div>
                   </div>
                   <div class="role-card-content">
                     <div class="role-title">Students & Education</div>
@@ -414,11 +434,11 @@
                 <div class="role-card" data-preset="BUREAUCRACY_OFFICIALS" tabindex="0" role="button" aria-pressed="false">
                   <div class="role-card-top">
                     <span class="role-emoji">🏛️</span>
-                    <div class="role-radio-circle"></div>
+                    <div class="role-checkbox-box"><span class="check-icon">✓</span></div>
                   </div>
                   <div class="role-card-content">
-                    <div class="role-title">Govt Officers & Employees</div>
-                    <div class="role-marathi">शासकीय अधिकारी व कर्मचारी</div>
+                    <div class="role-title">Govt Officers & Consultants</div>
+                    <div class="role-marathi">शासकीय अधिकारी व सल्लागार</div>
                     <p class="role-description">Transfers, cadre seniority lists, service rules, pay commission & inquiries.</p>
                     <div class="role-meta">
                       <span class="role-rate-tag">~2–5 alerts / wk</span>
@@ -431,7 +451,7 @@
                 <div class="role-card" data-preset="BANKING_FINANCE" tabindex="0" role="button" aria-pressed="false">
                   <div class="role-card-top">
                     <span class="role-emoji">🏦</span>
-                    <div class="role-radio-circle"></div>
+                    <div class="role-checkbox-box"><span class="check-icon">✓</span></div>
                   </div>
                   <div class="role-card-content">
                     <div class="role-title">Banking & Finance</div>
@@ -448,7 +468,7 @@
                 <div class="role-card" data-preset="POLITICAL_LEADERSHIP" tabindex="0" role="button" aria-pressed="false">
                   <div class="role-card-top">
                     <span class="role-emoji">📜</span>
-                    <div class="role-radio-circle"></div>
+                    <div class="role-checkbox-box"><span class="check-icon">✓</span></div>
                   </div>
                   <div class="role-card-content">
                     <div class="role-title">Cabinet & Public Policy</div>
@@ -465,7 +485,7 @@
                 <div class="role-card" data-preset="ALL_RESOLUTIONS" tabindex="0" role="button" aria-pressed="false">
                   <div class="role-card-top">
                     <span class="role-emoji">🌐</span>
-                    <div class="role-radio-circle"></div>
+                    <div class="role-checkbox-box"><span class="check-icon">✓</span></div>
                   </div>
                   <div class="role-card-content">
                     <div class="role-title">All Resolutions (Full Feed)</div>
@@ -484,7 +504,7 @@
             <!-- STEP 2: Geographic Scope -->
             <div class="form-step-block">
               <div class="step-label-row">
-                <span class="step-badge">Step 2 of 3</span>
+                <span class="guide-dot" aria-hidden="true"></span>
                 <div class="step-title-group">
                   <h2 class="step-heading">Select Your Location</h2>
                   <button type="button" class="info-btn" data-info="geo_scope" title="How location filtering works">ⓘ</button>
@@ -492,26 +512,8 @@
               </div>
               <p class="step-helper">Statewide policy orders will always reach you. You can narrow down local orders to your specific area.</p>
 
-              <!-- Segment Switcher -->
-              <div class="segmented-control" role="radiogroup" aria-label="Geographic Scope">
-                <label class="segment-btn active" id="segment-statewide">
-                  <input type="radio" name="geo-scope" value="statewide" checked>
-                  <span class="segment-label">
-                    <span class="segment-icon">🌐</span>
-                    <span>Whole State (All Maharashtra)</span>
-                  </span>
-                </label>
-                <label class="segment-btn" id="segment-specific">
-                  <input type="radio" name="geo-scope" value="specific">
-                  <span class="segment-label">
-                    <span class="segment-icon">📍</span>
-                    <span>My District or Division</span>
-                  </span>
-                </label>
-              </div>
-
-              <!-- Specific District/Division Panel -->
-              <div id="district-selector-panel" class="district-panel hidden">
+              <!-- District and Division Selector Panel (Default) -->
+              <div id="district-selector-panel" class="district-panel">
                 <div class="division-section">
                   <div class="division-header-row">
                     <span class="field-subheading">Choose Administrative Division:</span>
@@ -525,10 +527,13 @@
                 <div class="districts-section">
                   <div class="districts-header-row">
                     <span class="field-subheading">Districts in <strong id="active-division-title">Pune Division</strong>:</span>
-                    <div class="district-quick-links">
-                      <button type="button" id="select-all-districts-btn" class="text-link-btn">Select All in Division</button>
-                      <span class="link-divider">•</span>
-                      <button type="button" id="clear-districts-btn" class="text-link-btn">Clear</button>
+                    <div class="district-action-buttons">
+                      <button type="button" id="select-all-districts-btn" class="district-action-pill select-all-pill">
+                        <span>✓</span> Select All in Division
+                      </button>
+                      <button type="button" id="clear-districts-btn" class="district-action-pill clear-pill">
+                        <span>✕</span> Clear All
+                      </button>
                     </div>
                   </div>
                   <div id="districts-grid-container" class="districts-badge-grid">
@@ -583,10 +588,13 @@
                   </div>
                   <div class="search-filter-bar">
                     <input type="text" id="dept-search-input" class="search-input" placeholder="Search departments (e.g. Agriculture, PWD, Finance, Health)...">
-                    <div class="quick-filter-links">
-                      <button type="button" id="select-all-depts-btn" class="text-link-btn">Select All</button>
-                      <span class="link-divider">•</span>
-                      <button type="button" id="clear-depts-btn" class="text-link-btn">Clear</button>
+                    <div class="district-action-buttons">
+                      <button type="button" id="select-all-depts-btn" class="district-action-pill select-all-pill">
+                        <span>✓</span> Select All Ministries
+                      </button>
+                      <button type="button" id="clear-depts-btn" class="district-action-pill clear-pill">
+                        <span>✕</span> Clear
+                      </button>
                     </div>
                   </div>
                   <div id="departments-list" class="departments-scroll-list">
@@ -606,10 +614,13 @@
                       <button type="button" class="info-btn" data-info="intents_info">ⓘ</button>
                     </div>
                   </div>
-                  <div class="quick-filter-links block-level">
-                    <button type="button" id="select-all-intents-btn" class="text-link-btn">Select All</button>
-                    <span class="link-divider">•</span>
-                    <button type="button" id="clear-intents-btn" class="text-link-btn">Reset</button>
+                  <div class="district-action-buttons" style="margin-bottom: 0.75rem;">
+                    <button type="button" id="select-all-intents-btn" class="district-action-pill select-all-pill">
+                      <span>✓</span> Select All Actions
+                    </button>
+                    <button type="button" id="clear-intents-btn" class="district-action-pill clear-pill">
+                      <span>✕</span> Reset
+                    </button>
                   </div>
                   <div id="intents-grid" class="tags-checkbox-grid">
                     <!-- Dynamically populated intents -->
@@ -635,17 +646,6 @@
                       <span class="toggle-slider"></span>
                     </label>
                   </div>
-
-                  <div class="switch-row" style="margin-top: 1rem;">
-                    <div class="switch-label-col">
-                      <strong>Active Alert Status</strong>
-                      <p>Temporarily pause alerts without losing your configured preferences.</p>
-                    </div>
-                    <label class="toggle-switch">
-                      <input type="checkbox" id="is-active-toggle" checked>
-                      <span class="toggle-slider"></span>
-                    </label>
-                  </div>
                 </div>
 
               </div>
@@ -654,7 +654,7 @@
             <!-- STEP 3: Delivery Preferences & Save -->
             <div class="form-step-block">
               <div class="step-label-row">
-                <span class="step-badge">Step 3 of 3</span>
+                <span class="guide-dot" aria-hidden="true"></span>
                 <div class="step-title-group">
                   <h2 class="step-heading">Save Preferences</h2>
                 </div>
@@ -673,18 +673,6 @@
                 <p class="form-disclaimer">
                   🔒 Official Maharashtra Government Resolution monitor. Modify or pause your alerts anytime.
                 </p>
-              </div>
-
-              <!-- Profile Management Bar -->
-              <div class="management-actions-bar">
-                <div class="management-status-col">
-                  <span class="active-sub-label">Profile Status: Active</span>
-                  <span id="management-subnote" class="management-subnote">Alerts are active for your number</span>
-                </div>
-                <div class="action-buttons-group">
-                  <button type="button" id="pause-alerts-btn" class="btn btn-secondary btn-sm">Pause Alerts</button>
-                  <button type="button" id="delete-sub-btn" class="btn btn-danger-link btn-sm">Delete Profile</button>
-                </div>
               </div>
             </div>
 
@@ -783,16 +771,102 @@
 
     </section>
 
+    <!-- =========================================================================
+         VIEW 3: PROFILE STATUS & ALERTS MANAGEMENT (Dedicated Header Tab)
+         ========================================================================= -->
+    <section id="profile-status-view" class="profile-status-section hidden">
+      <div class="profile-status-card">
+        <div class="profile-card-header">
+          <div class="profile-header-icon-wrap">
+            <span class="profile-header-icon">🛡️</span>
+          </div>
+          <div>
+            <h2 class="profile-card-title">Profile & Alert Status</h2>
+            <p class="profile-card-sub">Manage your active WhatsApp notification delivery and subscription status.</p>
+          </div>
+        </div>
+
+        <!-- Live Status Indicator Banner -->
+        <div class="status-indicator-box" id="profile-status-box">
+          <div class="status-indicator-left">
+            <div class="status-pulsing-dot" id="profile-pulsing-dot"></div>
+            <div>
+              <div class="status-main-label" id="profile-main-status-label">Profile Status: Active</div>
+              <div class="status-sub-label" id="profile-sub-status-label">Alerts are currently active for your number</div>
+            </div>
+          </div>
+          <div class="status-indicator-right">
+            <span class="status-pill-badge" id="profile-status-pill-badge">Active</span>
+          </div>
+        </div>
+
+        <!-- Account Details Strip -->
+        <div class="profile-details-grid">
+          <div class="profile-detail-item">
+            <span class="detail-label">WhatsApp Number</span>
+            <span class="detail-value" id="profile-detail-phone">+91 XXXXXXXXXX</span>
+          </div>
+          <div class="profile-detail-item">
+            <span class="detail-label">Citizen Name</span>
+            <span class="detail-value" id="profile-detail-name">Citizen</span>
+          </div>
+          <div class="profile-detail-item">
+            <span class="detail-label">Login Key (Birth Year)</span>
+            <div class="detail-pwd-wrap">
+              <code class="detail-value code" id="profile-detail-password">••••</code>
+              <span class="detail-hint">(Birth Year)</span>
+            </div>
+          </div>
+          <div class="profile-detail-item">
+            <span class="detail-label">Selected Categories</span>
+            <span class="detail-value" id="profile-detail-presets">Farmers & Agriculture</span>
+          </div>
+        </div>
+
+        <!-- Action Buttons (Pause Alerts & Delete Profile) -->
+        <div class="profile-actions-panel">
+          <div class="action-card pause-card">
+            <div class="action-card-text">
+              <strong>Temporarily Pause Alerts</strong>
+              <p>Stop receiving WhatsApp messages temporarily. Your selected categories, ministries, and districts remain safely saved.</p>
+            </div>
+            <button type="button" id="pause-alerts-btn" class="btn btn-secondary">
+              <span id="pause-btn-icon">⏸️</span>
+              <span id="pause-btn-text">Pause Alerts</span>
+            </button>
+          </div>
+
+          <div class="action-card danger-card">
+            <div class="action-card-text">
+              <strong class="text-danger">Delete Profile & Stop All Alerts</strong>
+              <p>Permanently remove your phone number, password, and preferences from the Maharashtra GR system.</p>
+            </div>
+            <button type="button" id="delete-sub-btn" class="btn btn-danger-outline">
+              <span>🗑️</span>
+              <span>Delete Profile</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Back to Preferences button -->
+        <div class="profile-card-footer">
+          <button type="button" id="btn-back-to-preferences" class="btn btn-outline">
+            <span>← Back to Alert Preferences</span>
+          </button>
+        </div>
+      </div>
+    </section>
+
   </main>
 
   <!-- Official Footer -->
   <footer class="app-footer">
     <div class="footer-container">
       <div class="footer-brand">
-        <span class="footer-emblem">🏛️</span>
+        <img src="/mitra-emblem-clean.png" alt="MITRA Maharashtra Official Logo" class="footer-logo-img">
         <div>
-          <div class="footer-title">महाराष्ट्र शासन निर्णय (GR) अलर्ट सर्व्हिस</div>
-          <div class="footer-subtitle">Civic Open Governance & Automated Resolution Intelligence</div>
+          <div class="footer-title">MahaSanket</div>
+          <div class="footer-subtitle">Maharashtra Institution for Transformation (MITRA) • Planning Department, Government of Maharashtra</div>
         </div>
       </div>
       <p class="footer-legal">
