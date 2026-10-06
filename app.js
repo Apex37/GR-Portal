@@ -721,7 +721,7 @@
       return;
     }
     if (!password) {
-      showGlobalBanner("Please enter your password (DOBFirstName, e.g. 17062004Vedant).", "error");
+      showGlobalBanner("Please enter your password (DOBFirstName, e.g. 07/11/2003Vishal).", "error");
       el.loginPassword.focus();
       return;
     }
@@ -769,12 +769,19 @@
         }
 
         const inputPwd = password.trim().toLowerCase();
-        const isMatch = (storedPassword && inputPwd === storedPassword.toLowerCase()) ||
-                        (computedPassword && inputPwd === computedPassword) ||
-                        (user.password && inputPwd === user.password.toLowerCase());
+        const normInput = inputPwd.replace(/[\/\-_]/g, "");
+        const normStored = (storedPassword || "").toLowerCase().replace(/[\/\-_]/g, "");
+        const normComputed = (computedPassword || "").toLowerCase().replace(/[\/\-_]/g, "");
+        const normUserPwd = (user.password || "").toLowerCase().replace(/[\/\-_]/g, "");
+
+        const isMatch = (normStored && normInput === normStored) ||
+                        (normComputed && normInput === normComputed) ||
+                        (normUserPwd && normInput === normUserPwd) ||
+                        (storedPassword && inputPwd === storedPassword.toLowerCase()) ||
+                        (computedPassword && inputPwd === computedPassword);
 
         if (!isMatch) {
-          throw new Error("Incorrect password. Note: Password is your Date of Birth (DDMMYYYY) followed by your First Name (e.g. 17062004Vedant).");
+          throw new Error("Incorrect password. Note: Password is your Date of Birth followed by your First Name (e.g. 07/11/2003Vishal).");
         }
 
         const loggedInUser = {
