@@ -594,7 +594,7 @@ app.post("/api/admin/login", (req, res) => {
           role: "CEO & Executive Chairman",
           department: "Planning Department • MITRA (Maharashtra Institute for Transformation)",
           name: "Shri Praveen Pardeshi, IAS",
-          displayName: "Shri Praveen Pardeshi (CEO, MITRA)",
+          displayName: "Praveen Pardeshi",
         }
       : {
           username: ADMIN_USER,
@@ -709,28 +709,36 @@ app.delete("/api/admin/users/:phone", verifyAdminSession, async (req, res) => {
 
 // Serve Dedicated Admin Portal Route
 app.get(["/admin", "/admin.html"], (req, res) => {
+  res.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
   res.sendFile(path.join(__dirname, "admin.html"));
 });
 
 // Serve Static Assets with production cache headers
 const ONE_WEEK = 7 * 24 * 60 * 60 * 1000;
-const ONE_HOUR = 60 * 60 * 1000;
 
 app.use(express.static(path.join(__dirname, "public"), {
-  maxAge: ONE_WEEK,
-  immutable: true,
-}));
-app.use(express.static(__dirname, {
-  maxAge: ONE_HOUR,
   setHeaders(res, filePath) {
-    if (/\.(png|jpg|jpeg|svg|gif|ico|webp)$/i.test(filePath)) {
+    if (/\.(png|jpg|jpeg|svg|gif|ico|webp|woff|woff2|ttf|eot)$/i.test(filePath)) {
       res.setHeader("Cache-Control", `public, max-age=${ONE_WEEK / 1000}, immutable`);
+    } else {
+      res.setHeader("Cache-Control", "no-cache, must-revalidate");
+    }
+  },
+}));
+
+app.use(express.static(__dirname, {
+  setHeaders(res, filePath) {
+    if (/\.(png|jpg|jpeg|svg|gif|ico|webp|woff|woff2|ttf|eot)$/i.test(filePath)) {
+      res.setHeader("Cache-Control", `public, max-age=${ONE_WEEK / 1000}, immutable`);
+    } else {
+      res.setHeader("Cache-Control", "no-cache, must-revalidate");
     }
   },
 }));
 
 // Fallback to index.html for Single-Page Navigation
 app.use((req, res) => {
+  res.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
   res.sendFile(path.join(__dirname, "index.html"));
 });
 
