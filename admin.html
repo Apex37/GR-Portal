@@ -46,13 +46,16 @@
           </div>
 
           <div class="creds-hint-box">
-            <div class="hint-title">🔑 Default Credentials:</div>
+            <div class="hint-title">🔑 Administrator Access:</div>
             <div class="hint-details">
-              <span>Username: <code>admin</code></span>
+              <span>Login: <code>admin</code> or <code>Praveen Pardeshi</code></span>
               <span class="hint-divider">•</span>
               <span>Password: <code>admin123</code></span>
             </div>
-            <button type="button" id="btn-autofill-creds" class="btn-text-action">Use Default Credentials</button>
+            <div style="display: flex; gap: 8px; margin-top: 6px; flex-wrap: wrap;">
+              <button type="button" id="btn-autofill-creds" class="btn-text-action">Use Default (admin)</button>
+              <button type="button" id="btn-autofill-praveen" class="btn-text-action">Sign in as Praveen Pardeshi</button>
+            </div>
           </div>
 
           <button type="submit" id="admin-login-btn" class="btn-admin-primary">
@@ -95,7 +98,7 @@
             <span class="admin-avatar">🛡️</span>
             <div class="admin-meta-text">
               <span class="admin-name" id="admin-display-name">MITRA Admin</span>
-              <span class="admin-role">SuperAdmin</span>
+              <span class="admin-role" id="admin-display-role">SuperAdmin</span>
             </div>
           </div>
 
@@ -295,13 +298,42 @@
           <div class="analytics-card-header">
             <div class="analytics-header-left">
               <div class="analytics-title-group">
-                <span class="analytics-badge">📅 Past Week Data (Past 7 Days)</span>
-                <h2 class="analytics-title">Resolution Publication Frequency (Past Week) • Department Breakdown</h2>
+                <span class="analytics-badge" id="analytics-timeframe-badge">📅 Past 7 Days Analysis</span>
+                <h2 class="analytics-title" id="analytics-section-title">Department Intent Breakdown & Action Matrix</h2>
               </div>
-              <p class="analytics-sub">Official Government Resolutions cataloged across Maharashtra State Ministries over the past week (data from past week)</p>
+              <p class="analytics-sub" id="analytics-section-sub">Official Government Resolutions cataloged and classified by policy intent and government ministry</p>
             </div>
 
             <div class="analytics-header-right">
+              <!-- Department Selector Dropdown -->
+              <div class="chart-dept-filter-wrap">
+                <label for="chart-dept-select" class="chart-dept-label">Select Department:</label>
+                <div class="chart-dept-select-wrap">
+                  <span class="select-icon">🏛️</span>
+                  <select id="chart-dept-select" class="chart-dept-dropdown" aria-label="Select Ministry to view intent distribution">
+                    <option value="ALL">All Key Ministries (Consolidated)</option>
+                    <option value="18">Public Works Department (PWD)</option>
+                    <option value="6">Finance Department</option>
+                    <option value="5">School Education and Sports</option>
+                    <option value="8">Urban Development Department (UDD)</option>
+                    <option value="3">Revenue and Forest Department</option>
+                    <option value="9">Public Health & Family Welfare</option>
+                    <option value="4">Agriculture, Animal Husbandry & Fisheries</option>
+                    <option value="12">Rural Development & Panchayat Raj</option>
+                    <option value="10">Water Resources Department (WRD)</option>
+                    <option value="1">General Administration Department (GAD)</option>
+                    <option value="2">Home Department</option>
+                    <option value="7">Planning Department (MITRA)</option>
+                    <option value="15">Higher & Technical Education</option>
+                    <option value="13">Industry, Energy & Labour</option>
+                    <option value="14">Social Justice & Special Assistance</option>
+                    <option value="16">Tribal Development Department</option>
+                    <option value="32">Housing Department</option>
+                    <option value="30">Information Technology (IT)</option>
+                  </select>
+                </div>
+              </div>
+
               <!-- Graph Type Toggle: Bar Graph vs Spider Graph -->
               <div class="chart-type-toggle-group" role="group" aria-label="Chart Type Selection">
                 <button type="button" id="toggle-chart-bar" class="chart-toggle-btn active" data-chart="bar">
@@ -326,16 +358,20 @@
           <!-- Analytics Highlights Footer Strip -->
           <div class="chart-summary-strip">
             <div class="summary-stat-pill">
-              <span class="stat-pill-label">Top Publishing Ministry (Past Week)</span>
-              <span class="stat-pill-val">Public Works Department (PWD) • 28 GRs</span>
+              <span class="stat-pill-label">Selected Department:</span>
+              <span class="stat-pill-val" id="chart-stat-dept">All Key Ministries (Consolidated)</span>
             </div>
             <div class="summary-stat-pill">
-              <span class="stat-pill-label">Weekly Publishing Velocity</span>
-              <span class="stat-pill-val">~28.4 GRs / Day</span>
+              <span class="stat-pill-label">Primary Action Type:</span>
+              <span class="stat-pill-val" id="chart-stat-primary-intent">Budget & Fund Sanctions • 68 GRs</span>
             </div>
             <div class="summary-stat-pill">
-              <span class="stat-pill-label">Total Cataloged (Past Week)</span>
-              <span class="stat-pill-val">199 Resolutions</span>
+              <span class="stat-pill-label">Secondary Intent Focus:</span>
+              <span class="stat-pill-val" id="chart-stat-secondary-intent">Tenders & Procurement • 54 GRs</span>
+            </div>
+            <div class="summary-stat-pill">
+              <span class="stat-pill-label">Total Cataloged:</span>
+              <span class="stat-pill-val" id="chart-stat-total">349 Resolutions</span>
             </div>
           </div>
         </div>

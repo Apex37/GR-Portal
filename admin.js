@@ -92,8 +92,10 @@
     loginBtnSpinner: document.getElementById("login-btn-spinner"),
     loginBtnText: document.getElementById("login-btn-text"),
     btnAutofill: document.getElementById("btn-autofill-creds"),
+    btnAutofillPraveen: document.getElementById("btn-autofill-praveen"),
     adminLogoutBtn: document.getElementById("admin-logout-btn"),
     adminDisplayName: document.getElementById("admin-display-name"),
+    adminDisplayRole: document.getElementById("admin-display-role"),
 
     // Metrics
     metricTotal: document.getElementById("metric-total-users"),
@@ -134,9 +136,16 @@
     drawerCloseActionBtn: document.getElementById("drawer-close-action-btn"),
 
     // Analytics & Chart
+    chartDeptSelect: document.getElementById("chart-dept-select"),
     toggleChartBar: document.getElementById("toggle-chart-bar"),
     toggleChartSpider: document.getElementById("toggle-chart-spider"),
     deptChartCanvas: document.getElementById("dept-frequency-chart"),
+    analyticsSectionTitle: document.getElementById("analytics-section-title"),
+    analyticsSectionSub: document.getElementById("analytics-section-sub"),
+    chartStatDept: document.getElementById("chart-stat-dept"),
+    chartStatPrimaryIntent: document.getElementById("chart-stat-primary-intent"),
+    chartStatSecondaryIntent: document.getElementById("chart-stat-secondary-intent"),
+    chartStatTotal: document.getElementById("chart-stat-total"),
 
     // Toast
     toast: document.getElementById("admin-toast"),
@@ -145,22 +154,438 @@
   };
 
   // ---------------------------------------------------------------------------
-  // Department GR Publication Frequency Analytics
+  // Department & Intent Resolution Matrix Analytics
   // ---------------------------------------------------------------------------
-  const DEPT_FREQUENCY_DATA = [
-    { name: "Public Works Department (PWD)", marathi: "सार्वजनिक बांधकाम विभाग", count: 28 },
-    { name: "Finance Department", marathi: "वित्त विभाग", count: 25 },
-    { name: "School Education and Sports", marathi: "शालेय शिक्षण व क्रीडा विभाग", count: 22 },
-    { name: "Revenue and Forest Department", marathi: "महसूल व वन विभाग", count: 20 },
-    { name: "Public Health & Family Welfare", marathi: "सार्वजनिक आरोग्य विभाग", count: 18 },
-    { name: "Urban Development Department (UDD)", marathi: "नगर विकास विभाग", count: 16 },
-    { name: "Agriculture, Animal Husbandry & Fisheries", marathi: "कृषि, पशुसंवर्धन व मत्स्यव्यवसाय", count: 15 },
-    { name: "Rural Development & Panchayat Raj", marathi: "ग्रामविकास व पंचायत राज", count: 14 },
-    { name: "Water Resources Department (WRD)", marathi: "जलसंपदा विभाग", count: 12 },
-    { name: "General Administration Department (GAD)", marathi: "सामान्य प्रशासन विभाग", count: 11 },
-    { name: "Home Department", marathi: "गृह विभाग", count: 10 },
-    { name: "Higher & Technical Education", marathi: "उच्च व तंत्र शिक्षण विभाग", count: 8 },
+  const INTENTS_CATALOG = [
+    { key: "FUND_SANCTION_AND_BUDGET", label: "Budget & Fund Sanctions", marathi: "निधी वाटप व अंदाजपत्रक", icon: "💰" },
+    { key: "INFRASTRUCTURE_PROJECT", label: "Infrastructure Projects", marathi: "पायाभूत सुविधा प्रकल्प", icon: "🏗️" },
+    { key: "TENDER_AND_PROCUREMENT", label: "Tenders & Procurement", marathi: "निविदा व खरेदी", icon: "📑" },
+    { key: "WELFARE_AND_SUBSIDY", label: "Welfare & Subsidies", marathi: "कल्याणकारी योजना व अनुदान", icon: "🌾" },
+    { key: "POLICY_AND_REGULATION", label: "Policy & Rules", marathi: "धोरण व नियम", icon: "📜" },
+    { key: "RECRUITMENT_AND_VACANCY", label: "Recruitment & Vacancies", marathi: "भरती व रिक्त पदे", icon: "📢" },
+    { key: "TRANSFER_AND_POSTING", label: "Transfers & Postings", marathi: "बदल्या व पदस्थापना", icon: "🔄" },
+    { key: "SERVICE_RULES_AND_CADRE", label: "Service Rules & Cadre", marathi: "सेवा नियम व संवर्ग", icon: "📝" },
+    { key: "BANKING_AND_FINANCE", label: "Banking & Grants", marathi: "बँकिंग व वित्तीय सहाय्य", icon: "🏦" },
+    { key: "COMMITTEE_AND_INQUIRY", label: "Committees & Inquiries", marathi: "समित्या व चौकशी", icon: "🔍" },
+    { key: "GENERAL_ADMINISTRATIVE", label: "General Administrative", marathi: "सामान्य प्रशासकीय कामकाज", icon: "🏢" },
   ];
+
+  const DEPARTMENT_INTENT_MATRIX = {
+    // 18: Public Works Department (PWD)
+    18: {
+      name: "Public Works Department (PWD)",
+      marathi: "सार्वजनिक बांधकाम विभाग",
+      shortName: "PWD",
+      intents: {
+        INFRASTRUCTURE_PROJECT: 16,
+        TENDER_AND_PROCUREMENT: 14,
+        FUND_SANCTION_AND_BUDGET: 9,
+        TRANSFER_AND_POSTING: 6,
+        POLICY_AND_REGULATION: 4,
+        SERVICE_RULES_AND_CADRE: 3,
+        GENERAL_ADMINISTRATIVE: 3,
+        COMMITTEE_AND_INQUIRY: 2,
+        RECRUITMENT_AND_VACANCY: 2,
+        BANKING_AND_FINANCE: 1,
+        WELFARE_AND_SUBSIDY: 0,
+      },
+    },
+    // 6: Finance Department
+    6: {
+      name: "Finance Department",
+      marathi: "वित्त विभाग",
+      shortName: "Finance",
+      intents: {
+        FUND_SANCTION_AND_BUDGET: 26,
+        BANKING_AND_FINANCE: 15,
+        POLICY_AND_REGULATION: 10,
+        SERVICE_RULES_AND_CADRE: 6,
+        WELFARE_AND_SUBSIDY: 5,
+        COMMITTEE_AND_INQUIRY: 4,
+        GENERAL_ADMINISTRATIVE: 4,
+        TRANSFER_AND_POSTING: 3,
+        TENDER_AND_PROCUREMENT: 2,
+        RECRUITMENT_AND_VACANCY: 1,
+        INFRASTRUCTURE_PROJECT: 1,
+      },
+    },
+    // 5: School Education and Sports Department
+    5: {
+      name: "School Education and Sports",
+      marathi: "शालेय शिक्षण व क्रीडा विभाग",
+      shortName: "Education",
+      intents: {
+        WELFARE_AND_SUBSIDY: 18,
+        RECRUITMENT_AND_VACANCY: 11,
+        TRANSFER_AND_POSTING: 9,
+        POLICY_AND_REGULATION: 8,
+        FUND_SANCTION_AND_BUDGET: 7,
+        SERVICE_RULES_AND_CADRE: 5,
+        INFRASTRUCTURE_PROJECT: 4,
+        GENERAL_ADMINISTRATIVE: 4,
+        TENDER_AND_PROCUREMENT: 3,
+        COMMITTEE_AND_INQUIRY: 2,
+        BANKING_AND_FINANCE: 0,
+      },
+    },
+    // 8: Urban Development Department (UDD)
+    8: {
+      name: "Urban Development Department (UDD)",
+      marathi: "नगर विकास विभाग",
+      shortName: "UDD",
+      intents: {
+        INFRASTRUCTURE_PROJECT: 15,
+        POLICY_AND_REGULATION: 12,
+        FUND_SANCTION_AND_BUDGET: 11,
+        TENDER_AND_PROCUREMENT: 8,
+        TRANSFER_AND_POSTING: 5,
+        GENERAL_ADMINISTRATIVE: 4,
+        COMMITTEE_AND_INQUIRY: 3,
+        BANKING_AND_FINANCE: 3,
+        SERVICE_RULES_AND_CADRE: 2,
+        WELFARE_AND_SUBSIDY: 2,
+        RECRUITMENT_AND_VACANCY: 1,
+      },
+    },
+    // 3: Revenue and Forest Department
+    3: {
+      name: "Revenue and Forest Department",
+      marathi: "महसूल व वन विभाग",
+      shortName: "Revenue & Forest",
+      intents: {
+        TRANSFER_AND_POSTING: 15,
+        POLICY_AND_REGULATION: 13,
+        FUND_SANCTION_AND_BUDGET: 9,
+        GENERAL_ADMINISTRATIVE: 7,
+        SERVICE_RULES_AND_CADRE: 6,
+        COMMITTEE_AND_INQUIRY: 5,
+        INFRASTRUCTURE_PROJECT: 4,
+        RECRUITMENT_AND_VACANCY: 3,
+        WELFARE_AND_SUBSIDY: 2,
+        TENDER_AND_PROCUREMENT: 2,
+        BANKING_AND_FINANCE: 1,
+      },
+    },
+    // 9: Public Health and Family Welfare Department
+    9: {
+      name: "Public Health & Family Welfare",
+      marathi: "सार्वजनिक आरोग्य व कुटुंब कल्याण विभाग",
+      shortName: "Public Health",
+      intents: {
+        TENDER_AND_PROCUREMENT: 15,
+        RECRUITMENT_AND_VACANCY: 13,
+        FUND_SANCTION_AND_BUDGET: 9,
+        WELFARE_AND_SUBSIDY: 8,
+        INFRASTRUCTURE_PROJECT: 6,
+        POLICY_AND_REGULATION: 5,
+        TRANSFER_AND_POSTING: 4,
+        SERVICE_RULES_AND_CADRE: 4,
+        COMMITTEE_AND_INQUIRY: 3,
+        GENERAL_ADMINISTRATIVE: 2,
+        BANKING_AND_FINANCE: 0,
+      },
+    },
+    // 4: Agriculture, Animal Husbandry & Fisheries
+    4: {
+      name: "Agriculture, Animal Husbandry & Fisheries",
+      marathi: "कृषि, पशुसंवर्धन व मत्स्यव्यवसाय",
+      shortName: "Agriculture",
+      intents: {
+        WELFARE_AND_SUBSIDY: 19,
+        FUND_SANCTION_AND_BUDGET: 12,
+        INFRASTRUCTURE_PROJECT: 7,
+        BANKING_AND_FINANCE: 6,
+        POLICY_AND_REGULATION: 6,
+        COMMITTEE_AND_INQUIRY: 4,
+        TRANSFER_AND_POSTING: 3,
+        TENDER_AND_PROCUREMENT: 3,
+        RECRUITMENT_AND_VACANCY: 2,
+        GENERAL_ADMINISTRATIVE: 2,
+        SERVICE_RULES_AND_CADRE: 1,
+      },
+    },
+    // 12: Rural Development & Panchayat Raj Department
+    12: {
+      name: "Rural Development & Panchayat Raj",
+      marathi: "ग्रामविकास व पंचायत राज विभाग",
+      shortName: "Rural Development",
+      intents: {
+        WELFARE_AND_SUBSIDY: 15,
+        FUND_SANCTION_AND_BUDGET: 12,
+        INFRASTRUCTURE_PROJECT: 9,
+        TENDER_AND_PROCUREMENT: 7,
+        POLICY_AND_REGULATION: 5,
+        TRANSFER_AND_POSTING: 5,
+        RECRUITMENT_AND_VACANCY: 4,
+        BANKING_AND_FINANCE: 3,
+        GENERAL_ADMINISTRATIVE: 3,
+        COMMITTEE_AND_INQUIRY: 2,
+        SERVICE_RULES_AND_CADRE: 2,
+      },
+    },
+    // 10: Water Resources Department (WRD)
+    10: {
+      name: "Water Resources Department (WRD)",
+      marathi: "जलसंपदा विभाग",
+      shortName: "WRD",
+      intents: {
+        INFRASTRUCTURE_PROJECT: 17,
+        TENDER_AND_PROCUREMENT: 12,
+        FUND_SANCTION_AND_BUDGET: 10,
+        TRANSFER_AND_POSTING: 6,
+        POLICY_AND_REGULATION: 4,
+        SERVICE_RULES_AND_CADRE: 4,
+        COMMITTEE_AND_INQUIRY: 3,
+        GENERAL_ADMINISTRATIVE: 2,
+        BANKING_AND_FINANCE: 2,
+        RECRUITMENT_AND_VACANCY: 1,
+        WELFARE_AND_SUBSIDY: 0,
+      },
+    },
+    // 1: General Administration Department (GAD)
+    1: {
+      name: "General Administration Department (GAD)",
+      marathi: "सामान्य प्रशासन विभाग",
+      shortName: "GAD",
+      intents: {
+        TRANSFER_AND_POSTING: 18,
+        SERVICE_RULES_AND_CADRE: 14,
+        POLICY_AND_REGULATION: 9,
+        GENERAL_ADMINISTRATIVE: 8,
+        RECRUITMENT_AND_VACANCY: 7,
+        COMMITTEE_AND_INQUIRY: 6,
+        FUND_SANCTION_AND_BUDGET: 4,
+        TENDER_AND_PROCUREMENT: 2,
+        WELFARE_AND_SUBSIDY: 1,
+        INFRASTRUCTURE_PROJECT: 0,
+        BANKING_AND_FINANCE: 0,
+      },
+    },
+    // 2: Home Department
+    2: {
+      name: "Home Department",
+      marathi: "गृह विभाग",
+      shortName: "Home",
+      intents: {
+        TRANSFER_AND_POSTING: 19,
+        SERVICE_RULES_AND_CADRE: 10,
+        POLICY_AND_REGULATION: 9,
+        TENDER_AND_PROCUREMENT: 7,
+        GENERAL_ADMINISTRATIVE: 6,
+        COMMITTEE_AND_INQUIRY: 5,
+        RECRUITMENT_AND_VACANCY: 5,
+        FUND_SANCTION_AND_BUDGET: 5,
+        INFRASTRUCTURE_PROJECT: 2,
+        BANKING_AND_FINANCE: 0,
+        WELFARE_AND_SUBSIDY: 0,
+      },
+    },
+    // 7: Planning Department (MITRA)
+    7: {
+      name: "Planning Department (MITRA)",
+      marathi: "नियोजन विभाग",
+      shortName: "MITRA / Planning",
+      intents: {
+        FUND_SANCTION_AND_BUDGET: 15,
+        POLICY_AND_REGULATION: 13,
+        COMMITTEE_AND_INQUIRY: 8,
+        INFRASTRUCTURE_PROJECT: 7,
+        BANKING_AND_FINANCE: 5,
+        GENERAL_ADMINISTRATIVE: 4,
+        WELFARE_AND_SUBSIDY: 3,
+        TRANSFER_AND_POSTING: 3,
+        SERVICE_RULES_AND_CADRE: 2,
+        TENDER_AND_PROCUREMENT: 2,
+        RECRUITMENT_AND_VACANCY: 1,
+      },
+    },
+    // 15: Higher & Technical Education
+    15: {
+      name: "Higher & Technical Education",
+      marathi: "उच्च व तंत्र शिक्षण विभाग",
+      shortName: "Higher Education",
+      intents: {
+        WELFARE_AND_SUBSIDY: 11,
+        POLICY_AND_REGULATION: 9,
+        RECRUITMENT_AND_VACANCY: 8,
+        FUND_SANCTION_AND_BUDGET: 7,
+        SERVICE_RULES_AND_CADRE: 6,
+        TRANSFER_AND_POSTING: 5,
+        INFRASTRUCTURE_PROJECT: 4,
+        TENDER_AND_PROCUREMENT: 3,
+        GENERAL_ADMINISTRATIVE: 3,
+        COMMITTEE_AND_INQUIRY: 2,
+        BANKING_AND_FINANCE: 0,
+      },
+    },
+    // 13: Industry, Energy & Labour
+    13: {
+      name: "Industry, Energy & Labour",
+      marathi: "उद्योग, ऊर्जा व कामगार विभाग",
+      shortName: "Industry & Energy",
+      intents: {
+        POLICY_AND_REGULATION: 14,
+        TENDER_AND_PROCUREMENT: 9,
+        INFRASTRUCTURE_PROJECT: 8,
+        FUND_SANCTION_AND_BUDGET: 7,
+        WELFARE_AND_SUBSIDY: 5,
+        COMMITTEE_AND_INQUIRY: 4,
+        GENERAL_ADMINISTRATIVE: 3,
+        BANKING_AND_FINANCE: 3,
+        TRANSFER_AND_POSTING: 3,
+        SERVICE_RULES_AND_CADRE: 2,
+        RECRUITMENT_AND_VACANCY: 2,
+      },
+    },
+    // 14: Social Justice & Special Assistance
+    14: {
+      name: "Social Justice & Special Assistance",
+      marathi: "सामाजिक न्याय व विशेष सहाय्य विभाग",
+      shortName: "Social Justice",
+      intents: {
+        WELFARE_AND_SUBSIDY: 21,
+        FUND_SANCTION_AND_BUDGET: 12,
+        POLICY_AND_REGULATION: 7,
+        BANKING_AND_FINANCE: 5,
+        TRANSFER_AND_POSTING: 4,
+        COMMITTEE_AND_INQUIRY: 3,
+        RECRUITMENT_AND_VACANCY: 3,
+        GENERAL_ADMINISTRATIVE: 2,
+        INFRASTRUCTURE_PROJECT: 2,
+        SERVICE_RULES_AND_CADRE: 2,
+        TENDER_AND_PROCUREMENT: 1,
+      },
+    },
+    // 16: Tribal Development Department
+    16: {
+      name: "Tribal Development Department",
+      marathi: "आदिवासी विकास विभाग",
+      shortName: "Tribal Development",
+      intents: {
+        WELFARE_AND_SUBSIDY: 19,
+        FUND_SANCTION_AND_BUDGET: 10,
+        INFRASTRUCTURE_PROJECT: 6,
+        POLICY_AND_REGULATION: 5,
+        TRANSFER_AND_POSTING: 4,
+        TENDER_AND_PROCUREMENT: 4,
+        RECRUITMENT_AND_VACANCY: 3,
+        COMMITTEE_AND_INQUIRY: 2,
+        GENERAL_ADMINISTRATIVE: 2,
+        SERVICE_RULES_AND_CADRE: 2,
+        BANKING_AND_FINANCE: 1,
+      },
+    },
+    // 32: Housing Department
+    32: {
+      name: "Housing Department",
+      marathi: "गृहनिर्माण विभाग",
+      shortName: "Housing",
+      intents: {
+        POLICY_AND_REGULATION: 12,
+        INFRASTRUCTURE_PROJECT: 11,
+        FUND_SANCTION_AND_BUDGET: 8,
+        TENDER_AND_PROCUREMENT: 6,
+        TRANSFER_AND_POSTING: 4,
+        GENERAL_ADMINISTRATIVE: 3,
+        WELFARE_AND_SUBSIDY: 3,
+        COMMITTEE_AND_INQUIRY: 2,
+        BANKING_AND_FINANCE: 2,
+        SERVICE_RULES_AND_CADRE: 2,
+        RECRUITMENT_AND_VACANCY: 1,
+      },
+    },
+    // 30: Information Technology (IT)
+    30: {
+      name: "Information Technology (IT)",
+      marathi: "माहिती तंत्रज्ञान विभाग",
+      shortName: "IT Directorate",
+      intents: {
+        TENDER_AND_PROCUREMENT: 13,
+        POLICY_AND_REGULATION: 11,
+        FUND_SANCTION_AND_BUDGET: 7,
+        INFRASTRUCTURE_PROJECT: 5,
+        GENERAL_ADMINISTRATIVE: 4,
+        COMMITTEE_AND_INQUIRY: 3,
+        TRANSFER_AND_POSTING: 2,
+        SERVICE_RULES_AND_CADRE: 2,
+        RECRUITMENT_AND_VACANCY: 2,
+        WELFARE_AND_SUBSIDY: 1,
+        BANKING_AND_FINANCE: 0,
+      },
+    },
+  };
+
+  function getDepartmentIntentAnalytics(deptKey) {
+    if (!deptKey || deptKey === "ALL") {
+      const totals = {};
+      INTENTS_CATALOG.forEach((item) => {
+        totals[item.key] = 0;
+      });
+
+      Object.values(DEPARTMENT_INTENT_MATRIX).forEach((dept) => {
+        INTENTS_CATALOG.forEach((item) => {
+          totals[item.key] += dept.intents[item.key] || 0;
+        });
+      });
+
+      const totalGRs = Object.values(totals).reduce((sum, n) => sum + n, 0);
+
+      const sortedIntents = INTENTS_CATALOG.map((item) => ({
+        ...item,
+        count: totals[item.key],
+        pct: totalGRs > 0 ? Math.round((totals[item.key] / totalGRs) * 100) : 0,
+      })).sort((a, b) => b.count - a.count);
+
+      return {
+        name: "All Key Ministries (Consolidated)",
+        marathi: "सर्व प्रमुख प्रशासकीय विभाग (एकत्रित आढावा)",
+        shortName: "Consolidated (Statewide)",
+        total: totalGRs,
+        intentTotals: totals,
+        sortedIntents,
+        primaryIntent: sortedIntents[0],
+        secondaryIntent: sortedIntents[1] || sortedIntents[0],
+      };
+    }
+
+    const dept = DEPARTMENT_INTENT_MATRIX[deptKey] || {
+      name: DEPARTMENTS_MAP[deptKey]?.name || `Department #${deptKey}`,
+      marathi: DEPARTMENTS_MAP[deptKey]?.marathi || "शासकीय विभाग",
+      shortName: DEPARTMENTS_MAP[deptKey]?.name?.split(" ")[0] || "Department",
+      intents: {
+        POLICY_AND_REGULATION: 8,
+        FUND_SANCTION_AND_BUDGET: 7,
+        GENERAL_ADMINISTRATIVE: 5,
+        TRANSFER_AND_POSTING: 4,
+        INFRASTRUCTURE_PROJECT: 3,
+        TENDER_AND_PROCUREMENT: 3,
+        SERVICE_RULES_AND_CADRE: 2,
+        COMMITTEE_AND_INQUIRY: 2,
+        RECRUITMENT_AND_VACANCY: 2,
+        WELFARE_AND_SUBSIDY: 1,
+        BANKING_AND_FINANCE: 1,
+      },
+    };
+
+    const totalGRs = Object.values(dept.intents).reduce((sum, n) => sum + n, 0);
+
+    const sortedIntents = INTENTS_CATALOG.map((item) => ({
+      ...item,
+      count: dept.intents[item.key] || 0,
+      pct: totalGRs > 0 ? Math.round(((dept.intents[item.key] || 0) / totalGRs) * 100) : 0,
+    })).sort((a, b) => b.count - a.count);
+
+    return {
+      name: dept.name,
+      marathi: dept.marathi,
+      shortName: dept.shortName,
+      total: totalGRs,
+      intentTotals: dept.intents,
+      sortedIntents,
+      primaryIntent: sortedIntents[0],
+      secondaryIntent: sortedIntents[1] || sortedIntents[0],
+    };
+  }
 
   let currentChart = null;
   let currentChartType = "bar";
@@ -169,19 +594,67 @@
     if (!window.Chart || !el.deptChartCanvas) return;
     currentChartType = chartType;
 
+    const selectedDeptKey = el.chartDeptSelect ? el.chartDeptSelect.value : "ALL";
+    const data = getDepartmentIntentAnalytics(selectedDeptKey);
+
+    // Update section titles and stat pills
+    if (el.analyticsSectionTitle) {
+      if (selectedDeptKey === "ALL") {
+        el.analyticsSectionTitle.textContent = "Statewide Intent Breakdown • All Ministries (Consolidated)";
+      } else {
+        el.analyticsSectionTitle.textContent = `${data.name} • Intent-Wise Publication Breakdown`;
+      }
+    }
+    if (el.analyticsSectionSub) {
+      if (selectedDeptKey === "ALL") {
+        el.analyticsSectionSub.textContent = `Consolidated catalog of ${data.total} Government Resolutions classified across 11 policy action types`;
+      } else {
+        el.analyticsSectionSub.textContent = `Publication frequency for ${data.name} (${data.marathi}) across official policy action types`;
+      }
+    }
+
+    if (el.chartStatDept) {
+      el.chartStatDept.textContent = data.name;
+    }
+    if (el.chartStatPrimaryIntent && data.primaryIntent) {
+      el.chartStatPrimaryIntent.textContent = `${data.primaryIntent.label} • ${data.primaryIntent.count} GRs (${data.primaryIntent.pct}%)`;
+    }
+    if (el.chartStatSecondaryIntent && data.secondaryIntent) {
+      el.chartStatSecondaryIntent.textContent = `${data.secondaryIntent.label} • ${data.secondaryIntent.count} GRs (${data.secondaryIntent.pct}%)`;
+    }
+    if (el.chartStatTotal) {
+      el.chartStatTotal.textContent = `${data.total} Resolutions Cataloged`;
+    }
+
     if (currentChart) {
       currentChart.destroy();
       currentChart = null;
     }
 
-    const labels = DEPT_FREQUENCY_DATA.map((d) => d.name);
-    const dataVals = DEPT_FREQUENCY_DATA.map((d) => d.count);
+    // Chart Labels and Values ordered by Intents Catalog
+    const labels = INTENTS_CATALOG.map((item) => item.label);
+    const dataVals = INTENTS_CATALOG.map((item) => data.intentTotals[item.key] || 0);
+    const marathiMap = INTENTS_CATALOG.map((item) => item.marathi);
+    const iconsMap = INTENTS_CATALOG.map((item) => item.icon);
+    const maxVal = Math.max(...dataVals, 1);
+
     const ctx = el.deptChartCanvas.getContext("2d");
 
     if (chartType === "bar") {
-      // Bar Chart Configuration
-      const backgroundColors = DEPT_FREQUENCY_DATA.map((d, i) => (i === 0 ? "#ea580c" : "#163a6e"));
-      const hoverColors = DEPT_FREQUENCY_DATA.map((d, i) => (i === 0 ? "#c2410c" : "#1d4b8f"));
+      // Dynamic Colors: highlight the top intent with saffron, second with royal navy, others with slate/blue
+      const backgroundColors = dataVals.map((val) => {
+        if (val === maxVal && val > 0) return "#ea580c"; // Saffron accent
+        if (val >= maxVal * 0.72) return "#163a6e"; // Primary navy
+        if (val >= maxVal * 0.45) return "#2563eb"; // Royal blue
+        return "#64748b"; // Slate
+      });
+
+      const hoverColors = dataVals.map((val) => {
+        if (val === maxVal && val > 0) return "#c2410c";
+        if (val >= maxVal * 0.72) return "#1d4b8f";
+        if (val >= maxVal * 0.45) return "#1d4ed8";
+        return "#475569";
+      });
 
       currentChart = new window.Chart(ctx, {
         type: "bar",
@@ -189,12 +662,12 @@
           labels: labels,
           datasets: [
             {
-              label: "Government Resolutions Published (Past Week)",
+              label: `${data.shortName} Resolutions`,
               data: dataVals,
               backgroundColor: backgroundColors,
               hoverBackgroundColor: hoverColors,
               borderRadius: 6,
-              maxBarThickness: 38,
+              maxBarThickness: 42,
             },
           ],
         },
@@ -214,11 +687,12 @@
               callbacks: {
                 title: function (items) {
                   const idx = items[0].dataIndex;
-                  const item = DEPT_FREQUENCY_DATA[idx];
-                  return `${item.name} (${item.marathi})`;
+                  return `${iconsMap[idx]} ${labels[idx]} (${marathiMap[idx]})`;
                 },
                 label: function (item) {
-                  return ` ${item.raw} Government Resolutions published in past week`;
+                  const val = item.raw;
+                  const pct = data.total > 0 ? Math.round((val / data.total) * 100) : 0;
+                  return ` ${val} Government Resolutions published (${pct}% of volume)`;
                 },
               },
             },
@@ -227,43 +701,46 @@
             x: {
               grid: { display: false },
               ticks: {
-                font: { size: 11, family: "'Plus Jakarta Sans', sans-serif" },
+                font: { size: 10.5, family: "'Plus Jakarta Sans', sans-serif" },
                 color: "#475569",
-                maxRotation: 40,
-                minRotation: 20,
+                maxRotation: 45,
+                minRotation: 25,
               },
             },
             y: {
               beginAtZero: true,
               grid: { color: "#f1f5f9" },
               ticks: {
-                stepSize: 5,
+                stepSize: Math.ceil(maxVal / 5) || 1,
                 font: { size: 11, family: "'JetBrains Mono', monospace" },
                 color: "#64748b",
               },
-              suggestedMax: 30,
+              suggestedMax: Math.ceil(maxVal * 1.15),
             },
           },
         },
       });
     } else {
       // Spider / Radar Chart Configuration
+      const radarColor = selectedDeptKey === "ALL" ? "rgba(22, 58, 110, 0.25)" : "rgba(234, 88, 12, 0.22)";
+      const radarBorder = selectedDeptKey === "ALL" ? "#163a6e" : "#ea580c";
+
       currentChart = new window.Chart(ctx, {
         type: "radar",
         data: {
           labels: labels,
           datasets: [
             {
-              label: "Resolution Volume (Past Week)",
+              label: `${data.name} Intent Footprint`,
               data: dataVals,
-              backgroundColor: "rgba(22, 58, 110, 0.22)",
-              borderColor: "#163a6e",
+              backgroundColor: radarColor,
+              borderColor: radarBorder,
               borderWidth: 2.5,
-              pointBackgroundColor: "#ea580c",
+              pointBackgroundColor: "#163a6e",
               pointBorderColor: "#ffffff",
               pointBorderWidth: 1.5,
               pointRadius: 5,
-              pointHoverRadius: 7,
+              pointHoverRadius: 8,
             },
           ],
         },
@@ -274,16 +751,21 @@
             legend: { display: false },
             tooltip: {
               backgroundColor: "#0f172a",
+              titleColor: "#ffffff",
+              bodyColor: "#cbd5e1",
+              titleFont: { size: 12, weight: "bold", family: "'Plus Jakarta Sans', sans-serif" },
+              bodyFont: { size: 11, family: "'Plus Jakarta Sans', sans-serif" },
               padding: 12,
               cornerRadius: 6,
               callbacks: {
                 title: function (items) {
                   const idx = items[0].dataIndex;
-                  const item = DEPT_FREQUENCY_DATA[idx];
-                  return `${item.name} (${item.marathi})`;
+                  return `${iconsMap[idx]} ${labels[idx]} (${marathiMap[idx]})`;
                 },
                 label: function (item) {
-                  return ` ${item.raw} Resolutions published in past week`;
+                  const val = item.raw;
+                  const pct = data.total > 0 ? Math.round((val / data.total) * 100) : 0;
+                  return ` ${val} Resolutions (${pct}% of volume)`;
                 },
               },
             },
@@ -293,17 +775,17 @@
               angleLines: { color: "rgba(148, 163, 184, 0.3)" },
               grid: { color: "rgba(148, 163, 184, 0.3)" },
               pointLabels: {
-                font: { size: 10.5, weight: "600", family: "'Plus Jakarta Sans', sans-serif" },
+                font: { size: 10, weight: "600", family: "'Plus Jakarta Sans', sans-serif" },
                 color: "#1e293b",
               },
               ticks: {
                 backdropColor: "transparent",
                 color: "#64748b",
-                stepSize: 5,
-                font: { size: 10, family: "'JetBrains Mono', monospace" },
+                stepSize: Math.ceil(maxVal / 4) || 1,
+                font: { size: 9.5, family: "'JetBrains Mono', monospace" },
               },
               suggestedMin: 0,
-              suggestedMax: 30,
+              suggestedMax: Math.ceil(maxVal * 1.15),
             },
           },
         },
@@ -417,6 +899,9 @@
     el.dashboardView.classList.remove("hidden");
     if (state.session?.admin?.displayName) {
       el.adminDisplayName.textContent = state.session.admin.displayName;
+    }
+    if (el.adminDisplayRole && state.session?.admin?.role) {
+      el.adminDisplayRole.textContent = state.session.admin.role;
     }
     loadSubscribers();
     setTimeout(() => {
@@ -1098,6 +1583,13 @@
       showToast("Default credentials filled (admin / admin123)", "🔑");
     });
 
+    // Autofill Praveen Pardeshi credentials
+    el.btnAutofillPraveen?.addEventListener("click", () => {
+      el.userInput.value = "Praveen Pardeshi";
+      el.passInput.value = "admin123";
+      showToast("Credentials filled for Praveen Pardeshi", "🛡️");
+    });
+
     // Logout
     el.adminLogoutBtn?.addEventListener("click", handleLogout);
 
@@ -1168,6 +1660,14 @@
 
     // Export CSV
     el.exportCsvBtn?.addEventListener("click", exportSubscribersCSV);
+
+    // Department Selector for Chart
+    el.chartDeptSelect?.addEventListener("change", () => {
+      renderDepartmentFrequencyChart(currentChartType);
+      const opt = el.chartDeptSelect.options[el.chartDeptSelect.selectedIndex];
+      const deptName = opt ? opt.text : "Department";
+      showToast(`Showing intent breakdown for ${deptName}`, "🏛️");
+    });
 
     // Chart Type Toggles
     el.toggleChartBar?.addEventListener("click", () => {

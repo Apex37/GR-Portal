@@ -561,10 +561,20 @@ app.post("/api/admin/login", (req, res) => {
     const inputUser = String(username || "").trim().toLowerCase();
     const inputPass = String(password || "").trim();
 
+    const normalizedUser = inputUser.replace(/\s+/g, " ");
+    const isPraveenPardeshi =
+      normalizedUser === "praveen pardeshi" ||
+      normalizedUser === "praveen.pardeshi" ||
+      normalizedUser === "praveen_pardeshi" ||
+      normalizedUser === "praveen" ||
+      normalizedUser === "praveen.pardeshi@mahasanket.gov.in" ||
+      normalizedUser === "praveen.pardeshi@mitra.gov.in";
+
     const isValidUser =
       inputUser === ADMIN_USER.toLowerCase() ||
       inputUser === "admin" ||
-      inputUser === "admin@mahasanket.gov.in";
+      inputUser === "admin@mahasanket.gov.in" ||
+      isPraveenPardeshi;
 
     const isValidPass =
       inputPass === ADMIN_PASS ||
@@ -573,20 +583,31 @@ app.post("/api/admin/login", (req, res) => {
 
     if (!isValidUser || !isValidPass) {
       return res.status(401).json({
-        error: "Invalid administrator credentials. Default is admin / admin123.",
+        error: "Invalid administrator credentials. Default logins: admin or Praveen Pardeshi.",
       });
     }
 
     const token = generateAdminToken();
+    const adminProfile = isPraveenPardeshi
+      ? {
+          username: "Praveen Pardeshi",
+          role: "CEO & Executive Chairman",
+          department: "Planning Department • MITRA (Maharashtra Institute for Transformation)",
+          name: "Shri Praveen Pardeshi, IAS",
+          displayName: "Shri Praveen Pardeshi (CEO, MITRA)",
+        }
+      : {
+          username: ADMIN_USER,
+          role: "SuperAdmin",
+          department: "Planning Department • MITRA",
+          name: "Operations Administrator",
+          displayName: "MITRA Admin",
+        };
+
     res.json({
       success: true,
       token,
-      admin: {
-        username: ADMIN_USER,
-        role: "SuperAdmin",
-        department: "Planning Department • MITRA",
-        name: "Operations Administrator",
-      },
+      admin: adminProfile,
     });
   } catch (err) {
     console.error("Admin login error:", err);

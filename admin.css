@@ -1414,6 +1414,70 @@ html, body {
   color: var(--slate-500);
 }
 
+.analytics-header-right {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+/* Department Selector in Chart Header */
+.chart-dept-filter-wrap {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.chart-dept-label {
+  font-size: 0.76rem;
+  font-weight: 700;
+  color: var(--slate-600);
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  white-space: nowrap;
+}
+
+.chart-dept-select-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.chart-dept-select-wrap .select-icon {
+  position: absolute;
+  left: 10px;
+  font-size: 0.85rem;
+  pointer-events: none;
+  opacity: 0.85;
+}
+
+.chart-dept-dropdown {
+  height: 36px;
+  padding: 0 16px 0 32px;
+  background-color: #ffffff;
+  border: 1px solid var(--slate-300);
+  border-radius: 6px;
+  font-family: inherit;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--slate-800);
+  cursor: pointer;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+  transition: all 0.15s ease;
+  min-width: 260px;
+  max-width: 340px;
+}
+
+.chart-dept-dropdown:hover {
+  border-color: var(--admin-navy-500);
+}
+
+.chart-dept-dropdown:focus {
+  outline: none;
+  border-color: var(--admin-navy-600);
+  box-shadow: 0 0 0 3px rgba(29, 75, 143, 0.12);
+}
+
 /* Chart Type Toggle Group */
 .chart-type-toggle-group {
   display: inline-flex;
