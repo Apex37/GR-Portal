@@ -591,9 +591,9 @@ app.post("/api/admin/login", (req, res) => {
     const adminProfile = isPraveenPardeshi
       ? {
           username: "Praveen Pardeshi",
-          role: "CEO & Executive Chairman",
-          department: "Planning Department • MITRA (Maharashtra Institute for Transformation)",
-          name: "Shri Praveen Pardeshi, IAS",
+          role: "",
+          department: "Planning Department • MITRA",
+          name: "Praveen Pardeshi",
           displayName: "Praveen Pardeshi",
         }
       : {

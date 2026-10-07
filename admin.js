@@ -897,11 +897,29 @@
   function showDashboardView() {
     el.loginView.classList.add("hidden");
     el.dashboardView.classList.remove("hidden");
+
+    if (state.session?.admin) {
+      if (
+        state.session.admin.username?.toLowerCase().includes("praveen") ||
+        state.session.admin.displayName?.toLowerCase().includes("praveen")
+      ) {
+        state.session.admin.displayName = "Praveen Pardeshi";
+        state.session.admin.role = "";
+      }
+    }
+
     if (state.session?.admin?.displayName) {
       el.adminDisplayName.textContent = state.session.admin.displayName;
     }
-    if (el.adminDisplayRole && state.session?.admin?.role) {
-      el.adminDisplayRole.textContent = state.session.admin.role;
+    if (el.adminDisplayRole) {
+      const role = state.session?.admin?.role;
+      if (role && role !== "CEO & Executive Chairman") {
+        el.adminDisplayRole.textContent = role;
+        el.adminDisplayRole.style.display = "";
+      } else {
+        el.adminDisplayRole.textContent = "";
+        el.adminDisplayRole.style.display = "none";
+      }
     }
     loadSubscribers();
     setTimeout(() => {
