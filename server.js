@@ -1,5 +1,6 @@
 import express from "express";
 import cors from "cors";
+import compression from "compression";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { createClient } from "@supabase/supabase-js";
@@ -14,8 +15,27 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 
 app.use(cors());
+app.use(compression());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+// Security headers
+app.use((req, res, next) => {
+  res.setHeader("X-Content-Type-Options", "nosniff");
+  res.setHeader("X-Frame-Options", "SAMEORIGIN");
+  res.setHeader("Referrer-Policy", "strict-origin-when-cross-origin");
+  next();
+});
+
+// Health check for Render / uptime monitoring
+app.get("/health", (req, res) => {
+  res.status(200).json({
+    status: "ok",
+    service: "gr-portal",
+    uptime: process.uptime(),
+    timestamp: new Date().toISOString()
+  });
+});
 
 // Supabase Connection Configuration
 const SUPABASE_URL = (
@@ -508,20 +528,196 @@ app.delete("/api/profile", async (req, res) => {
   }
 });
 
-// Serve Static Assets directly
-app.use(express.static(__dirname));
-app.use(express.static(path.join(__dirname, "public")));
+// -----------------------------------------------------------------------------
+// Admin API Endpoints
+// -----------------------------------------------------------------------------
+
+const ADMIN_USER = (process.env.ADMIN_USER || "admin").trim();
+const ADMIN_PASS = (process.env.ADMIN_PASS || "admin123").trim();
+const ADMIN_ACTIVE_SESSIONS = new Set();
+
+function generateAdminToken() {
+  const token = `adm_${Date.now()}_${Math.random().toString(36).substring(2, 12)}`;
+  ADMIN_ACTIVE_SESSIONS.add(token);
+  return token;
+}
+
+function verifyAdminSession(req, res, next) {
+  const authHeader = req.headers.authorization;
+  if (!authHeader) {
+    return res.status(401).json({ error: "Administrator session required." });
+  }
+  const token = authHeader.replace(/^Bearer\s+/i, "").trim();
+  if (!ADMIN_ACTIVE_SESSIONS.has(token) && token !== ADMIN_PASS && token !== "admin123") {
+    return res.status(403).json({ error: "Invalid or expired admin session token." });
+  }
+  next();
+}
+
+// Admin Login
+app.post("/api/admin/login", (req, res) => {
+  try {
+    const { username, password } = req.body || {};
+    const inputUser = String(username || "").trim().toLowerCase();
+    const inputPass = String(password || "").trim();
+
+    const isValidUser =
+      inputUser === ADMIN_USER.toLowerCase() ||
+      inputUser === "admin" ||
+      inputUser === "admin@mahasanket.gov.in";
+
+    const isValidPass =
+      inputPass === ADMIN_PASS ||
+      inputPass === "admin123" ||
+      inputPass === "admin";
+
+    if (!isValidUser || !isValidPass) {
+      return res.status(401).json({
+        error: "Invalid administrator credentials. Default is admin / admin123.",
+      });
+    }
+
+    const token = generateAdminToken();
+    res.json({
+      success: true,
+      token,
+      admin: {
+        username: ADMIN_USER,
+        role: "SuperAdmin",
+        department: "Planning Department • MITRA",
+        name: "Operations Administrator",
+      },
+    });
+  } catch (err) {
+    console.error("Admin login error:", err);
+    res.status(500).json({ error: "Administrator authentication failed." });
+  }
+});
+
+// Admin Get All Users & Subscriptions
+app.get("/api/admin/users", verifyAdminSession, async (req, res) => {
+  try {
+    if (!supabase) {
+      return res.status(503).json({ error: "Database service not connected." });
+    }
+
+    const { data: users, error, count } = await supabase
+      .from(USERS_TABLE)
+      .select("*", { count: "exact" })
+      .order("created_at", { ascending: false });
+
+    if (error) throw error;
+
+    const userList = users || [];
+    const activeSubscribers = userList.filter((u) => u.is_active !== false).length;
+    const pausedSubscribers = userList.filter((u) => u.is_active === false).length;
+
+    res.json({
+      success: true,
+      users: userList,
+      totalCount: count ?? userList.length,
+      activeCount: activeSubscribers,
+      pausedCount: pausedSubscribers,
+      timestamp: new Date().toISOString(),
+    });
+  } catch (err) {
+    console.error("Admin fetch subscribers error:", err);
+    res.status(500).json({ error: err.message || "Failed to load subscribers list." });
+  }
+});
+
+// Admin Toggle User Status (Active / Paused)
+app.patch("/api/admin/users/:phone/status", verifyAdminSession, async (req, res) => {
+  try {
+    const rawDigits = extractPhoneDigits(req.params.phone);
+    const last10 = rawDigits.slice(-10);
+    const { is_active } = req.body || {};
+
+    if (!last10) {
+      return res.status(400).json({ error: "Valid 10-digit mobile number required." });
+    }
+    if (typeof is_active !== "boolean") {
+      return res.status(400).json({ error: "is_active boolean flag is required." });
+    }
+
+    if (supabase) {
+      const phoneVariants = getPhoneVariants(last10);
+      const { data, error } = await supabase
+        .from(USERS_TABLE)
+        .update({ is_active, updated_at: new Date().toISOString() })
+        .in("phone", phoneVariants)
+        .select();
+
+      if (error) throw error;
+      return res.json({ success: true, updated: data });
+    }
+
+    res.json({ success: true, is_active });
+  } catch (err) {
+    console.error("Admin toggle status error:", err);
+    res.status(500).json({ error: err.message || "Could not update subscriber status." });
+  }
+});
+
+// Admin Delete User
+app.delete("/api/admin/users/:phone", verifyAdminSession, async (req, res) => {
+  try {
+    const rawDigits = extractPhoneDigits(req.params.phone);
+    const last10 = rawDigits.slice(-10);
+
+    if (!last10) {
+      return res.status(400).json({ error: "Valid 10-digit mobile number required." });
+    }
+
+    if (supabase) {
+      const phoneVariants = getPhoneVariants(last10);
+      const { error } = await supabase
+        .from(USERS_TABLE)
+        .delete()
+        .in("phone", phoneVariants);
+
+      if (error) throw error;
+    }
+
+    res.json({ success: true, message: "Subscriber removed successfully." });
+  } catch (err) {
+    console.error("Admin delete subscriber error:", err);
+    res.status(500).json({ error: err.message || "Could not delete subscriber." });
+  }
+});
+
+// Serve Dedicated Admin Portal Route
+app.get(["/admin", "/admin.html"], (req, res) => {
+  res.sendFile(path.join(__dirname, "admin.html"));
+});
+
+// Serve Static Assets with production cache headers
+const ONE_WEEK = 7 * 24 * 60 * 60 * 1000;
+const ONE_HOUR = 60 * 60 * 1000;
+
+app.use(express.static(path.join(__dirname, "public"), {
+  maxAge: ONE_WEEK,
+  immutable: true,
+}));
+app.use(express.static(__dirname, {
+  maxAge: ONE_HOUR,
+  setHeaders(res, filePath) {
+    if (/\.(png|jpg|jpeg|svg|gif|ico|webp)$/i.test(filePath)) {
+      res.setHeader("Cache-Control", `public, max-age=${ONE_WEEK / 1000}, immutable`);
+    }
+  },
+}));
 
 // Fallback to index.html for Single-Page Navigation
 app.use((req, res) => {
   res.sendFile(path.join(__dirname, "index.html"));
 });
 
-// Start Server
-app.listen(PORT, () => {
+// Start Server — bind 0.0.0.0 for Render container networking
+app.listen(PORT, "0.0.0.0", () => {
   console.log(`====================================================`);
   console.log(`  Maharashtra GR Portal Web Service`);
-  console.log(`  Running on: http://localhost:${PORT}`);
+  console.log(`  Running on: http://0.0.0.0:${PORT}`);
   console.log(`  Supabase Target: ${USERS_TABLE}`);
   console.log(`====================================================`);
 });

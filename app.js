@@ -496,7 +496,7 @@
   function checkSavedSession() {
     const rawSaved = localStorage.getItem("maha_gr_user");
     if (!rawSaved) {
-      showAuthView("login");
+      showAuthView("register");
       return;
     }
 
@@ -505,15 +505,15 @@
       if (savedUser && savedUser.phone) {
         logUserIn(savedUser);
       } else {
-        showAuthView("login");
+        showAuthView("register");
       }
     } catch {
-      showAuthView("login");
+      showAuthView("register");
     }
   }
 
   // Switch between Auth View and Dashboard View
-  function showAuthView(tab = "login") {
+  function showAuthView(tab = "register") {
     el.authView.classList.remove("hidden");
     el.dashboardView.classList.add("hidden");
     if (el.profileStatusView) el.profileStatusView.classList.add("hidden");
@@ -682,13 +682,7 @@
 
     const welcomeBadge = document.getElementById("welcome-status-badge") || document.querySelector(".account-active-badge");
     if (welcomeBadge) {
-      if (state.isActive) {
-        welcomeBadge.textContent = "● Active Alert Profile";
-        welcomeBadge.className = "account-active-badge";
-      } else {
-        welcomeBadge.textContent = "⏸ Alerts Paused";
-        welcomeBadge.className = "account-active-badge paused";
-      }
+      welcomeBadge.remove();
     }
 
     if (el.pauseAlertsBtn) {
@@ -734,7 +728,7 @@
     state.user = null;
     localStorage.removeItem("maha_gr_user");
     showGlobalBanner("You have been logged out successfully.", "success");
-    showAuthView("login");
+    showAuthView("register");
   }
 
   // Handle Register Form Submission
@@ -1426,55 +1420,85 @@
     updateProfileStatusView();
   }
 
-  // Calculate Volume Estimate
+  // Calculate Volume Estimate (+2 for every selected district)
   function updateVolumeEstimate() {
     if (!el.volumeEstimateNumber || !el.meterFill || !el.volumeSummaryText) return;
 
-    let estimate = "~4–8";
-    let width = 35;
-    let summary = "Balanced flow of high-value official notifications";
+    let baseMin = 4;
+    let baseMax = 8;
+    let baseWidth = 35;
+    let baseSummary = "Balanced flow of high-value official notifications";
 
-    const hasSpecificDistricts = state.preferredDistricts.length > 0;
     const deptCount = state.preferredDepartments.length;
     const intentCount = state.preferredIntents.length;
     const presetCount = state.selectedPresets.length;
 
     if (state.selectedPresets.includes("ALL_RESOLUTIONS")) {
-      estimate = "~50–150";
-      width = 100;
-      summary = "Complete statewide feed: All 34 ministries and all official resolutions";
-    } else if (hasSpecificDistricts && deptCount > 0 && deptCount <= 3) {
-      estimate = "~1–3";
-      width = 18;
-      summary = "Laser-focused alerts for your specific district and ministry";
+      baseMin = 50;
+      baseMax = 150;
+      baseWidth = 92;
+      baseSummary = "Complete statewide feed: All 34 ministries and all official resolutions";
     } else if (presetCount > 2) {
-      estimate = "~12–25";
-      width = 65;
-      summary = `Multi-category stream covering ${presetCount} selected interest areas`;
+      baseMin = 12;
+      baseMax = 25;
+      baseWidth = 65;
+      baseSummary = `Multi-category stream covering ${presetCount} selected interest areas`;
     } else if (presetCount === 2) {
-      estimate = "~8–16";
-      width = 50;
-      summary = "Combined updates for your selected sectors";
-    } else if (hasSpecificDistricts) {
-      estimate = "~2–5";
-      width = 28;
-      summary = "Focused exclusively on your local district and statewide decisions";
+      baseMin = 8;
+      baseMax = 16;
+      baseWidth = 50;
+      baseSummary = "Combined updates for your selected sectors";
     } else if (state.selectedPresets.includes("COMMERCIAL_VENDOR")) {
-      estimate = "~5–10";
-      width = 45;
-      summary = "Active coverage of tenders, public works, and procurement deadlines";
+      baseMin = 5;
+      baseMax = 10;
+      baseWidth = 45;
+      baseSummary = "Active coverage of tenders, public works, and procurement deadlines";
+    } else if (state.selectedPresets.includes("BUREAUCRACY_OFFICIALS")) {
+      baseMin = 2;
+      baseMax = 5;
+      baseWidth = 25;
+      baseSummary = "Transfers, cadre seniority lists, and administrative service orders";
+    } else if (state.selectedPresets.includes("STUDENTS_EDUCATION")) {
+      baseMin = 3;
+      baseMax = 6;
+      baseWidth = 30;
+      baseSummary = "Scholarships, exams, recruitments, and school education";
+    } else if (state.selectedPresets.includes("BANKING_FINANCE")) {
+      baseMin = 3;
+      baseMax = 7;
+      baseWidth = 32;
+      baseSummary = "Co-operative credit, loan waivers, and state financial sanctions";
+    } else if (state.selectedPresets.includes("POLITICAL_LEADERSHIP")) {
+      baseMin = 3;
+      baseMax = 6;
+      baseWidth = 30;
+      baseSummary = "Cabinet policy decisions, ordinances, and major state sanctions";
     } else if (state.selectedPresets.includes("CITIZEN_PUBLIC")) {
-      estimate = "~4–8";
-      width = 38;
-      summary = "Subsidies, agriculture, and citizen welfare schemes";
-    } else if (deptCount === 0 && intentCount === 0 && !hasSpecificDistricts) {
-      estimate = "~25–40";
-      width = 85;
-      summary = "Comprehensive feed of all daily Maharashtra government orders";
+      baseMin = 4;
+      baseMax = 8;
+      baseWidth = 38;
+      baseSummary = "Subsidies, agriculture, and citizen welfare schemes";
+    } else if (deptCount === 0 && intentCount === 0) {
+      baseMin = 25;
+      baseMax = 40;
+      baseWidth = 85;
+      baseSummary = "Comprehensive feed of all daily Maharashtra government orders";
     }
 
+    // User requirement: +2 in estimated frequency for every time user selects a district
+    const districtCount = state.preferredDistricts.length;
+    const districtBoost = districtCount * 2;
+    const finalMin = baseMin + districtBoost;
+    const finalMax = baseMax + districtBoost;
+    const finalWidth = Math.min(100, baseWidth + Math.min(45, districtCount * 5));
+
+    const estimate = `~${finalMin}–${finalMax}`;
+    const summary = districtCount > 0
+      ? `${baseSummary} (+${districtBoost} local updates across ${districtCount} selected district${districtCount > 1 ? "s" : ""})`
+      : baseSummary;
+
     el.volumeEstimateNumber.textContent = estimate;
-    el.meterFill.style.width = `${width}%`;
+    el.meterFill.style.width = `${finalWidth}%`;
     el.volumeSummaryText.textContent = summary;
   }
 
@@ -1765,6 +1789,45 @@
       if (e.target === el.infoModal) closeInfoDialog();
     });
 
+    // Pro Features Modal Triggers & Event Handlers
+    const proModal = document.getElementById("pro-features-modal");
+    const closeProModalBtn = document.getElementById("close-pro-modal-btn");
+    const dismissProModalBtn = document.getElementById("dismiss-pro-modal-btn");
+    const proWaitlistCta = document.getElementById("btn-pro-waitlist-cta");
+
+    function openProModal() {
+      if (proModal) proModal.classList.remove("hidden");
+    }
+
+    function closeProModal() {
+      if (proModal) proModal.classList.add("hidden");
+    }
+
+    document.addEventListener("click", (e) => {
+      const trigger = e.target.closest(".btn-trigger-pro-modal");
+      if (trigger) {
+        e.preventDefault();
+        e.stopPropagation();
+        openProModal();
+      }
+    });
+
+    if (closeProModalBtn) closeProModalBtn.addEventListener("click", closeProModal);
+    if (dismissProModalBtn) dismissProModalBtn.addEventListener("click", closeProModal);
+    if (proModal) {
+      proModal.addEventListener("click", (e) => {
+        if (e.target === proModal) closeProModal();
+      });
+    }
+
+    if (proWaitlistCta) {
+      proWaitlistCta.addEventListener("click", () => {
+        proWaitlistCta.textContent = "✓ Added to Early Access List";
+        showToastNotification("Priority access requested! We will notify your WhatsApp upon launch.", "🚀");
+        setTimeout(closeProModal, 1600);
+      });
+    }
+
     if (el.toastCloseBtn) {
       el.toastCloseBtn.addEventListener("click", () => {
         if (el.toastNotification) el.toastNotification.classList.add("hidden");
@@ -1782,4 +1845,128 @@
 
   // Start app when DOM is ready
   document.addEventListener("DOMContentLoaded", init);
+
+  // ---------------------------------------------------------------------------
+  // Scroll-Follow: Pin the Estimated Frequency card to the viewport on scroll
+  // Uses position:fixed toggling (bypasses CSS sticky overflow issues)
+  // ---------------------------------------------------------------------------
+  document.addEventListener("DOMContentLoaded", function () {
+    const volumeCard = document.querySelector(".volume-card");
+    if (!volumeCard) return;
+
+    // Create a placeholder to hold the card's space when it goes fixed
+    const placeholder = document.createElement("div");
+    placeholder.className = "volume-card-placeholder";
+    volumeCard.parentNode.insertBefore(placeholder, volumeCard.nextSibling);
+
+    let headerOffset = 16; // fallback; dynamically measured below
+    let isFixed = false;
+    let naturalTop = 0;
+    let cardWidth = 0;
+    let cardHeight = 0;
+    let cardLeft = 0;
+    let ticking = false;
+
+    function measureHeaderHeight() {
+      const hdr = document.querySelector(".app-header");
+      if (hdr) {
+        headerOffset = hdr.getBoundingClientRect().height + 12; // 12px breathing room
+      }
+    }
+
+    function measure() {
+      if (isFixed) {
+        // Temporarily unfix to measure natural position
+        volumeCard.classList.remove("volume-card-fixed");
+        volumeCard.style.cssText = "";
+        placeholder.style.display = "none";
+        isFixed = false;
+      }
+      measureHeaderHeight();
+      const rect = volumeCard.getBoundingClientRect();
+      naturalTop = rect.top + window.scrollY;
+      cardWidth = rect.width;
+      cardHeight = rect.height;
+      cardLeft = rect.left; // capture the natural left offset
+    }
+
+    function onScroll() {
+      if (ticking) return;
+      ticking = true;
+      requestAnimationFrame(function () {
+        ticking = false;
+
+        // Only do this when dashboard-view is visible
+        const dash = document.getElementById("dashboard-view");
+        if (!dash || dash.classList.contains("hidden")) {
+          if (isFixed) {
+            volumeCard.classList.remove("volume-card-fixed");
+            volumeCard.style.cssText = "";
+            placeholder.style.display = "none";
+            isFixed = false;
+          }
+          return;
+        }
+
+        const scrollTop = window.scrollY || document.documentElement.scrollTop;
+        const triggerPoint = naturalTop - headerOffset;
+
+        // Find the sidebar-wrapper bottom to know when to stop pinning
+        const sidebarWrapper = volumeCard.closest(".sidebar-wrapper") || volumeCard.closest(".sticky-sidebar");
+        let stopPoint = Infinity;
+        if (sidebarWrapper) {
+          const sidebarRect = sidebarWrapper.getBoundingClientRect();
+          const sidebarBottom = sidebarRect.bottom + scrollTop;
+          stopPoint = sidebarBottom - cardHeight - headerOffset - 16;
+        }
+
+        if (scrollTop >= triggerPoint && scrollTop < stopPoint) {
+          if (!isFixed) {
+            // Pin it
+            placeholder.style.display = "block";
+            placeholder.style.height = cardHeight + "px";
+            volumeCard.classList.add("volume-card-fixed");
+            volumeCard.style.top = headerOffset + "px";
+            volumeCard.style.width = cardWidth + "px";
+            // Use stored natural left position (placeholder holds original spot)
+            volumeCard.style.left = cardLeft + "px";
+            isFixed = true;
+          }
+        } else {
+          if (isFixed) {
+            // Unpin it
+            volumeCard.classList.remove("volume-card-fixed");
+            volumeCard.style.cssText = "";
+            placeholder.style.display = "none";
+            isFixed = false;
+          }
+        }
+      });
+    }
+
+    // Re-measure on resize / orientation change
+    function onResize() {
+      measure();
+      onScroll();
+    }
+
+    // Initial setup after a short delay to let layout settle
+    setTimeout(function () {
+      measure();
+      window.addEventListener("scroll", onScroll, { passive: true });
+      window.addEventListener("resize", onResize, { passive: true });
+    }, 300);
+
+    // Re-measure whenever dashboard-view becomes visible (login triggers this)
+    const observer = new MutationObserver(function () {
+      const dash = document.getElementById("dashboard-view");
+      if (dash && !dash.classList.contains("hidden")) {
+        setTimeout(function () { measure(); onScroll(); }, 200);
+      }
+    });
+    const dashEl = document.getElementById("dashboard-view");
+    if (dashEl) {
+      observer.observe(dashEl, { attributes: true, attributeFilter: ["class"] });
+    }
+  });
 })();

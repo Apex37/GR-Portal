@@ -44,8 +44,15 @@ if (fs.existsSync('public')) {
   fs.cpSync('public', distDir, { recursive: true });
 }
 
-// Ensure key logo assets in root are copied to dist
-const rootAssets = ['mitra-emblem-clean.png', 'mitra-logo.png', 'mitra-banner.png'];
+// Ensure key logo assets and admin portal in root are copied to dist
+const rootAssets = [
+  'mitra-emblem-clean.png',
+  'mitra-logo.png',
+  'mitra-banner.png',
+  'admin.html',
+  'admin.css',
+  'admin.js'
+];
 rootAssets.forEach((file) => {
   if (fs.existsSync(file)) {
     fs.copyFileSync(file, path.join(distDir, file));

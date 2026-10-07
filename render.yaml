@@ -1,14 +1,18 @@
 services:
   - type: web
     name: gr-portal
-    env: node
+    runtime: node
     plan: free
+    region: singapore
     buildCommand: npm install
     startCommand: npm start
+    healthCheckPath: /health
     envVars:
+      - key: NODE_ENV
+        value: production
       - key: SUPABASE_URL
-        value: https://uhlncqrevycxtxtdydav.supabase.co
+        sync: false
       - key: SUPABASE_SERVICE_ROLE_KEY
-        sync: false # Set your private Supabase secret key in the Render Environment tab
+        sync: false
       - key: SUPABASE_GOV_USERS_TABLE
         value: gov-users-v2

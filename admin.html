@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MahaSanket • Administrator Console | Maharashtra GR Alert Service</title>
+  <meta name="description" content="Institutional Administrator Console for monitoring citizen WhatsApp subscribers and alert dispatch configurations.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/admin.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
+</head>
+<body>
+
+  <!-- =========================================================================
+       VIEW 1: ADMIN LOGIN SCREEN (Shown when admin is not logged in)
+       ========================================================================= -->
+  <section id="admin-login-view" class="admin-login-section">
+    <div class="login-card-container">
+      <div class="login-card">
+        <div class="login-header">
+          <img src="/mitra-emblem-clean.png" alt="Government of Maharashtra Seal" class="login-emblem">
+          <div class="login-tag">महाराष्ट्र शासन • नियोजन विभाग (MITRA)</div>
+          <h1 class="login-title">MahaSanket Admin Console</h1>
+          <p class="login-subtitle">Official Subscriber Monitoring & Alert Dispatch Management Portal</p>
+        </div>
+
+        <div id="login-error-alert" class="alert-box alert-error hidden" role="alert"></div>
+
+        <form id="admin-login-form" class="login-form" novalidate>
+          <div class="form-group">
+            <label for="admin-user-input" class="form-label">Administrator ID / Username</label>
+            <div class="input-wrap">
+              <span class="input-icon">👤</span>
+              <input type="text" id="admin-user-input" class="form-input" placeholder="e.g. admin" autocomplete="username" required value="admin">
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="admin-pass-input" class="form-label">Security Password</label>
+            <div class="input-wrap">
+              <span class="input-icon">🔒</span>
+              <input type="password" id="admin-pass-input" class="form-input" placeholder="Enter password" autocomplete="current-password" required value="admin123">
+            </div>
+          </div>
+
+          <div class="creds-hint-box">
+            <div class="hint-title">🔑 Default Credentials:</div>
+            <div class="hint-details">
+              <span>Username: <code>admin</code></span>
+              <span class="hint-divider">•</span>
+              <span>Password: <code>admin123</code></span>
+            </div>
+            <button type="button" id="btn-autofill-creds" class="btn-text-action">Use Default Credentials</button>
+          </div>
+
+          <button type="submit" id="admin-login-btn" class="btn-admin-primary">
+            <span id="login-btn-spinner" class="spinner hidden"></span>
+            <span id="login-btn-text">Sign In to Admin Console</span>
+          </button>
+        </form>
+
+        <div class="login-footer">
+          <a href="/" class="return-link">← Return to Public MahaSanket Portal</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+
+  <!-- =========================================================================
+       VIEW 2: ADMIN DASHBOARD (Shown when admin is authenticated)
+       ========================================================================= -->
+  <section id="admin-dashboard-view" class="admin-dashboard-section hidden">
+
+    <!-- Institutional Admin Header -->
+    <header class="admin-header">
+      <div class="admin-header-inner">
+        <div class="header-brand-wrap">
+          <img src="/mitra-emblem-clean.png" alt="MITRA Official Seal" class="header-emblem">
+          <div class="header-titles">
+            <div class="dept-name">महाराष्ट्र शासन • नियोजन विभाग (MITRA)</div>
+            <div class="system-name">MahaSanket Admin Console</div>
+          </div>
+        </div>
+
+        <div class="header-right-meta">
+          <div class="db-status-pill">
+            <span class="status-pulse-dot"></span>
+            <span class="db-pill-text">Live: gov-users-v2</span>
+          </div>
+
+          <div class="admin-user-pill">
+            <span class="admin-avatar">🛡️</span>
+            <div class="admin-meta-text">
+              <span class="admin-name" id="admin-display-name">MITRA Admin</span>
+              <span class="admin-role">SuperAdmin</span>
+            </div>
+          </div>
+
+          <div class="header-btn-group">
+            <a href="/" target="_blank" class="btn-header-secondary" title="View Public Portal">
+              <span>Public Portal</span>
+              <span>↗</span>
+            </a>
+            <button type="button" id="admin-logout-btn" class="btn-header-danger">
+              <span>Sign Out</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </header>
+
+
+    <!-- Main Admin Workspace Container -->
+    <main class="admin-main-container">
+
+      <!-- Metrics Summary Strip -->
+      <section class="kpi-metrics-grid" aria-label="Subscriber Statistics">
+        <div class="kpi-card">
+          <div class="kpi-header">
+            <span class="kpi-label">Total Registered Citizens</span>
+            <span class="kpi-icon">👥</span>
+          </div>
+          <div class="kpi-number" id="metric-total-users">-</div>
+          <div class="kpi-subtext">Total verified WhatsApp profiles</div>
+        </div>
+
+        <div class="kpi-card highlight-success">
+          <div class="kpi-header">
+            <span class="kpi-label">Active Alert Subscribers</span>
+            <span class="kpi-icon">🟢</span>
+          </div>
+          <div class="kpi-number" id="metric-active-users">-</div>
+          <div class="kpi-subtext">Receiving automated daily GR updates</div>
+        </div>
+
+        <div class="kpi-card highlight-warning">
+          <div class="kpi-header">
+            <span class="kpi-label">Paused Subscriptions</span>
+            <span class="kpi-icon">⏸️</span>
+          </div>
+          <div class="kpi-number" id="metric-paused-users">-</div>
+          <div class="kpi-subtext">Alerts temporarily suspended by user</div>
+        </div>
+
+        <div class="kpi-card">
+          <div class="kpi-header">
+            <span class="kpi-label">Districts Covered</span>
+            <span class="kpi-icon">📍</span>
+          </div>
+          <div class="kpi-number" id="metric-districts-covered">-</div>
+          <div class="kpi-subtext">Across 6 administrative divisions</div>
+        </div>
+      </section>
+
+
+      <!-- Controls & Filters Toolbar -->
+      <section class="toolbar-section">
+        <div class="toolbar-card">
+          <div class="toolbar-search-group">
+            <div class="search-input-wrap">
+              <span class="search-icon">🔍</span>
+              <input type="text" id="subscriber-search-input" class="search-input" placeholder="Search by citizen name, mobile number (+91...), or district...">
+              <button type="button" id="clear-search-btn" class="clear-input-btn hidden" title="Clear search">✕</button>
+            </div>
+          </div>
+
+          <div class="toolbar-filters-group">
+            <!-- Status Filter Radio/Pills -->
+            <div class="status-pill-filter">
+              <button type="button" class="status-filter-btn active" data-status="ALL">
+                <span>All</span>
+                <span class="badge" id="badge-count-all">0</span>
+              </button>
+              <button type="button" class="status-filter-btn" data-status="ACTIVE">
+                <span>Active</span>
+                <span class="badge badge-active" id="badge-count-active">0</span>
+              </button>
+              <button type="button" class="status-filter-btn" data-status="PAUSED">
+                <span>Paused</span>
+                <span class="badge badge-paused" id="badge-count-paused">0</span>
+              </button>
+            </div>
+
+            <!-- Role / Preset Dropdown -->
+            <div class="dropdown-filter-wrap">
+              <select id="role-filter-select" class="filter-select" aria-label="Filter by Category">
+                <option value="ALL">All Categories</option>
+                <option value="CITIZEN_PUBLIC">🌾 Farmers, Citizens & Welfare</option>
+                <option value="BUREAUCRACY_OFFICIALS">📋 Govt Officers & Consultants</option>
+                <option value="COMMERCIAL_VENDOR">💼 Contractors & Business</option>
+                <option value="STUDENTS_AND_YOUTH">🎓 Students & Youth</option>
+                <option value="HEALTHCARE_PROFESSIONALS">🩺 Doctors & Healthcare</option>
+                <option value="JOURNALIST_RESEARCHER">📰 Media & Policy Analysts</option>
+                <option value="CUSTOM">⚙️ Custom Selection</option>
+              </select>
+            </div>
+
+            <!-- Administrative Division Filter -->
+            <div class="dropdown-filter-wrap">
+              <select id="division-filter-select" class="filter-select" aria-label="Filter by Division">
+                <option value="ALL">All Divisions</option>
+                <option value="Pune">Pune Division</option>
+                <option value="Konkan">Konkan Division (Mumbai)</option>
+                <option value="Nashik">Nashik Division</option>
+                <option value="Chhatrapati Sambhajinagar">Chhatrapati Sambhajinagar Division</option>
+                <option value="Amravati">Amravati Division</option>
+                <option value="Nagpur">Nagpur Division</option>
+              </select>
+            </div>
+
+            <!-- Actions (Refresh & Export) -->
+            <div class="toolbar-actions">
+              <button type="button" id="refresh-data-btn" class="btn-toolbar-secondary" title="Reload subscribers from database">
+                <span id="refresh-spinner" class="btn-icon">🔄</span>
+                <span>Refresh</span>
+              </button>
+              <button type="button" id="export-csv-btn" class="btn-toolbar-primary" title="Export subscriber list as CSV">
+                <span class="btn-icon">📥</span>
+                <span>Export CSV</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+
+      <!-- Main Table Section -->
+      <section class="table-card-section">
+        <div class="table-card">
+          <div class="table-card-header">
+            <div class="table-header-left">
+              <h2 class="table-title">Citizen Subscribers & Preference Matrix</h2>
+              <span class="table-counter" id="table-showing-counter">Showing 0 of 0 subscribers</span>
+            </div>
+            <div class="table-header-right">
+              <span class="last-sync-time" id="last-sync-label">Last updated: Just now</span>
+            </div>
+          </div>
+
+          <!-- Loading State -->
+          <div id="table-loading-state" class="state-container hidden">
+            <div class="loading-spinner"></div>
+            <div class="state-title">Loading Subscribers from Database...</div>
+            <div class="state-sub">Fetching verified citizen profiles from Supabase.</div>
+          </div>
+
+          <!-- Error State -->
+          <div id="table-error-state" class="state-container hidden">
+            <div class="error-icon">⚠️</div>
+            <div class="state-title" id="table-error-message">Failed to load subscriber records</div>
+            <button type="button" id="btn-retry-load" class="btn-admin-primary btn-sm">Retry Connection</button>
+          </div>
+
+          <!-- Empty State -->
+          <div id="table-empty-state" class="state-container hidden">
+            <div class="empty-icon">📂</div>
+            <div class="state-title">No Subscribers Found</div>
+            <div class="state-sub">No citizen profiles match the applied filter or search query.</div>
+            <button type="button" id="btn-clear-all-filters" class="btn-text-action">Clear Filters</button>
+          </div>
+
+          <!-- Data Table Wrapper -->
+          <div class="table-responsive" id="table-responsive-wrapper">
+            <table class="subscribers-table" id="subscribers-table">
+              <thead>
+                <tr>
+                  <th class="col-num">#</th>
+                  <th class="col-citizen">Citizen & Contact</th>
+                  <th class="col-status">Status</th>
+                  <th class="col-roles">Categories / Roles</th>
+                  <th class="col-geo">Geographic Scope</th>
+                  <th class="col-depts">Departments & Ministries</th>
+                  <th class="col-intents">Action Types</th>
+                  <th class="col-safeguards">Safeguards</th>
+                  <th class="col-actions">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="subscribers-table-body">
+                <!-- Dynamically populated via admin.js -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+
+      <!-- =========================================================================
+           CONTAINER 3: DEPARTMENT RESOLUTION FREQUENCY ANALYTICS (BAR / SPIDER)
+           ========================================================================= -->
+      <section class="analytics-card-section">
+        <div class="analytics-card">
+          <div class="analytics-card-header">
+            <div class="analytics-header-left">
+              <div class="analytics-title-group">
+                <span class="analytics-badge">📅 Past Week Data (Past 7 Days)</span>
+                <h2 class="analytics-title">Resolution Publication Frequency (Past Week) • Department Breakdown</h2>
+              </div>
+              <p class="analytics-sub">Official Government Resolutions cataloged across Maharashtra State Ministries over the past week (data from past week)</p>
+            </div>
+
+            <div class="analytics-header-right">
+              <!-- Graph Type Toggle: Bar Graph vs Spider Graph -->
+              <div class="chart-type-toggle-group" role="group" aria-label="Chart Type Selection">
+                <button type="button" id="toggle-chart-bar" class="chart-toggle-btn active" data-chart="bar">
+                  <span class="toggle-icon">📊</span>
+                  <span>Bar Graph</span>
+                </button>
+                <button type="button" id="toggle-chart-spider" class="chart-toggle-btn" data-chart="radar">
+                  <span class="toggle-icon">🕸️</span>
+                  <span>Spider Graph</span>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Chart Display Canvas Container -->
+          <div class="chart-canvas-wrapper">
+            <div class="chart-inner-container">
+              <canvas id="dept-frequency-chart" aria-label="Department Resolution Frequency Chart" role="img"></canvas>
+            </div>
+          </div>
+
+          <!-- Analytics Highlights Footer Strip -->
+          <div class="chart-summary-strip">
+            <div class="summary-stat-pill">
+              <span class="stat-pill-label">Top Publishing Ministry (Past Week)</span>
+              <span class="stat-pill-val">Public Works Department (PWD) • 28 GRs</span>
+            </div>
+            <div class="summary-stat-pill">
+              <span class="stat-pill-label">Weekly Publishing Velocity</span>
+              <span class="stat-pill-val">~28.4 GRs / Day</span>
+            </div>
+            <div class="summary-stat-pill">
+              <span class="stat-pill-label">Total Cataloged (Past Week)</span>
+              <span class="stat-pill-val">199 Resolutions</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+    </main>
+
+  </section>
+
+
+  <!-- =========================================================================
+       VIEW 3: SUBSCRIBER DETAIL SLIDE-OVER DRAWER
+       ========================================================================= -->
+  <div id="subscriber-drawer" class="drawer-backdrop hidden" role="dialog" aria-modal="true" aria-labelledby="drawer-user-name">
+    <div class="drawer-panel">
+      <div class="drawer-header">
+        <div class="drawer-header-left">
+          <div class="drawer-avatar">👤</div>
+          <div>
+            <h3 class="drawer-title" id="drawer-user-name">Citizen Profile</h3>
+            <span class="drawer-sub" id="drawer-user-phone">+91 XXXXXXXXXX</span>
+          </div>
+        </div>
+        <button type="button" id="close-drawer-btn" class="drawer-close-btn" aria-label="Close details">✕</button>
+      </div>
+
+      <div class="drawer-body" id="drawer-body-content">
+        <!-- Dynamically rendered detailed inspection -->
+      </div>
+
+      <div class="drawer-footer">
+        <a id="drawer-whatsapp-link" href="#" target="_blank" rel="noopener" class="btn-drawer-whatsapp">
+          <span>💬 Open WhatsApp Chat</span>
+        </a>
+        <button type="button" id="drawer-close-action-btn" class="btn-drawer-secondary">Close</button>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- Floating Toast Notification -->
+  <div id="admin-toast" class="admin-toast hidden" role="status" aria-live="polite">
+    <span class="toast-icon" id="admin-toast-icon">✅</span>
+    <span class="toast-msg" id="admin-toast-msg">Operation completed successfully</span>
+  </div>
+
+  <script src="/admin.js"></script>
+</body>
+</html>

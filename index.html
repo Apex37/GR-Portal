@@ -37,10 +37,6 @@
       </nav>
 
       <div class="header-actions">
-        <span class="live-status-pill">
-          <span class="live-dot"></span>
-          <span>Scraper Active • Live Updates</span>
-        </span>
 
         <!-- Shown when NOT logged in -->
         <div id="header-guest-actions">
@@ -53,6 +49,10 @@
           <div class="user-pill">
             <span class="user-avatar-icon">👤</span>
             <span id="header-user-name" class="user-display-name">Citizen</span>
+          </div>
+          <div class="header-tier-stack">
+            <span class="user-tier-badge">Free Tier</span>
+            <button type="button" class="btn-upgrade-pro btn-trigger-pro-modal" title="View MahaSanket Pro features">Upgrade to Pro ✨</button>
           </div>
           <button id="header-logout-btn" class="header-action-btn outline" type="button">Log Out</button>
         </div>
@@ -74,6 +74,66 @@
       </div>
       <div class="modal-footer">
         <button id="dismiss-info-modal-btn" class="btn btn-primary btn-sm" type="button">Got it</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Dialog for Pro Features Upgrade -->
+  <div id="pro-features-modal" class="modal-backdrop hidden" role="dialog" aria-modal="true" aria-labelledby="pro-modal-title">
+    <div class="modal-dialog pro-modal-dialog">
+      <div class="modal-header pro-modal-header">
+        <div class="pro-modal-header-top">
+          <span class="pro-modal-badge">✨ MahaSanket Pro</span>
+          <button id="close-pro-modal-btn" class="modal-close-btn" type="button" aria-label="Close dialog">&times;</button>
+        </div>
+        <h3 id="pro-modal-title" class="pro-modal-title">Unlock Advanced Governance Features</h3>
+        <p class="pro-modal-sub">Empowering officers, businesses, legal researchers, and citizens with next-generation Maharashtra governance tools.</p>
+      </div>
+
+      <div class="modal-body pro-modal-body">
+        <div class="pro-features-grid">
+          <!-- Feature 1: Translation of GR's -->
+          <div class="pro-feature-card">
+            <div class="pro-feature-icon">🌐</div>
+            <div class="pro-feature-content">
+              <h4>Translation of GR's</h4>
+              <span class="feature-marathi-tag">मराठी ⇄ इंग्रजी भाषांतर</span>
+              <p>Instant bilingual translation of complex Marathi government resolutions and annexures into clear, readable English with simplified plain-language executive summaries.</p>
+            </div>
+          </div>
+
+          <!-- Feature 2: Intelligent API -->
+          <div class="pro-feature-card">
+            <div class="pro-feature-icon">⚡</div>
+            <div class="pro-feature-content">
+              <h4>Intelligent API & Webhooks</h4>
+              <span class="feature-marathi-tag">संस्थात्मक ऑटोमेशन API</span>
+              <p>Direct low-latency REST endpoints, webhook subscriptions, and structured JSON feeds for automated ingestion into corporate ERPs, legal databases, and internal dashboards.</p>
+            </div>
+          </div>
+
+          <!-- Feature 3: Interactive AI Chatbot -->
+          <div class="pro-feature-card">
+            <div class="pro-feature-icon">🤖</div>
+            <div class="pro-feature-content">
+              <h4>Interactive Governance AI Chatbot</h4>
+              <span class="feature-marathi-tag">बुद्धिमान शासन निर्णय चॅटबॉट</span>
+              <p>Ask questions in plain conversational Marathi or English (e.g. <em>"What are the eligibility criteria for the agriculture subsidy?"</em>) with exact paragraph references from verified government orders.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="pro-current-plan-card">
+          <div class="pro-plan-info">
+            <div class="pro-plan-pill">Current Plan: Free Tier Active</div>
+            <p>You currently receive real-time verified WhatsApp alerts for your chosen categories and districts at zero cost.</p>
+          </div>
+          <button type="button" id="btn-pro-waitlist-cta" class="btn btn-primary btn-sm">Join Pro Early Access →</button>
+        </div>
+      </div>
+
+      <div class="modal-footer pro-modal-footer">
+        <button id="dismiss-pro-modal-btn" class="btn btn-secondary btn-sm" type="button">Close</button>
       </div>
     </div>
   </div>
@@ -109,20 +169,125 @@
 
           <!-- Auth Tab Switcher -->
           <div class="auth-tabs" role="tablist">
-            <button type="button" id="tab-btn-login" class="auth-tab-btn active" role="tab" aria-selected="true">
-              <span>🔑 Log In</span>
-            </button>
-            <button type="button" id="tab-btn-register" class="auth-tab-btn" role="tab" aria-selected="false">
+            <button type="button" id="tab-btn-register" class="auth-tab-btn active" role="tab" aria-selected="true">
               <span>👤 Create Profile</span>
+            </button>
+            <button type="button" id="tab-btn-login" class="auth-tab-btn" role="tab" aria-selected="false">
+              <span>🔑 Log In</span>
             </button>
           </div>
 
-          <!-- TAB PANE 1: LOG IN -->
-          <div id="pane-login" class="auth-pane active">
+          <!-- TAB PANE 1: CREATE PROFILE (REGISTER - DEFAULT LANDING) -->
+          <div id="pane-register" class="auth-pane active">
+            <form id="register-form" novalidate>
+              <div class="auth-form-intro">
+                <h2 class="auth-pane-title">Create Your Alert Profile</h2>
+                <p class="auth-pane-sub">Register your phone number and details. We will automatically generate your secure login password.</p>
+              </div>
+
+              <!-- Mobile Number (Primary Key) -->
+              <div class="form-group">
+                <label for="reg-phone" class="form-label">
+                  WhatsApp Mobile Number <span class="required-star">*</span>
+                  <span class="primary-key-badge">Primary Key</span>
+                </label>
+                <div class="phone-input-box">
+                  <div class="country-badge">
+                    <span class="country-code">+91</span>
+                  </div>
+                  <input 
+                    type="tel" 
+                    id="reg-phone" 
+                    class="phone-text-input" 
+                    placeholder="9090535272" 
+                    maxlength="10" 
+                    required 
+                    autocomplete="tel-national" 
+                    inputmode="numeric"
+                  >
+                </div>
+                <span class="input-hint">Your 10-digit phone number is your unique account identifier.</span>
+              </div>
+
+              <!-- Names Row -->
+              <div class="form-row-two" style="margin-top: 1.15rem;">
+                <div class="form-group">
+                  <label for="reg-firstname" class="form-label">
+                    First Name <span class="required-star">*</span>
+                  </label>
+                  <input 
+                    type="text" 
+                    id="reg-firstname" 
+                    class="standard-text-input" 
+                    placeholder="First name" 
+                    required 
+                    autocomplete="given-name"
+                  >
+                </div>
+                <div class="form-group">
+                  <label for="reg-lastname" class="form-label">
+                    Last Name <span class="optional-tag">(Optional)</span>
+                  </label>
+                  <input 
+                    type="text" 
+                    id="reg-lastname" 
+                    class="standard-text-input" 
+                    placeholder="Last name" 
+                    autocomplete="family-name"
+                  >
+                </div>
+              </div>
+
+              <!-- Date of Birth / Birth Year (Auto-Key Generation) -->
+              <div class="form-group" style="margin-top: 1.15rem;">
+                <label for="reg-dob" class="form-label">
+                  Birth Year (4-digit YYYY) <span class="required-star">*</span>
+                </label>
+                <input 
+                  type="text" 
+                  id="reg-dob" 
+                  class="standard-text-input" 
+                  placeholder="e.g. 1998 or 2003" 
+                  maxlength="4"
+                  inputmode="numeric"
+                  pattern="[0-9]{4}"
+                  required 
+                >
+                <!-- Live Password Key Generation Callout -->
+                <div class="key-callout-box">
+                  <div class="key-callout-header">
+                    <span class="key-shield-icon">🛡️</span>
+                    <strong>Your Generated Login Key:</strong>
+                  </div>
+                  <div class="key-display-row">
+                    <code id="preview-generated-password" class="key-code-badge">YYYY</code>
+                    <span class="key-rule-text">Your 4-digit Birth Year will be your password.</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Register CTA -->
+              <div class="auth-submit-area">
+                <button type="submit" id="register-submit-btn" class="btn btn-whatsapp btn-large btn-block">
+                  <span class="btn-text">Create Profile & Choose Categories →</span>
+                  <span class="btn-spinner hidden" aria-hidden="true"></span>
+                </button>
+              </div>
+
+              <!-- Switch to Login Link -->
+              <div class="auth-switch-prompt">
+                <span>Already registered?</span>
+                <button type="button" id="switch-to-login-btn" class="text-link-btn font-bold">Log in to existing profile</button>
+              </div>
+            </form>
+          </div>
+
+          <!-- TAB PANE 2: LOG IN -->
+          <div id="pane-login" class="auth-pane hidden">
             <form id="login-form" novalidate>
               <div class="auth-form-intro">
                 <h2 class="auth-pane-title">Welcome Back</h2>
-                <p class="auth-pane-sub">Log in with your WhatsApp number and password to view or change your alert preferences.</p>
+                <p class="auth-pane-sub">Log in with your WhatsApp number and birth year to view or change your alert preferences.</p>
               </div>
 
               <!-- Phone Input -->
@@ -186,118 +351,6 @@
               </div>
             </form>
           </div>
-
-          <!-- TAB PANE 2: CREATE PROFILE (REGISTER) -->
-          <div id="pane-register" class="auth-pane hidden">
-            <form id="register-form" novalidate>
-              <div class="auth-form-intro">
-                <h2 class="auth-pane-title">Create Your Alert Profile</h2>
-                <p class="auth-pane-sub">Register your phone number and details. We will automatically generate your secure login password.</p>
-              </div>
-
-              <!-- Mobile Number (Primary Key) -->
-              <div class="form-group">
-                <label for="reg-phone" class="form-label">
-                  WhatsApp Mobile Number <span class="required-star">*</span>
-                  <span class="primary-key-badge">Primary Key</span>
-                </label>
-                <div class="phone-input-box">
-                  <div class="country-badge">
-                    <span class="country-code">+91</span>
-                  </div>
-                  <input 
-                    type="tel" 
-                    id="reg-phone" 
-                    class="phone-text-input" 
-                    placeholder="9090535272" 
-                    maxlength="10" 
-                    required 
-                    autocomplete="tel-national" 
-                    inputmode="numeric"
-                  >
-                </div>
-                <span class="input-hint">Your 10-digit phone number is your unique account identifier.</span>
-              </div>
-
-              <!-- Names Row -->
-              <div class="form-row-two" style="margin-top: 1.15rem;">
-                <div class="form-group">
-                  <label for="reg-firstname" class="form-label">
-                    First Name <span class="required-star">*</span>
-                  </label>
-                  <input 
-                    type="text" 
-                    id="reg-firstname" 
-                    class="standard-text-input" 
-                    placeholder="First name" 
-                    required 
-                    autocomplete="given-name"
-                  >
-                </div>
-                <div class="form-group">
-                  <label for="reg-lastname" class="form-label">
-                    Last Name <span class="required-star">*</span>
-                  </label>
-                  <input 
-                    type="text" 
-                    id="reg-lastname" 
-                    class="standard-text-input" 
-                    placeholder="Last name" 
-                    required 
-                    autocomplete="family-name"
-                  >
-                </div>
-              </div>
-
-              <!-- Birth Year -->
-              <div class="form-group" style="margin-top: 1.15rem;">
-                <label for="reg-dob" class="form-label">
-                  Birth Year (YYYY) <span class="required-star">*</span>
-                </label>
-                <input 
-                  type="number" 
-                  id="reg-dob" 
-                  class="standard-text-input" 
-                  placeholder="e.g. 1998" 
-                  min="1930" 
-                  max="2025" 
-                  required
-                  inputmode="numeric"
-                >
-                <span class="input-hint">Your 4-digit birth year is your quick, memorable login key.</span>
-              </div>
-
-              <!-- Generated Password Preview Callout -->
-              <div class="generated-password-card">
-                <div class="gen-pass-top">
-                  <span class="gen-pass-icon">🔒</span>
-                  <span class="gen-pass-title">Your Quick Login Key (Birth Year):</span>
-                </div>
-                <div class="gen-pass-display">
-                  <span id="preview-generated-password" class="gen-pass-value">YYYY</span>
-                </div>
-                <div class="gen-pass-explanation">
-                  Format: <strong>4-Digit Birth Year (YYYY)</strong>. You will use this year to log in and modify your alert preferences anytime.
-                </div>
-              </div>
-
-              <!-- Register CTA -->
-              <div class="auth-submit-area">
-                <button type="submit" id="register-submit-btn" class="btn btn-whatsapp btn-large btn-block">
-                  <span class="wa-btn-icon">💬</span>
-                  <span class="btn-text">Create Profile & Set Preferences →</span>
-                  <span class="btn-spinner hidden" aria-hidden="true"></span>
-                </button>
-              </div>
-
-              <!-- Switch to Login Link -->
-              <div class="auth-switch-prompt">
-                <span>Already have a profile?</span>
-                <button type="button" id="switch-to-login-btn" class="text-link-btn font-bold">Log in here</button>
-              </div>
-            </form>
-          </div>
-
         </div>
 
         <!-- Trust Highlights below Auth card -->
@@ -341,7 +394,6 @@
             <h1 class="welcome-greeting">
               Namaskar, <span id="dash-user-name">Citizen</span>!
             </h1>
-            <span class="account-active-badge" id="welcome-status-badge">● Active Alert Profile</span>
           </div>
           <p class="welcome-subtext">
             Personalize which Government Resolutions you want delivered to <strong id="dash-user-phone">+91 XXXXXXXXXX</strong>.
@@ -379,58 +431,7 @@
 
               <div class="role-grid">
 
-                <!-- Role 1: Citizen & Farmer -->
-                <div class="role-card active" data-preset="CITIZEN_PUBLIC" tabindex="0" role="button" aria-pressed="true">
-                  <div class="role-card-top">
-                    <span class="role-emoji">🌾</span>
-                    <div class="role-checkbox-box"><span class="check-icon">✓</span></div>
-                  </div>
-                  <div class="role-card-content">
-                    <div class="role-title">Farmers & Agriculture</div>
-                    <div class="role-marathi">शेतकरी, कृषी व ग्रामीण कल्याण</div>
-                    <p class="role-description">Crop loans, solar pumps, drip irrigation, drought relief & welfare schemes.</p>
-                    <div class="role-meta">
-                      <span class="role-rate-tag">~4–8 alerts / wk</span>
-                      <button type="button" class="info-btn" data-info="preset_citizen" title="More info">ⓘ</button>
-                    </div>
-                  </div>
-                </div>
-
-                <!-- Role 2: Business & Contractor -->
-                <div class="role-card" data-preset="COMMERCIAL_VENDOR" tabindex="0" role="button" aria-pressed="false">
-                  <div class="role-card-top">
-                    <span class="role-emoji">💼</span>
-                    <div class="role-checkbox-box"><span class="check-icon">✓</span></div>
-                  </div>
-                  <div class="role-card-content">
-                    <div class="role-title">Contractors & Business</div>
-                    <div class="role-marathi">कंत्राटदार, निविदा व व्यावसायिक</div>
-                    <p class="role-description">PWD infrastructure, e-tenders, procurement, water resources & industry orders.</p>
-                    <div class="role-meta">
-                      <span class="role-rate-tag">~5–10 alerts / wk</span>
-                      <button type="button" class="info-btn" data-info="preset_vendor" title="More info">ⓘ</button>
-                    </div>
-                  </div>
-                </div>
-
-                <!-- Role 3: Students & Education -->
-                <div class="role-card" data-preset="STUDENTS_EDUCATION" tabindex="0" role="button" aria-pressed="false">
-                  <div class="role-card-top">
-                    <span class="role-emoji">🎓</span>
-                    <div class="role-checkbox-box"><span class="check-icon">✓</span></div>
-                  </div>
-                  <div class="role-card-content">
-                    <div class="role-title">Students & Education</div>
-                    <div class="role-marathi">विद्यार्थी, शिक्षक व शिक्षण क्षेत्र</div>
-                    <p class="role-description">Scholarships, teacher recruitments, university circulars & school education.</p>
-                    <div class="role-meta">
-                      <span class="role-rate-tag">~3–6 alerts / wk</span>
-                      <button type="button" class="info-btn" data-info="preset_students" title="More info">ⓘ</button>
-                    </div>
-                  </div>
-                </div>
-
-                <!-- Role 4: Civil Service & Officers -->
+                <!-- 1. Govt Officers & Consultants (gov off cons) -->
                 <div class="role-card" data-preset="BUREAUCRACY_OFFICIALS" tabindex="0" role="button" aria-pressed="false">
                   <div class="role-card-top">
                     <span class="role-emoji">🏛️</span>
@@ -447,24 +448,24 @@
                   </div>
                 </div>
 
-                <!-- Role 5: Banking & Finance -->
-                <div class="role-card" data-preset="BANKING_FINANCE" tabindex="0" role="button" aria-pressed="false">
+                <!-- 2. Farmers & Agriculture (farmers and agr) -->
+                <div class="role-card active" data-preset="CITIZEN_PUBLIC" tabindex="0" role="button" aria-pressed="true">
                   <div class="role-card-top">
-                    <span class="role-emoji">🏦</span>
+                    <span class="role-emoji">🌾</span>
                     <div class="role-checkbox-box"><span class="check-icon">✓</span></div>
                   </div>
                   <div class="role-card-content">
-                    <div class="role-title">Banking & Finance</div>
-                    <div class="role-marathi">बँकिंग, पतपुरवठा व कर्ज योजना</div>
-                    <p class="role-description">Co-operative banks, loan waivers, institutional credit & state financial sanctions.</p>
+                    <div class="role-title">Farmers & Agriculture</div>
+                    <div class="role-marathi">शेतकरी, कृषी व ग्रामीण कल्याण</div>
+                    <p class="role-description">Crop loans, solar pumps, drip irrigation, drought relief & welfare schemes.</p>
                     <div class="role-meta">
-                      <span class="role-rate-tag">~3–7 alerts / wk</span>
-                      <button type="button" class="info-btn" data-info="preset_banking" title="More info">ⓘ</button>
+                      <span class="role-rate-tag">~4–8 alerts / wk</span>
+                      <button type="button" class="info-btn" data-info="preset_citizen" title="More info">ⓘ</button>
                     </div>
                   </div>
                 </div>
 
-                <!-- Role 6: All Decisions / Leadership -->
+                <!-- 3. Cabinet & Public Policy (cabinet and public) -->
                 <div class="role-card" data-preset="POLITICAL_LEADERSHIP" tabindex="0" role="button" aria-pressed="false">
                   <div class="role-card-top">
                     <span class="role-emoji">📜</span>
@@ -481,7 +482,58 @@
                   </div>
                 </div>
 
-                <!-- Role 7: All Resolutions (Full Feed) -->
+                <!-- 4. Students & Education (student) -->
+                <div class="role-card" data-preset="STUDENTS_EDUCATION" tabindex="0" role="button" aria-pressed="false">
+                  <div class="role-card-top">
+                    <span class="role-emoji">🎓</span>
+                    <div class="role-checkbox-box"><span class="check-icon">✓</span></div>
+                  </div>
+                  <div class="role-card-content">
+                    <div class="role-title">Students & Education</div>
+                    <div class="role-marathi">विद्यार्थी, शिक्षक व शिक्षण क्षेत्र</div>
+                    <p class="role-description">Scholarships, teacher recruitments, university circulars & school education.</p>
+                    <div class="role-meta">
+                      <span class="role-rate-tag">~3–6 alerts / wk</span>
+                      <button type="button" class="info-btn" data-info="preset_students" title="More info">ⓘ</button>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- 5. Contractors & Business (contracto buss) -->
+                <div class="role-card" data-preset="COMMERCIAL_VENDOR" tabindex="0" role="button" aria-pressed="false">
+                  <div class="role-card-top">
+                    <span class="role-emoji">💼</span>
+                    <div class="role-checkbox-box"><span class="check-icon">✓</span></div>
+                  </div>
+                  <div class="role-card-content">
+                    <div class="role-title">Contractors & Business</div>
+                    <div class="role-marathi">कंत्राटदार, निविदा व व्यावसायिक</div>
+                    <p class="role-description">PWD infrastructure, e-tenders, procurement, water resources & industry orders.</p>
+                    <div class="role-meta">
+                      <span class="role-rate-tag">~5–10 alerts / wk</span>
+                      <button type="button" class="info-btn" data-info="preset_vendor" title="More info">ⓘ</button>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- 6. Banking & Finance (banking and finance) -->
+                <div class="role-card" data-preset="BANKING_FINANCE" tabindex="0" role="button" aria-pressed="false">
+                  <div class="role-card-top">
+                    <span class="role-emoji">🏦</span>
+                    <div class="role-checkbox-box"><span class="check-icon">✓</span></div>
+                  </div>
+                  <div class="role-card-content">
+                    <div class="role-title">Banking & Finance</div>
+                    <div class="role-marathi">बँकिंग, पतपुरवठा व कर्ज योजना</div>
+                    <p class="role-description">Co-operative banks, loan waivers, institutional credit & state financial sanctions.</p>
+                    <div class="role-meta">
+                      <span class="role-rate-tag">~3–7 alerts / wk</span>
+                      <button type="button" class="info-btn" data-info="preset_banking" title="More info">ⓘ</button>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- 7. All Resolutions (Full Feed) -->
                 <div class="role-card" data-preset="ALL_RESOLUTIONS" tabindex="0" role="button" aria-pressed="false">
                   <div class="role-card-top">
                     <span class="role-emoji">🌐</span>
@@ -821,6 +873,13 @@
             <span class="detail-label">Selected Categories</span>
             <span class="detail-value" id="profile-detail-presets">Farmers & Agriculture</span>
           </div>
+          <div class="profile-detail-item">
+            <span class="detail-label">Active Plan</span>
+            <div class="profile-tier-row">
+              <span class="user-tier-badge">Free Tier</span>
+              <button type="button" class="btn-upgrade-pro-sm btn-trigger-pro-modal" title="View Pro features">Upgrade to Pro ✨</button>
+            </div>
+          </div>
         </div>
 
         <!-- Action Buttons (Pause Alerts & Delete Profile) -->
@@ -872,6 +931,9 @@
       <p class="footer-legal">
         Official government resolutions are publicly published by the Government of Maharashtra at <a href="https://gr.maharashtra.gov.in" target="_blank" rel="noopener">gr.maharashtra.gov.in</a>. This service provides structured notifications and does not represent official political endorsement.
       </p>
+      <div class="footer-admin-bar">
+        <a href="/admin" class="footer-admin-link">🔒 Administrator Portal (अधिकारी लॉगिन)</a>
+      </div>
     </div>
   </footer>
 
