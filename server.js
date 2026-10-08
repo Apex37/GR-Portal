@@ -567,12 +567,14 @@ app.post("/api/admin/login", (req, res) => {
       normalizedUser === "praveen.pardeshi" ||
       normalizedUser === "praveen_pardeshi" ||
       normalizedUser === "praveen" ||
+      normalizedUser === "praveen.pardeshi@mahagrinfo.gov.in" ||
       normalizedUser === "praveen.pardeshi@mahasanket.gov.in" ||
       normalizedUser === "praveen.pardeshi@mitra.gov.in";
 
     const isValidUser =
       inputUser === ADMIN_USER.toLowerCase() ||
       inputUser === "admin" ||
+      inputUser === "admin@mahagrinfo.gov.in" ||
       inputUser === "admin@mahasanket.gov.in" ||
       isPraveenPardeshi;
 

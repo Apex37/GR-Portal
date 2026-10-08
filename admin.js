@@ -1,5 +1,5 @@
 /**
- * MahaSanket • Administrator Console Logic
+ * MahaGRInfo • Administrator Console Logic
  * Official Subscriber Monitoring & Alert Management
  */
 
@@ -874,7 +874,7 @@
   // Authentication & Session
   // ---------------------------------------------------------------------------
   function initAuth() {
-    const rawSaved = localStorage.getItem("mahasanket_admin_session");
+    const rawSaved = localStorage.getItem("mahagrinfo_admin_session") || localStorage.getItem("mahasanket_admin_session");
     if (rawSaved) {
       try {
         const parsed = JSON.parse(rawSaved);
@@ -953,7 +953,7 @@
       }
 
       state.session = data;
-      localStorage.setItem("mahasanket_admin_session", JSON.stringify(data));
+      localStorage.setItem("mahagrinfo_admin_session", JSON.stringify(data));
       showToast("Signed in to Admin Console", "🛡️");
       showDashboardView();
     } catch (err) {
@@ -965,6 +965,7 @@
 
   function handleLogout() {
     state.session = null;
+    localStorage.removeItem("mahagrinfo_admin_session");
     localStorage.removeItem("mahasanket_admin_session");
     showToast("Signed out", "👋");
     showLoginView();
@@ -1560,7 +1561,7 @@
     const link = document.createElement("a");
     const dateStr = new Date().toISOString().slice(0, 10);
     link.setAttribute("href", url);
-    link.setAttribute("download", `mahasanket_subscribers_${dateStr}.csv`);
+    link.setAttribute("download", `mahagrinfo_subscribers_${dateStr}.csv`);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
