@@ -68,7 +68,6 @@
     BANKING_FINANCE: { label: "Banking & Finance", icon: "🏦" },
     HEALTHCARE_PROFESSIONALS: { label: "Doctors & Healthcare", icon: "🩺" },
     JOURNALIST_RESEARCHER: { label: "Media & Policy Analysts", icon: "📰" },
-    ALL_RESOLUTIONS: { label: "All Resolutions", icon: "🌐" },
     CUSTOM: { label: "Custom Configuration", icon: "⚙️" },
   };
 

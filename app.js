@@ -171,7 +171,7 @@
   // Pre-configured Presets for the 6 Roles
   const PRESET_CONFIGS = {
     CITIZEN_PUBLIC: {
-      departments: [],
+      departments: [4, 10, 12, 27, 33],
       intents: ["WELFARE_AND_SUBSIDY", "FUND_SANCTION_AND_BUDGET", "POLICY_AND_REGULATION"],
       audiences: ["CITIZEN_PUBLIC"],
       beneficiaries: ["FARMERS", "WOMEN_AND_CHILDREN", "GENERAL_PUBLIC"],
@@ -183,7 +183,7 @@
       sampleAudience: "🌾 Farmers & Agrarian Community",
     },
     COMMERCIAL_VENDOR: {
-      departments: [],
+      departments: [18, 8, 10, 13, 32],
       intents: ["TENDER_AND_PROCUREMENT", "INFRASTRUCTURE_PROJECT", "FUND_SANCTION_AND_BUDGET"],
       audiences: ["COMMERCIAL_VENDOR"],
       beneficiaries: [],
@@ -195,7 +195,7 @@
       sampleAudience: "💼 Contractors & Commercial Vendors",
     },
     STUDENTS_EDUCATION: {
-      departments: [],
+      departments: [5, 15, 24, 14],
       intents: ["RECRUITMENT_AND_VACANCY", "WELFARE_AND_SUBSIDY", "POLICY_AND_REGULATION"],
       audiences: [],
       beneficiaries: ["STUDENTS_AND_YOUTH"],
@@ -207,7 +207,7 @@
       sampleAudience: "🎓 Students, Teachers & Youth",
     },
     BUREAUCRACY_OFFICIALS: {
-      departments: [],
+      departments: [1, 6, 11],
       intents: ["TRANSFER_AND_POSTING", "SERVICE_RULES_AND_CADRE", "RECRUITMENT_AND_VACANCY", "GENERAL_ADMINISTRATIVE"],
       audiences: ["BUREAUCRACY_OFFICIALS"],
       beneficiaries: ["GOVT_EMPLOYEES"],
@@ -219,7 +219,7 @@
       sampleAudience: "👔 Civil Service & Govt Officers",
     },
     CONSULTANTS_ADVISORY: {
-      departments: [],
+      departments: [7, 1, 6, 8, 18, 30],
       intents: ["COMMITTEE_AND_INQUIRY", "POLICY_AND_REGULATION", "TENDER_AND_PROCUREMENT", "GENERAL_ADMINISTRATIVE"],
       audiences: ["BUREAUCRACY_OFFICIALS", "COMMERCIAL_VENDOR"],
       beneficiaries: [],
@@ -231,7 +231,7 @@
       sampleAudience: "📊 Consultants & Advisory Experts",
     },
     BANKING_FINANCE: {
-      departments: [],
+      departments: [6, 33, 7],
       intents: ["BANKING_AND_FINANCE", "FUND_SANCTION_AND_BUDGET", "POLICY_AND_REGULATION"],
       audiences: [],
       beneficiaries: [],
@@ -243,7 +243,7 @@
       sampleAudience: "🏦 Banking & Financial Institutions",
     },
     POLITICAL_LEADERSHIP: {
-      departments: [],
+      departments: [1, 6, 7],
       intents: ["FUND_SANCTION_AND_BUDGET", "POLICY_AND_REGULATION", "INFRASTRUCTURE_PROJECT", "GENERAL_ADMINISTRATIVE"],
       audiences: ["POLITICAL_LEADERSHIP", "CITIZEN_PUBLIC", "BUREAUCRACY_OFFICIALS"],
       beneficiaries: [],
@@ -253,18 +253,6 @@
       sampleSummary: "Cabinet sanction for the supplementary state development budget allocation for infrastructure acceleration.",
       sampleTitle: "वित्त विभाग - राज्य विकास आराखडा पुरवणी अंदाजपत्रक मंजुरी.",
       sampleAudience: "🏛️ Cabinet, Ministers & MLAs",
-    },
-    ALL_RESOLUTIONS: {
-      departments: [],
-      intents: [],
-      audiences: [],
-      beneficiaries: [],
-      excludeAmendments: false,
-      sampleDept: "All 34 Maharashtra Ministries",
-      sampleIntent: "🌐 Complete Alert Feed (All Categories)",
-      sampleSummary: "Real-time official notifications for every Government Resolution published across all state departments without exception.",
-      sampleTitle: "महाराष्ट्र शासन - सर्व विभागांचे संपूर्ण अधिकृत शासन निर्णय.",
-      sampleAudience: "🌍 Complete Statewide Feed",
     },
     CUSTOM: {
       departments: [],
@@ -282,11 +270,6 @@
 
   // Plain-Language Explanations for Info (i) Triggers
   const INFO_ITEMS = {
-    preset_all: {
-      title: "All Resolutions (Full Feed)",
-      text: "You will receive real-time notifications for every Government Resolution published by the Government of Maharashtra, covering all 34 departments and all categories without exception.",
-      tip: "Best for journalists, legal researchers, policy analysts, and administrators who need to monitor the entire state government."
-    },
     hero_overview: {
       title: "About the GR Alert Service",
       text: "The Government of Maharashtra publishes hundreds of Government Resolutions (GRs) weekly. This service scans official publications in real-time, categorizes them using clean metadata, and sends high-priority summaries directly to your WhatsApp.",
@@ -582,10 +565,21 @@
           loadedPresets = [state.user.role_preset];
         }
       }
-      state.selectedPresets = loadedPresets || ["CITIZEN_PUBLIC"];
+      state.selectedPresets = (loadedPresets || ["CITIZEN_PUBLIC"]).filter((p) => p !== "ALL_RESOLUTIONS");
+      if (state.selectedPresets.length === 0) {
+        state.selectedPresets = ["CITIZEN_PUBLIC"];
+      }
       state.rolePreset = state.selectedPresets.length === 1 ? state.selectedPresets[0] : "CUSTOM";
 
       state.preferredDepartments = state.user.preferred_departments || [];
+      // Populate defaults if user had no preferred departments saved (customisation is compulsory)
+      if (!state.preferredDepartments || state.preferredDepartments.length === 0) {
+        const defaultDepts = new Set();
+        state.selectedPresets.forEach((p) => {
+          (PRESET_CONFIGS[p]?.departments || []).forEach((d) => defaultDepts.add(d));
+        });
+        state.preferredDepartments = Array.from(defaultDepts);
+      }
       state.preferredIntents = state.user.preferred_intents || [];
       state.preferredAudiences = state.user.preferred_audiences || [];
       state.preferredBeneficiaries = state.user.preferred_beneficiaries || [];
@@ -661,7 +655,6 @@
         CONSULTANTS_ADVISORY: "Consultants & Advisory",
         BANKING_FINANCE: "Banking & Finance",
         POLITICAL_LEADERSHIP: "Cabinet & Public Policy",
-        ALL_RESOLUTIONS: "All Resolutions (Full Feed)",
       };
       const names = state.selectedPresets.map((p) => presetNameMap[p] || p);
       el.profileDetailPresets.textContent = names.join(" • ") || "Farmers & Agriculture";
@@ -932,6 +925,16 @@
       return;
     }
 
+    // Compulsory Customisation Validation
+    if (!state.preferredDepartments || state.preferredDepartments.length === 0) {
+      showPreferencesBanner("⚠️ Customisation is compulsory: Please select at least one Government Ministry / Department before saving.", "error");
+      showToast("Customisation is compulsory! Select at least one Ministry.", "warning");
+      const customStep = document.getElementById("customisation-step-block");
+      if (customStep) customStep.scrollIntoView({ behavior: "smooth", block: "center" });
+      if (el.deptSearchInput) el.deptSearchInput.focus();
+      return;
+    }
+
     if (saveBtnResetTimer) clearTimeout(saveBtnResetTimer);
     if (el.savePreferencesBtn) {
       el.savePreferencesBtn.classList.remove("btn-success-state", "btn-error-state");
@@ -980,7 +983,7 @@
 
       const derivedRolePreset = state.selectedPresets.length === 1 
         ? state.selectedPresets[0] 
-        : (state.selectedPresets.includes("ALL_RESOLUTIONS") ? "ALL_RESOLUTIONS" : "CUSTOM");
+        : "CUSTOM";
 
       const dbPayload = {
         phone: String(state.user.phone).slice(-10),
@@ -1321,27 +1324,20 @@
 
   // Toggle a Preset for Multi-Select
   function togglePreset(presetName) {
-    if (presetName === "ALL_RESOLUTIONS") {
-      if (state.selectedPresets.includes("ALL_RESOLUTIONS")) {
-        state.selectedPresets = ["CITIZEN_PUBLIC"];
+    if (presetName === "ALL_RESOLUTIONS") return;
+
+    state.selectedPresets = state.selectedPresets.filter((p) => p !== "ALL_RESOLUTIONS");
+
+    const idx = state.selectedPresets.indexOf(presetName);
+    if (idx > -1) {
+      if (state.selectedPresets.length > 1) {
+        state.selectedPresets.splice(idx, 1);
       } else {
-        state.selectedPresets = ["ALL_RESOLUTIONS"];
+        showToast("At least one interest category must remain selected.", "warning");
+        return;
       }
     } else {
-      // Remove ALL_RESOLUTIONS if picking specific categories
-      state.selectedPresets = state.selectedPresets.filter((p) => p !== "ALL_RESOLUTIONS");
-
-      const idx = state.selectedPresets.indexOf(presetName);
-      if (idx > -1) {
-        if (state.selectedPresets.length > 1) {
-          state.selectedPresets.splice(idx, 1);
-        } else {
-          showToast("At least one interest category must remain selected.", "warning");
-          return;
-        }
-      } else {
-        state.selectedPresets.push(presetName);
-      }
+      state.selectedPresets.push(presetName);
     }
 
     applySelectedPresets();
@@ -1350,6 +1346,11 @@
 
   // Apply Selected Presets across 5D Dimensions
   function applySelectedPresets() {
+    state.selectedPresets = state.selectedPresets.filter((p) => p !== "ALL_RESOLUTIONS");
+    if (state.selectedPresets.length === 0) {
+      state.selectedPresets = ["CITIZEN_PUBLIC"];
+    }
+
     const combinedDepts = new Set();
     const combinedIntents = new Set();
     const combinedAudiences = new Set();
@@ -1375,7 +1376,7 @@
 
     state.rolePreset = state.selectedPresets.length === 1 
       ? state.selectedPresets[0] 
-      : (state.selectedPresets.includes("ALL_RESOLUTIONS") ? "ALL_RESOLUTIONS" : "CUSTOM");
+      : "CUSTOM";
 
     if (el.excludeAmendmentsToggle) {
       el.excludeAmendmentsToggle.checked = state.excludeAmendments;
@@ -1415,18 +1416,20 @@
       item.classList.toggle("active", state.preferredDepartments.includes(parseInt(item.dataset.code, 10)));
     });
 
-    // 4. Update Header Badges in Accordion
+    // 4. Update Header Badges in Step 3: Compulsory Customisation
     if (el.deptCountBadge) {
       if (state.preferredDepartments.length === 0) {
-        el.deptCountBadge.textContent = "All 34 Ministries";
+        el.deptCountBadge.textContent = "⚠️ None Selected (Compulsory)";
+        el.deptCountBadge.classList.add("error-pill");
       } else {
-        el.deptCountBadge.textContent = `${state.preferredDepartments.length} Ministry(s)`;
+        el.deptCountBadge.textContent = `${state.preferredDepartments.length} Ministry(s) Selected`;
+        el.deptCountBadge.classList.remove("error-pill");
       }
     }
 
     if (el.intentCountBadge) {
       if (state.preferredIntents.length === 0) {
-        el.intentCountBadge.textContent = "All Actions";
+        el.intentCountBadge.textContent = "All Action Types";
       } else {
         el.intentCountBadge.textContent = `${state.preferredIntents.length} Action(s)`;
       }
@@ -1451,11 +1454,11 @@
     const intentCount = state.preferredIntents.length;
     const presetCount = state.selectedPresets.length;
 
-    if (state.selectedPresets.includes("ALL_RESOLUTIONS")) {
-      baseMin = 50;
-      baseMax = 150;
-      baseWidth = 92;
-      baseSummary = "Complete statewide feed: All 34 ministries and all official resolutions";
+    if (deptCount >= 30) {
+      baseMin = 40;
+      baseMax = 100;
+      baseWidth = 90;
+      baseSummary = "Broad statewide coverage across almost all 34 ministries";
     } else if (presetCount > 2) {
       baseMin = 12;
       baseMax = 25;
@@ -1734,16 +1737,20 @@
       updateUI();
     });
 
-    // Accordion Toggle
-    el.advancedToggleBtn.addEventListener("click", () => {
-      const isExpanded = el.advancedToggleBtn.getAttribute("aria-expanded") === "true";
-      el.advancedToggleBtn.setAttribute("aria-expanded", String(!isExpanded));
-      el.advancedAccordionContent.classList.toggle("hidden", isExpanded);
-      const ctaText = el.advancedToggleBtn.querySelector(".accordion-cta-btn span:first-child");
-      if (ctaText) {
-        ctaText.textContent = !isExpanded ? "Close Panel" : "Fine-Tune";
-      }
-    });
+    // Accordion Toggle (if button exists)
+    if (el.advancedToggleBtn) {
+      el.advancedToggleBtn.addEventListener("click", () => {
+        const isExpanded = el.advancedToggleBtn.getAttribute("aria-expanded") === "true";
+        el.advancedToggleBtn.setAttribute("aria-expanded", String(!isExpanded));
+        if (el.advancedAccordionContent) {
+          el.advancedAccordionContent.classList.toggle("hidden", isExpanded);
+        }
+        const ctaText = el.advancedToggleBtn.querySelector(".accordion-cta-btn span:first-child");
+        if (ctaText) {
+          ctaText.textContent = !isExpanded ? "Close Panel" : "Fine-Tune";
+        }
+      });
+    }
 
     // Ministry Search & Actions
     el.deptSearchInput.addEventListener("input", (e) => {

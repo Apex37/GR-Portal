@@ -532,24 +532,6 @@
                     </div>
                   </div>
                 </div>
-
-                <!-- 7. All Resolutions (Full Feed) -->
-                <div class="role-card" data-preset="ALL_RESOLUTIONS" tabindex="0" role="button" aria-pressed="false">
-                  <div class="role-card-top">
-                    <span class="role-emoji">🌐</span>
-                    <div class="role-checkbox-box"><span class="check-icon">✓</span></div>
-                  </div>
-                  <div class="role-card-content">
-                    <div class="role-title">All Resolutions (Full Feed)</div>
-                    <div class="role-marathi">सर्व शासन निर्णय (संपूर्ण प्रवाह)</div>
-                    <p class="role-description">Receive every official GR published across all 34 ministries without any filters.</p>
-                    <div class="role-meta">
-                      <span class="role-rate-tag">~50–150 alerts / wk</span>
-                      <button type="button" class="info-btn" data-info="preset_all" title="More info">ⓘ</button>
-                    </div>
-                  </div>
-                </div>
-
               </div>
             </div>
 
@@ -601,40 +583,29 @@
               </div>
             </div>
 
-            <!-- CUSTOMISATION: Fine-Tune Ministries & Filters (Accordion) -->
-            <div class="accordion-section" style="margin-top: 1.75rem; margin-bottom: 2rem;">
-              <button type="button" id="advanced-toggle-btn" class="accordion-trigger" aria-expanded="false">
-                <div class="accordion-trigger-left">
-                  <div class="accordion-icon-wrap" aria-hidden="true">
-                    <span>⚙️</span>
-                  </div>
-                  <div class="accordion-trigger-text">
-                    <div class="accordion-title-row">
-                      <span class="accordion-trigger-title">Want to customize specific Ministries or Topics?</span>
-                      <span class="customisation-pill">✨ Customisation</span>
-                    </div>
-                    <span class="accordion-trigger-sub">Search across all 34 Government Ministries and fine-tune operational intents</span>
-                  </div>
+            <!-- STEP 3: Compulsory Customisation (Ministries & Topics) -->
+            <div class="form-step-block compulsory-customisation-step" id="customisation-step-block" style="margin-top: 2rem;">
+              <div class="step-label-row">
+                <span class="guide-dot" aria-hidden="true"></span>
+                <div class="step-title-group">
+                  <h2 class="step-heading">Step 3: Customise Ministries & Topics</h2>
+                  <span class="compulsory-pill">🔴 Compulsory • आवश्यक</span>
+                  <button type="button" class="info-btn" data-info="departments_info" title="How ministry customisation works">ⓘ</button>
                 </div>
-                <div class="accordion-trigger-right">
-                  <span class="accordion-cta-btn">
-                    <span>Fine-Tune</span>
-                    <span class="accordion-chevron" aria-hidden="true">▼</span>
-                  </span>
-                </div>
-              </button>
+              </div>
+              <p class="step-helper">Customisation is compulsory to prevent unwanted message floods. Select the specific government ministries and action types you want delivered.</p>
 
-              <div id="advanced-accordion-content" class="accordion-body hidden">
+              <div id="advanced-accordion-content" class="compulsory-custom-panel">
 
                 <!-- Ministries / Departments Selector -->
                 <div class="accordion-block">
                   <div class="accordion-block-header">
                     <div>
-                      <h3 class="block-title">Government Ministries (34 Departments)</h3>
-                      <p class="block-sub">Filter resolutions by issuing departments</p>
+                      <h3 class="block-title">Government Ministries (34 Departments) <span class="required-star">*</span></h3>
+                      <p class="block-sub">Filter resolutions by issuing departments (At least 1 required)</p>
                     </div>
                     <div class="block-actions">
-                      <span id="dept-count-badge" class="selection-pill">All 34 Ministries</span>
+                      <span id="dept-count-badge" class="selection-pill">Select Ministries</span>
                       <button type="button" class="info-btn" data-info="departments_info">ⓘ</button>
                     </div>
                   </div>
@@ -703,12 +674,12 @@
               </div>
             </div>
 
-            <!-- STEP 3: Delivery Preferences & Save -->
+            <!-- STEP 4: Delivery Preferences & Save -->
             <div class="form-step-block">
               <div class="step-label-row">
                 <span class="guide-dot" aria-hidden="true"></span>
                 <div class="step-title-group">
-                  <h2 class="step-heading">Save Preferences</h2>
+                  <h2 class="step-heading">Step 4: Save Preferences</h2>
                 </div>
               </div>
               <p class="step-helper">Updates are applied immediately to your WhatsApp notification stream.</p>
