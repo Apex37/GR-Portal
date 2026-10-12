@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/admin.css?v=20261008_v1">
+  <link rel="stylesheet" href="/admin.css?v=20261012_v1">
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.4/dist/chart.umd.min.js"></script>
 </head>
 <body>
@@ -20,8 +20,8 @@
     <div class="login-card-container">
       <div class="login-card">
         <div class="login-header">
-          <img src="/mitra-emblem-clean.png" alt="Government of Maharashtra Seal" class="login-emblem">
-          <div class="login-tag">महाराष्ट्र शासन • नियोजन विभाग (MITRA)</div>
+          <div class="login-icon-badge" aria-hidden="true">🏛️</div>
+          <div class="login-tag">महाराष्ट्र शासन • नियोजन विभाग</div>
           <h1 class="login-title">MahaGRInfo Admin Console</h1>
           <p class="login-subtitle">Official Subscriber Monitoring & Alert Dispatch Management Portal</p>
         </div>
@@ -68,9 +68,9 @@
     <header class="admin-header">
       <div class="admin-header-inner">
         <div class="header-brand-wrap">
-          <img src="/mitra-emblem-clean.png" alt="MITRA Official Seal" class="header-emblem">
+          <div class="header-icon-badge" aria-hidden="true">🏛️</div>
           <div class="header-titles">
-            <div class="dept-name">महाराष्ट्र शासन • नियोजन विभाग (MITRA)</div>
+            <div class="dept-name">महाराष्ट्र शासन • नियोजन विभाग</div>
             <div class="system-name">MahaGRInfo Admin Console</div>
           </div>
         </div>
@@ -84,7 +84,7 @@
           <div class="admin-user-pill">
             <span class="admin-avatar">🛡️</span>
             <div class="admin-meta-text">
-              <span class="admin-name" id="admin-display-name">MITRA Admin</span>
+              <span class="admin-name" id="admin-display-name">Admin</span>
               <span class="admin-role" id="admin-display-role">SuperAdmin</span>
             </div>
           </div>
@@ -179,11 +179,12 @@
               <select id="role-filter-select" class="filter-select" aria-label="Filter by Category">
                 <option value="ALL">All Categories</option>
                 <option value="CITIZEN_PUBLIC">🌾 Farmers, Citizens & Welfare</option>
-                <option value="BUREAUCRACY_OFFICIALS">📋 Govt Officers & Consultants</option>
+                <option value="BUREAUCRACY_OFFICIALS">🏛️ Government Officials</option>
+                <option value="CONSULTANTS_ADVISORY">📊 Consultants & Advisory</option>
                 <option value="COMMERCIAL_VENDOR">💼 Contractors & Business</option>
                 <option value="STUDENTS_AND_YOUTH">🎓 Students & Youth</option>
-                <option value="HEALTHCARE_PROFESSIONALS">🩺 Doctors & Healthcare</option>
-                <option value="JOURNALIST_RESEARCHER">📰 Media & Policy Analysts</option>
+                <option value="BANKING_FINANCE">🏦 Banking & Finance</option>
+                <option value="ALL_RESOLUTIONS">🌐 All Resolutions (Full Feed)</option>
                 <option value="CUSTOM">⚙️ Custom Selection</option>
               </select>
             </div>
@@ -310,7 +311,7 @@
                     <option value="10">Water Resources Department (WRD)</option>
                     <option value="1">General Administration Department (GAD)</option>
                     <option value="2">Home Department</option>
-                    <option value="7">Planning Department (MITRA)</option>
+                    <option value="7">Planning Department</option>
                     <option value="15">Higher & Technical Education</option>
                     <option value="13">Industry, Energy & Labour</option>
                     <option value="14">Social Justice & Special Assistance</option>
@@ -405,6 +406,6 @@
     <span class="toast-msg" id="admin-toast-msg">Operation completed successfully</span>
   </div>
 
-  <script src="/admin.js?v=20261008_v1"></script>
+  <script src="/admin.js?v=20261012_v1"></script>
 </body>
 </html>

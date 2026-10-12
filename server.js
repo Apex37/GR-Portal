@@ -594,16 +594,16 @@ app.post("/api/admin/login", (req, res) => {
       ? {
           username: "Praveen Pardeshi",
           role: "",
-          department: "Planning Department • MITRA",
+          department: "Planning Department",
           name: "Praveen Pardeshi",
           displayName: "Praveen Pardeshi",
         }
       : {
           username: ADMIN_USER,
           role: "SuperAdmin",
-          department: "Planning Department • MITRA",
+          department: "Planning Department",
           name: "Operations Administrator",
-          displayName: "MITRA Admin",
+          displayName: "Admin",
         };
 
     res.json({

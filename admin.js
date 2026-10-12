@@ -14,7 +14,7 @@
     4: { name: "Agriculture, Animal Husbandry & Fisheries", marathi: "कृषि, पशुसंवर्धन व मत्स्यव्यवसाय" },
     5: { name: "School Education and Sports", marathi: "शालेय शिक्षण व क्रीडा विभाग" },
     6: { name: "Finance Department", marathi: "वित्त विभाग" },
-    7: { name: "Planning Department (MITRA)", marathi: "नियोजन विभाग" },
+    7: { name: "Planning Department", marathi: "नियोजन विभाग" },
     8: { name: "Urban Development Department (UDD)", marathi: "नगर विकास विभाग" },
     9: { name: "Public Health & Family Welfare", marathi: "सार्वजनिक आरोग्य विभाग" },
     10: { name: "Water Resources Department (WRD)", marathi: "जलसंपदा विभाग" },
@@ -60,11 +60,15 @@
 
   const PRESETS_MAP = {
     CITIZEN_PUBLIC: { label: "Citizens, Farmers & Welfare", icon: "🌾" },
-    BUREAUCRACY_OFFICIALS: { label: "Govt Officers & Consultants", icon: "📋" },
+    BUREAUCRACY_OFFICIALS: { label: "Government Officials", icon: "🏛️" },
+    CONSULTANTS_ADVISORY: { label: "Consultants & Advisory", icon: "📊" },
     COMMERCIAL_VENDOR: { label: "Contractors & Business", icon: "💼" },
     STUDENTS_AND_YOUTH: { label: "Students & Youth", icon: "🎓" },
+    STUDENTS_EDUCATION: { label: "Students & Education", icon: "🎓" },
+    BANKING_FINANCE: { label: "Banking & Finance", icon: "🏦" },
     HEALTHCARE_PROFESSIONALS: { label: "Doctors & Healthcare", icon: "🩺" },
     JOURNALIST_RESEARCHER: { label: "Media & Policy Analysts", icon: "📰" },
+    ALL_RESOLUTIONS: { label: "All Resolutions", icon: "🌐" },
     CUSTOM: { label: "Custom Configuration", icon: "⚙️" },
   };
 
@@ -380,11 +384,11 @@
         WELFARE_AND_SUBSIDY: 0,
       },
     },
-    // 7: Planning Department (MITRA)
+    // 7: Planning Department
     7: {
-      name: "Planning Department (MITRA)",
+      name: "Planning Department",
       marathi: "नियोजन विभाग",
-      shortName: "MITRA / Planning",
+      shortName: "Planning Dept",
       intents: {
         FUND_SANCTION_AND_BUDGET: 15,
         POLICY_AND_REGULATION: 13,

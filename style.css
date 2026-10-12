@@ -124,10 +124,29 @@ body {
   box-shadow: 0 6px 20px rgba(0, 0, 0, 0.48);
 }
 
-.brand-emblem {
-  font-size: 1.85rem;
-  line-height: 1;
-  filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2));
+.brand-icon-badge {
+  width: 50px;
+  height: 50px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.16) 0%, rgba(255, 255, 255, 0.05) 100%);
+  border: 1.5px solid rgba(255, 255, 255, 0.28);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.65rem;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
+  flex-shrink: 0;
+  transition: transform 0.2s ease;
+}
+
+.brand-icon-badge:hover {
+  transform: scale(1.05);
+}
+
+.footer-brand .brand-icon-badge {
+  width: 44px;
+  height: 44px;
+  font-size: 1.4rem;
 }
 
 .brand-title {

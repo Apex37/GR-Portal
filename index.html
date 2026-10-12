@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/style.css?v=20261008_v1">
+  <link rel="stylesheet" href="/style.css?v=20261012_v1">
 </head>
 <body>
 
@@ -16,10 +16,10 @@
   <header class="app-header">
     <div class="header-container">
       <div class="brand-group">
-        <img src="/mitra-emblem-clean.png" alt="MITRA Maharashtra Official Logo" class="brand-logo-img">
+        <div class="brand-icon-badge" aria-hidden="true">🏛️</div>
         <div class="brand-text">
           <div class="brand-title">MahaGRInfo</div>
-          <div class="brand-subtitle">Maharashtra Institution for Transformation (MITRA) • Planning Department</div>
+          <div class="brand-subtitle">Government of Maharashtra • Planning Department</div>
         </div>
       </div>
 
@@ -431,16 +431,16 @@
 
               <div class="role-grid">
 
-                <!-- 1. Govt Officers & Consultants (gov off cons) -->
+                <!-- 1. Government Officials (Govt Officers) -->
                 <div class="role-card" data-preset="BUREAUCRACY_OFFICIALS" tabindex="0" role="button" aria-pressed="false">
                   <div class="role-card-top">
                     <span class="role-emoji">🏛️</span>
                     <div class="role-checkbox-box"><span class="check-icon">✓</span></div>
                   </div>
                   <div class="role-card-content">
-                    <div class="role-title">Govt Officers & Consultants</div>
-                    <div class="role-marathi">शासकीय अधिकारी व सल्लागार</div>
-                    <p class="role-description">Transfers, cadre seniority lists, service rules, pay commission & inquiries.</p>
+                    <div class="role-title">Government Officials</div>
+                    <div class="role-marathi">शासकीय अधिकारी व कर्मचारी</div>
+                    <p class="role-description">Transfers, cadre seniority lists, service rules, pay commission & administrative orders.</p>
                     <div class="role-meta">
                       <span class="role-rate-tag">~2–5 alerts / wk</span>
                       <button type="button" class="info-btn" data-info="preset_officer" title="More info">ⓘ</button>
@@ -448,7 +448,24 @@
                   </div>
                 </div>
 
-                <!-- 2. Farmers & Agriculture (farmers and agr) -->
+                <!-- 2. Consultants & Advisory (Consultants) -->
+                <div class="role-card" data-preset="CONSULTANTS_ADVISORY" tabindex="0" role="button" aria-pressed="false">
+                  <div class="role-card-top">
+                    <span class="role-emoji">📊</span>
+                    <div class="role-checkbox-box"><span class="check-icon">✓</span></div>
+                  </div>
+                  <div class="role-card-content">
+                    <div class="role-title">Consultants & Advisory</div>
+                    <div class="role-marathi">सल्लागार, तज्ज्ञ व प्रकल्प नियोजन</div>
+                    <p class="role-description">Consultant empanelment, RFP studies, project advisory, committee orders & policy frameworks.</p>
+                    <div class="role-meta">
+                      <span class="role-rate-tag">~2–5 alerts / wk</span>
+                      <button type="button" class="info-btn" data-info="preset_consultant" title="More info">ⓘ</button>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- 3. Farmers & Agriculture -->
                 <div class="role-card active" data-preset="CITIZEN_PUBLIC" tabindex="0" role="button" aria-pressed="true">
                   <div class="role-card-top">
                     <span class="role-emoji">🌾</span>
@@ -461,23 +478,6 @@
                     <div class="role-meta">
                       <span class="role-rate-tag">~4–8 alerts / wk</span>
                       <button type="button" class="info-btn" data-info="preset_citizen" title="More info">ⓘ</button>
-                    </div>
-                  </div>
-                </div>
-
-                <!-- 3. Cabinet & Public Policy (cabinet and public) -->
-                <div class="role-card" data-preset="POLITICAL_LEADERSHIP" tabindex="0" role="button" aria-pressed="false">
-                  <div class="role-card-top">
-                    <span class="role-emoji">📜</span>
-                    <div class="role-checkbox-box"><span class="check-icon">✓</span></div>
-                  </div>
-                  <div class="role-card-content">
-                    <div class="role-title">Cabinet & Public Policy</div>
-                    <div class="role-marathi">सर्व प्रमुख शासन धोरण व मंत्रीमंडळ निर्णय</div>
-                    <p class="role-description">State cabinet decisions, major budgetary sanctions & high-level governance policy.</p>
-                    <div class="role-meta">
-                      <span class="role-rate-tag">~3–6 alerts / wk</span>
-                      <button type="button" class="info-btn" data-info="preset_political" title="More info">ⓘ</button>
                     </div>
                   </div>
                 </div>
@@ -922,10 +922,10 @@
   <footer class="app-footer">
     <div class="footer-container">
       <div class="footer-brand">
-        <img src="/mitra-emblem-clean.png" alt="MITRA Maharashtra Official Logo" class="footer-logo-img">
+        <div class="brand-icon-badge" aria-hidden="true">🏛️</div>
         <div>
           <div class="footer-title">MahaGRInfo</div>
-          <div class="footer-subtitle">Maharashtra Institution for Transformation (MITRA) • Planning Department, Government of Maharashtra</div>
+          <div class="footer-subtitle">Planning Department, Government of Maharashtra</div>
         </div>
       </div>
       <p class="footer-legal">
@@ -947,6 +947,6 @@
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="/app.js?v=20261008_v1"></script>
+  <script src="/app.js?v=20261012_v1"></script>
 </body>
 </html>

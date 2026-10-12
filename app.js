@@ -218,6 +218,18 @@
       sampleTitle: "सामान्य प्रशासन विभाग - राज्य नागरी सेवा अधिकाऱ्यांच्या बदल्या व पदस्थापना.",
       sampleAudience: "👔 Civil Service & Govt Officers",
     },
+    CONSULTANTS_ADVISORY: {
+      departments: [],
+      intents: ["COMMITTEE_AND_INQUIRY", "POLICY_AND_REGULATION", "TENDER_AND_PROCUREMENT", "GENERAL_ADMINISTRATIVE"],
+      audiences: ["BUREAUCRACY_OFFICIALS", "COMMERCIAL_VENDOR"],
+      beneficiaries: [],
+      excludeAmendments: true,
+      sampleDept: "Planning & General Administration",
+      sampleIntent: "📑 Consultant Empanelment & RFP",
+      sampleSummary: "Expression of Interest (EOI) for empanelment of technical, strategic, and transaction advisory consultants.",
+      sampleTitle: "नियोजन विभाग - धोरणात्मक सल्लागार व तांत्रिक संस्था नियुक्ती बाबत.",
+      sampleAudience: "📊 Consultants & Advisory Experts",
+    },
     BANKING_FINANCE: {
       departments: [],
       intents: ["BANKING_AND_FINANCE", "FUND_SANCTION_AND_BUDGET", "POLICY_AND_REGULATION"],
@@ -301,9 +313,14 @@
       tip: "Pre-selects School Education, Higher & Technical Education, and Sports departments."
     },
     preset_officer: {
-      title: "Govt Officers & Consultants Profile",
-      text: "Notifies civil servants and administrative staff about officer transfers, cadre seniority lists, dearness allowance (DA) revisions, pension rules, and administrative inquiries.",
-      tip: "Pre-selects General Administration (GAD) and Finance departments."
+      title: "Government Officials Profile",
+      text: "Notifies civil servants and administrative officers about departmental transfers, cadre seniority lists, dearness allowance (DA) revisions, pension rules, and administrative service regulations.",
+      tip: "Pre-selects General Administration (GAD), Finance, and administrative service rules."
+    },
+    preset_consultant: {
+      title: "Consultants & Advisory Profile",
+      text: "Curated for policy consultants, technical advisors, institutional experts, and advisory firms. Tracks consultant empanelment circulars, study committees, terms of reference (ToR), and strategic project advisory orders.",
+      tip: "Prioritizes Planning, GAD, Finance, and Infrastructure project advisory orders."
     },
     preset_banking: {
       title: "Banking, Credit & Co-operatives Profile",
@@ -640,7 +657,8 @@
         CITIZEN_PUBLIC: "Farmers & Agriculture",
         COMMERCIAL_VENDOR: "Contractors & Business",
         STUDENTS_EDUCATION: "Students & Education",
-        BUREAUCRACY_OFFICIALS: "Govt Officers & Consultants",
+        BUREAUCRACY_OFFICIALS: "Government Officials",
+        CONSULTANTS_ADVISORY: "Consultants & Advisory",
         BANKING_FINANCE: "Banking & Finance",
         POLITICAL_LEADERSHIP: "Cabinet & Public Policy",
         ALL_RESOLUTIONS: "All Resolutions (Full Feed)",
@@ -1458,6 +1476,11 @@
       baseMax = 5;
       baseWidth = 25;
       baseSummary = "Transfers, cadre seniority lists, and administrative service orders";
+    } else if (state.selectedPresets.includes("CONSULTANTS_ADVISORY")) {
+      baseMin = 2;
+      baseMax = 5;
+      baseWidth = 25;
+      baseSummary = "Consultant empanelments, project advisory, and policy study orders";
     } else if (state.selectedPresets.includes("STUDENTS_EDUCATION")) {
       baseMin = 3;
       baseMax = 6;
