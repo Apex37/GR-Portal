@@ -3,35 +3,37 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>GR Matching Algorithm Architecture • MahaGRInfo</title>
+  <title>Tagged GR to User Matching Architecture • MahaGRInfo</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
     :root {
-      --bg: #090d16;
-      --card-bg: #111827;
-      --card-border: #1f2937;
-      --accent: #38bdf8;
-      --accent-green: #10b981;
-      --accent-amber: #f59e0b;
-      --accent-red: #ef4444;
-      --text: #f9fafb;
-      --text-muted: #9ca3af;
+      --bg: #070a12;
+      --card-bg: #0e1526;
+      --card-border: #1e293b;
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+      --cyan: #38bdf8;
+      --green: #10b981;
+      --red: #ef4444;
+      --amber: #f59e0b;
+      --purple: #a855f7;
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; }
 
     body {
       background: var(--bg);
-      color: var(--text);
+      color: var(--text-main);
       font-family: 'Plus Jakarta Sans', sans-serif;
-      padding: 2rem 1rem;
+      padding: 2.5rem 1.5rem;
       min-height: 100vh;
+      line-height: 1.5;
     }
 
     .container {
-      max-width: 1200px;
+      max-width: 1400px;
       margin: 0 auto;
     }
 
@@ -40,26 +42,27 @@
       margin-bottom: 2.5rem;
     }
 
-    .badge {
+    .badge-bar {
       display: inline-flex;
       align-items: center;
       gap: 0.5rem;
-      padding: 0.35rem 0.85rem;
+      padding: 0.35rem 0.9rem;
       border-radius: 9999px;
-      font-size: 0.8rem;
+      font-size: 0.78rem;
       font-weight: 700;
       background: rgba(56, 189, 248, 0.1);
       border: 1px solid rgba(56, 189, 248, 0.3);
-      color: var(--accent);
-      margin-bottom: 1rem;
+      color: var(--cyan);
+      margin-bottom: 0.85rem;
+      letter-spacing: 0.03em;
     }
 
     h1 {
-      font-size: 2.25rem;
+      font-size: 2.35rem;
       font-weight: 800;
-      letter-spacing: -0.02em;
-      margin-bottom: 0.5rem;
-      background: linear-gradient(135deg, #ffffff, #94a3b8);
+      letter-spacing: -0.025em;
+      margin-bottom: 0.6rem;
+      background: linear-gradient(135deg, #ffffff 40%, #94a3b8);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
     }
@@ -67,241 +70,580 @@
     .subtitle {
       color: var(--text-muted);
       font-size: 1.05rem;
-      max-width: 700px;
+      max-width: 820px;
       margin: 0 auto;
     }
 
-    /* Diagram Image Card */
-    .infographic-wrapper {
+    /* Diagram Card Frame */
+    .diagram-frame {
       background: var(--card-bg);
       border: 1px solid var(--card-border);
       border-radius: 16px;
-      overflow: hidden;
-      margin-bottom: 3rem;
-      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+      padding: 1.5rem;
+      box-shadow: 0 20px 45px rgba(0, 0, 0, 0.6);
+      margin-bottom: 2.5rem;
+      overflow-x: auto;
     }
 
-    .infographic-header {
-      padding: 1.25rem 1.5rem;
-      border-bottom: 1px solid var(--card-border);
+    .diagram-frame-title {
       display: flex;
       justify-content: space-between;
       align-items: center;
+      margin-bottom: 1.25rem;
+      padding-bottom: 0.85rem;
+      border-bottom: 1px solid #1e293b;
     }
 
-    .infographic-header strong {
-      font-size: 1.1rem;
-      color: #fff;
+    .diagram-frame-title strong {
+      font-size: 1rem;
+      color: #e2e8f0;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
     }
 
-    .infographic-img {
+    .diagram-meta {
+      font-size: 0.8rem;
+      font-family: 'JetBrains Mono', monospace;
+      color: #64748b;
+    }
+
+    svg.matching-svg {
       width: 100%;
       height: auto;
+      min-width: 1100px;
       display: block;
     }
 
-    /* Interactive Pipeline Stages */
-    .pipeline-grid {
+    /* Candidate User Evaluation Walkthrough Cards */
+    .cases-heading {
+      font-size: 1.35rem;
+      font-weight: 700;
+      margin-bottom: 1rem;
+      color: #f1f5f9;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .cases-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
       gap: 1.25rem;
       margin-bottom: 3rem;
     }
 
-    .stage-card {
+    .case-card {
       background: var(--card-bg);
       border: 1px solid var(--card-border);
       border-radius: 12px;
-      padding: 1.5rem;
+      padding: 1.4rem;
       position: relative;
-      transition: all 0.2s ease;
     }
 
-    .stage-card:hover {
-      border-color: rgba(56, 189, 248, 0.4);
-      transform: translateY(-2px);
+    .case-card.matched {
+      border-color: rgba(16, 185, 129, 0.5);
+      background: linear-gradient(180deg, rgba(16, 185, 129, 0.05) 0%, var(--card-bg) 100%);
     }
 
-    .stage-num {
-      position: absolute;
-      top: 1.25rem;
-      right: 1.25rem;
-      font-size: 0.75rem;
-      font-weight: 800;
-      font-family: 'JetBrains Mono', monospace;
-      color: #64748b;
-      background: #1e293b;
-      padding: 0.2rem 0.5rem;
-      border-radius: 4px;
+    .case-card.rejected {
+      border-color: rgba(239, 68, 68, 0.35);
+      background: linear-gradient(180deg, rgba(239, 68, 68, 0.04) 0%, var(--card-bg) 100%);
     }
 
-    .stage-icon {
-      font-size: 1.75rem;
-      margin-bottom: 0.75rem;
-      display: inline-block;
-    }
-
-    .stage-title {
-      font-size: 1.15rem;
-      font-weight: 700;
-      color: #fff;
-      margin-bottom: 0.5rem;
-    }
-
-    .stage-desc {
-      font-size: 0.88rem;
-      color: var(--text-muted);
-      line-height: 1.5;
-      margin-bottom: 1rem;
-    }
-
-    .code-rule {
-      background: #0b0f19;
-      border: 1px solid #1e293b;
-      border-radius: 8px;
-      padding: 0.75rem 1rem;
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 0.78rem;
-      color: #38bdf8;
-      overflow-x: auto;
-    }
-
-    .guarantee-tag {
+    .case-status {
       display: inline-flex;
       align-items: center;
       gap: 0.35rem;
       font-size: 0.75rem;
-      font-weight: 700;
-      padding: 0.2rem 0.5rem;
+      font-weight: 800;
+      padding: 0.25rem 0.6rem;
       border-radius: 4px;
-      margin-top: 0.75rem;
+      margin-bottom: 0.75rem;
+      font-family: 'JetBrains Mono', monospace;
     }
 
-    .tag-strict {
-      background: rgba(239, 68, 68, 0.15);
-      border: 1px solid rgba(239, 68, 68, 0.3);
-      color: #f87171;
-    }
-
-    .tag-dynamic {
+    .status-pass {
       background: rgba(16, 185, 129, 0.15);
-      border: 1px solid rgba(16, 185, 129, 0.3);
       color: #34d399;
+      border: 1px solid rgba(16, 185, 129, 0.35);
     }
 
-    .tag-cascade {
-      background: rgba(245, 158, 11, 0.15);
-      border: 1px solid rgba(245, 158, 11, 0.3);
-      color: #fbbf24;
+    .status-fail {
+      background: rgba(239, 68, 68, 0.15);
+      color: #f87171;
+      border: 1px solid rgba(239, 68, 68, 0.35);
     }
 
-    /* Back Button */
-    .back-bar {
+    .case-user-title {
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: #fff;
+      margin-bottom: 0.35rem;
+    }
+
+    .case-user-prefs {
+      background: #090e1a;
+      border: 1px solid #1e293b;
+      border-radius: 6px;
+      padding: 0.75rem;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.76rem;
+      color: #94a3b8;
+      margin: 0.75rem 0;
+      line-height: 1.6;
+    }
+
+    .case-result-reason {
+      font-size: 0.85rem;
+      line-height: 1.45;
+    }
+
+    .case-card.matched .case-result-reason {
+      color: #6ee7b7;
+    }
+
+    .case-card.rejected .case-result-reason {
+      color: #fca5a5;
+    }
+
+    .back-nav {
       text-align: center;
       margin-top: 2rem;
     }
 
-    .btn-portal {
+    .back-btn {
       display: inline-flex;
       align-items: center;
       gap: 0.5rem;
-      padding: 0.75rem 1.75rem;
-      background: #2563eb;
+      padding: 0.75rem 1.6rem;
+      background: #1d4ed8;
       color: #fff;
       border-radius: 8px;
-      text-decoration: none;
       font-weight: 600;
-      font-size: 0.95rem;
+      font-size: 0.92rem;
+      text-decoration: none;
       transition: background 0.15s ease;
     }
 
-    .btn-portal:hover {
-      background: #1d4ed8;
+    .back-btn:hover {
+      background: #1e40af;
     }
   </style>
 </head>
 <body>
   <div class="container">
     <header>
-      <div class="badge">⚙️ Engine Architecture • checkUserMatch()</div>
-      <h1>Maharashtra GR Matching Pipeline</h1>
-      <p class="subtitle">Deterministic 5-Dimension progressive evaluation engine powering real-time WhatsApp government alerts.</p>
+      <div class="badge-bar">⚡ CORE ENGINE ARCHITECTURE • checkUserMatch(user, resolution)</div>
+      <h1>Tagged GR to User Matching Architecture</h1>
+      <p class="subtitle">How a Classified & Tagged Government Resolution (GR) traverses the 5-Gate Deterministic Pipeline to identify exactly which subscribers receive the instant alert.</p>
     </header>
 
-    <!-- Visual Infographic -->
-    <div class="infographic-wrapper">
-      <div class="infographic-header">
-        <strong>🗺️ System Architecture Flowchart</strong>
-        <span style="font-size: 0.85rem; color: #64748b;">42/42 Test Suites Passing</span>
-      </div>
-      <img src="/gr_matching_diagram.jpg" alt="Maharashtra GR Matching Algorithm Flowchart" class="infographic-img" onerror="this.src='/gr_matching_diagram_1791988714722.jpg'">
+    <!-- TAB / SECTION SELECTOR -->
+    <div style="display: flex; gap: 0.75rem; justify-content: center; margin-bottom: 2rem;">
+      <a href="#system-architecture" style="text-decoration: none; padding: 0.6rem 1.25rem; border-radius: 8px; font-weight: 700; font-size: 0.88rem; background: #0284c7; color: #fff;">1. End-to-End System Topology</a>
+      <a href="#matching-pipeline" style="text-decoration: none; padding: 0.6rem 1.25rem; border-radius: 8px; font-weight: 700; font-size: 0.88rem; background: #1e293b; color: #94a3b8; border: 1px solid #334155;">2. 5-Gate Matching Algorithm</a>
+      <a href="#rule-cases" style="text-decoration: none; padding: 0.6rem 1.25rem; border-radius: 8px; font-weight: 700; font-size: 0.88rem; background: #1e293b; color: #94a3b8; border: 1px solid #334155;">3. Candidate Walkthrough</a>
     </div>
 
-    <!-- Progressive Stage Breakdown -->
-    <div class="pipeline-grid">
-      <!-- Stage 1 -->
-      <div class="stage-card">
-        <span class="stage-num">STAGE 01</span>
-        <span class="stage-icon">🛡️</span>
-        <h3 class="stage-title">Integrity & Quality Safeguards</h3>
-        <p class="stage-desc">Drops inactive user accounts and filters out routine clerical amendments (शुद्धीपत्रक) like date extensions or typos if configured.</p>
-        <div class="code-rule">user.is_active !== false && !is_amendment</div>
-        <span class="guarantee-tag tag-strict">Zero Noise Guarantee</span>
+    <!-- ==================== 1. END-TO-END SYSTEM ARCHITECTURE ==================== -->
+    <div class="diagram-frame" id="system-architecture">
+      <div class="diagram-frame-title">
+        <strong><span>🌐</span> Architecture: End-to-End Tagged GR Ingestion, Matching & WhatsApp Delivery</strong>
+        <span class="diagram-meta">Microservice Mesh: Python Scraper + Classifier + Node.js Notifier + Supabase + Baileys</span>
       </div>
 
-      <!-- Stage 2 -->
-      <div class="stage-card">
-        <span class="stage-num">STAGE 02</span>
-        <span class="stage-icon">🏛️</span>
-        <h3 class="stage-title">Strict Department Boundary</h3>
-        <p class="stage-desc">Verifies issuing ministry against user's selected departments. Intent matches (like Tenders or Schemes) can <strong>never</strong> bypass this boundary.</p>
-        <div class="code-rule">user.preferred_departments.includes(deptCode)</div>
-        <span class="guarantee-tag tag-strict">Strict Boundary • No Intent Bypass</span>
+      <svg class="matching-svg" viewBox="0 0 1320 380" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <linearGradient id="sysBoxGrad" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#1e293b" />
+            <stop offset="100%" stop-color="#0f172a" />
+          </linearGradient>
+          <linearGradient id="blueHdr" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stop-color="#0284c7" />
+            <stop offset="100%" stop-color="#0369a1" />
+          </linearGradient>
+          <linearGradient id="purpleHdr" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stop-color="#7c3aed" />
+            <stop offset="100%" stop-color="#6d28d9" />
+          </linearGradient>
+          <linearGradient id="amberHdr" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stop-color="#d97706" />
+            <stop offset="100%" stop-color="#b45309" />
+          </linearGradient>
+          <linearGradient id="greenHdr" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stop-color="#059669" />
+            <stop offset="100%" stop-color="#047857" />
+          </linearGradient>
+          <marker id="sysArrow" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+            <path d="M 0 1 L 8 5 L 0 9 z" fill="#38bdf8" />
+          </marker>
+        </defs>
+
+        <!-- SUB-SYSTEM 1: INGESTION & CLASSIFICATION -->
+        <g transform="translate(20, 30)">
+          <rect width="280" height="310" rx="12" fill="url(#sysBoxGrad)" stroke="#38bdf8" stroke-width="1.5" />
+          <rect width="280" height="38" rx="12" fill="url(#blueHdr)" />
+          <text x="14" y="24" fill="#ffffff" font-size="12" font-weight="800">1. INGESTION & CLASSIFICATION</text>
+          
+          <rect x="14" y="50" width="252" height="52" rx="6" fill="#090e1a" stroke="#1e293b" />
+          <text x="22" y="70" fill="#38bdf8" font-size="11" font-weight="700">maharashtra.gov.in Crawler</text>
+          <text x="22" y="88" fill="#94a3b8" font-size="9" font-family="'JetBrains Mono', monospace">scraper.py • Polls new GR PDFs</text>
+
+          <path d="M 140 102 L 140 118" stroke="#38bdf8" stroke-width="2" marker-end="url(#sysArrow)" />
+
+          <rect x="14" y="120" width="252" height="82" rx="6" fill="#090e1a" stroke="#1e293b" />
+          <text x="22" y="138" fill="#a855f7" font-size="11" font-weight="700">Gemini 1.5 Classifier & Rules</text>
+          <text x="22" y="154" fill="#cbd5e1" font-size="9">Phase 0: Fast Regex Bypass</text>
+          <text x="22" y="168" fill="#cbd5e1" font-size="9">Phase 1: 5D Gemini Flash Extraction</text>
+          <text x="22" y="184" fill="#cbd5e1" font-size="9">Phase 2: Canonical Invariant Rules</text>
+
+          <path d="M 140 202 L 140 218" stroke="#38bdf8" stroke-width="2" marker-end="url(#sysArrow)" />
+
+          <rect x="14" y="220" width="252" height="74" rx="6" fill="#0c1e3d" stroke="#38bdf8" />
+          <text x="22" y="238" fill="#38bdf8" font-size="11" font-weight="800">OUTPUT: TAGGED GR OBJECT</text>
+          <text x="22" y="254" fill="#94a3b8" font-size="9" font-family="'JetBrains Mono', monospace">• DeptCode (1-35) • Intent Tag</text>
+          <text x="22" y="268" fill="#94a3b8" font-size="9" font-family="'JetBrains Mono', monospace">• Audience • Beneficiary</text>
+          <text x="22" y="282" fill="#94a3b8" font-size="9" font-family="'JetBrains Mono', monospace">• Geography (District/Division/State)</text>
+        </g>
+
+        <!-- Connector Arrow 1 -> 2 -->
+        <path d="M 300 185 L 340 185" stroke="#38bdf8" stroke-width="3" marker-end="url(#sysArrow)" />
+
+        <!-- SUB-SYSTEM 2: PERSISTENCE & SUBSCRIBER REGISTRY -->
+        <g transform="translate(340, 30)">
+          <rect width="280" height="310" rx="12" fill="url(#sysBoxGrad)" stroke="#a855f7" stroke-width="1.5" />
+          <rect width="280" height="38" rx="12" fill="url(#purpleHdr)" />
+          <text x="14" y="24" fill="#ffffff" font-size="12" font-weight="800">2. SUPABASE POSTGRESQL</text>
+
+          <rect x="14" y="52" width="252" height="96" rx="6" fill="#090e1a" stroke="#1e293b" />
+          <text x="22" y="72" fill="#d8b4fe" font-size="11" font-weight="700">TABLE: resolutions</text>
+          <text x="22" y="88" fill="#94a3b8" font-size="9" font-family="'JetBrains Mono', monospace">• ref_id (18 digits PRIMARY KEY)</text>
+          <text x="22" y="102" fill="#94a3b8" font-size="9" font-family="'JetBrains Mono', monospace">• title, department_name, pdf_link</text>
+          <text x="22" y="116" fill="#94a3b8" font-size="9" font-family="'JetBrains Mono', monospace">• classification (JSONB 5D tags)</text>
+          <text x="22" y="130" fill="#a7f3d0" font-size="9" font-weight="700">Upsert Idempotent Batch Gate</text>
+
+          <rect x="14" y="162" width="252" height="132" rx="6" fill="#090e1a" stroke="#1e293b" />
+          <text x="22" y="182" fill="#d8b4fe" font-size="11" font-weight="700">TABLE: users (gov-users-v2)</text>
+          <text x="22" y="198" fill="#94a3b8" font-size="9" font-family="'JetBrains Mono', monospace">• phone (WhatsApp destination)</text>
+          <text x="22" y="212" fill="#94a3b8" font-size="9" font-family="'JetBrains Mono', monospace">• is_active (Account status)</text>
+          <text x="22" y="226" fill="#94a3b8" font-size="9" font-family="'JetBrains Mono', monospace">• preferred_departments: [1, 13..]</text>
+          <text x="22" y="240" fill="#fbbf24" font-size="9" font-weight="700" font-family="'JetBrains Mono', monospace">• department_intents: { "13": [...] }</text>
+          <text x="22" y="254" fill="#94a3b8" font-size="9" font-family="'JetBrains Mono', monospace">• preferred_audiences, beneficiaries</text>
+          <text x="22" y="268" fill="#94a3b8" font-size="9" font-family="'JetBrains Mono', monospace">• preferred_districts/divisions</text>
+        </g>
+
+        <!-- Connector Arrow 2 -> 3 -->
+        <path d="M 620 185 L 660 185" stroke="#38bdf8" stroke-width="3" marker-end="url(#sysArrow)" />
+
+        <!-- SUB-SYSTEM 3: NODE.JS MATCHING ORCHESTRATOR -->
+        <g transform="translate(660, 30)">
+          <rect width="320" height="310" rx="12" fill="url(#sysBoxGrad)" stroke="#f59e0b" stroke-width="1.5" />
+          <rect width="320" height="38" rx="12" fill="url(#amberHdr)" />
+          <text x="14" y="24" fill="#ffffff" font-size="12" font-weight="800">3. NOTIFICATION ORCHESTRATOR</text>
+
+          <rect x="14" y="52" width="292" height="52" rx="6" fill="#090e1a" stroke="#1e293b" />
+          <text x="22" y="70" fill="#fbbf24" font-size="11" font-weight="700">resolutionRepository.ts</text>
+          <text x="22" y="88" fill="#94a3b8" font-size="9" font-family="'JetBrains Mono', monospace">Preloads active users • Checks WA readiness</text>
+
+          <path d="M 160 104 L 160 120" stroke="#f59e0b" stroke-width="2" marker-end="url(#sysArrow)" />
+
+          <rect x="14" y="122" width="292" height="154" rx="6" fill="#172033" stroke="#f59e0b" />
+          <text x="22" y="142" fill="#fbbf24" font-size="11" font-weight="800">checkUserMatch(user, gr)</text>
+          <text x="22" y="160" fill="#93c5fd" font-size="10" font-weight="700">The 5-Gate Deterministic Engine:</text>
+          <text x="22" y="178" fill="#cbd5e1" font-size="9">Gate 1: Active Account & Corrigendum</text>
+          <text x="22" y="194" fill="#f87171" font-size="9" font-weight="700">Gate 2: Strict Dept Boundary (Zero Bypass)</text>
+          <text x="22" y="210" fill="#fbbf24" font-size="9" font-weight="700">Gate 3: Per-Dept Intent Customisation</text>
+          <text x="22" y="226" fill="#cbd5e1" font-size="9">Gate 4: Audience & Beneficiaries</text>
+          <text x="22" y="242" fill="#cbd5e1" font-size="9">Gate 5: 3-Tier Geographic Hierarchy</text>
+          <text x="22" y="260" fill="#34d399" font-size="9" font-weight="700">&rarr; Returns: { matched: boolean, reason?: string }</text>
+        </g>
+
+        <!-- Connector Arrow 3 -> 4 -->
+        <path d="M 980 185 L 1020 185" stroke="#38bdf8" stroke-width="3" marker-end="url(#sysArrow)" />
+
+        <!-- SUB-SYSTEM 4: DELIVERY & WHATSAPP ENGINE -->
+        <g transform="translate(1020, 30)">
+          <rect width="280" height="310" rx="12" fill="url(#sysBoxGrad)" stroke="#10b981" stroke-width="1.5" />
+          <rect width="280" height="38" rx="12" fill="url(#greenHdr)" />
+          <text x="14" y="24" fill="#ffffff" font-size="12" font-weight="800">4. DISPATCH & DELIVERY</text>
+
+          <rect x="14" y="52" width="252" height="64" rx="6" fill="#090e1a" stroke="#1e293b" />
+          <text x="22" y="72" fill="#6ee7b7" font-size="11" font-weight="700">Deduplication Guard</text>
+          <text x="22" y="90" fill="#94a3b8" font-size="9" font-family="'JetBrains Mono', monospace">Cache Key: `${phone}|${ref_id}`</text>
+          <text x="22" y="104" fill="#94a3b8" font-size="9">Prevents redundant spam alerts</text>
+
+          <path d="M 140 116 L 140 132" stroke="#10b981" stroke-width="2" marker-end="url(#sysArrow)" />
+
+          <rect x="14" y="134" width="252" height="64" rx="6" fill="#090e1a" stroke="#1e293b" />
+          <text x="22" y="154" fill="#6ee7b7" font-size="11" font-weight="700">Message Formatter</text>
+          <text x="22" y="172" fill="#cbd5e1" font-size="9">Department, Marathi Title, Badges</text>
+          <text x="22" y="186" fill="#cbd5e1" font-size="9">Direct official PDF download link</text>
+
+          <path d="M 140 198 L 140 214" stroke="#10b981" stroke-width="2" marker-end="url(#sysArrow)" />
+
+          <rect x="14" y="216" width="252" height="80" rx="6" fill="#064e3b" stroke="#10b981" />
+          <text x="22" y="236" fill="#34d399" font-size="11" font-weight="800">WhatsApp Baileys Gateway</text>
+          <text x="22" y="254" fill="#a7f3d0" font-size="9">Target: +91XXXXXXXXXX</text>
+          <text x="22" y="268" fill="#ffffff" font-size="9" font-weight="700">Delivery Latency: &lt; 2.5 seconds</text>
+          <text x="22" y="282" fill="#a7f3d0" font-size="9">End-to-End Encrypted Notification</text>
+        </g>
+      </svg>
+    </div>
+
+    <!-- ==================== 2. 5-GATE MATCHING ALGORITHM EXECUTION FLOWCHART ==================== -->
+    <div class="diagram-frame" id="matching-pipeline">
+      <div class="diagram-frame-title">
+        <strong><span>📐</span> Algorithm Deep Dive: 5-Gate Deterministic Evaluation Flowchart</strong>
+        <span class="diagram-meta">Engine: resolutionNotifier.ts • Tested on 42 Scenarios</span>
       </div>
 
-      <!-- Stage 3 -->
-      <div class="stage-card">
-        <span class="stage-num">STAGE 03</span>
-        <span class="stage-icon">🎯</span>
-        <h3 class="stage-title">Per-Department Intent Matrix</h3>
-        <p class="stage-desc">Checks custom action tags fine-tuned specifically for this ministry (e.g. Mining → Welfare Schemes, Ministry → Fund Sanctions).</p>
-        <div class="code-rule">department_intents[deptCode].includes(intent)</div>
-        <span class="guarantee-tag tag-dynamic">Compulsory Tag Customisation</span>
+      <svg class="matching-svg" viewBox="0 0 1320 620" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <!-- Gradients -->
+          <linearGradient id="grGrad" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stop-color="#0284c7" />
+            <stop offset="100%" stop-color="#0369a1" />
+          </linearGradient>
+          <linearGradient id="gateGrad" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#1e293b" />
+            <stop offset="100%" stop-color="#0f172a" />
+          </linearGradient>
+          <linearGradient id="matchedGrad" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stop-color="#059669" />
+            <stop offset="100%" stop-color="#047857" />
+          </linearGradient>
+          <linearGradient id="rejectedGrad" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stop-color="#b91c1c" />
+            <stop offset="100%" stop-color="#991b1b" />
+          </linearGradient>
+          <filter id="glow">
+            <feGaussianBlur stdDeviation="3" result="blur" />
+            <feComposite in="SourceGraphic" in2="blur" operator="over" />
+          </filter>
+        </defs>
+
+        <!-- Background grid lines subtle -->
+        <g opacity="0.1" stroke="#334155" stroke-width="1">
+          <line x1="0" y1="100" x2="1320" y2="100" />
+          <line x1="0" y1="200" x2="1320" y2="200" />
+          <line x1="0" y1="300" x2="1320" y2="300" />
+          <line x1="0" y1="400" x2="1320" y2="400" />
+          <line x1="0" y1="500" x2="1320" y2="500" />
+        </g>
+
+        <!-- ==================== 1. TAGGED GR INPUT (LEFT) ==================== -->
+        <g transform="translate(30, 70)">
+          <rect width="250" height="480" rx="12" fill="url(#gateGrad)" stroke="#38bdf8" stroke-width="2" />
+          <rect x="0" y="0" width="250" height="42" rx="12" fill="#0284c7" />
+          <text x="20" y="26" fill="#ffffff" font-weight="800" font-size="14" font-family="'Plus Jakarta Sans', sans-serif">📄 INCOMING TAGGED GR</text>
+
+          <!-- GR Details -->
+          <text x="18" y="72" fill="#38bdf8" font-size="11" font-weight="700" font-family="'JetBrains Mono', monospace">REF_ID: 202610141300000013</text>
+          
+          <rect x="16" y="90" width="218" height="58" rx="6" fill="#090e1a" stroke="#1e293b" />
+          <text x="24" y="108" fill="#64748b" font-size="10" font-family="'JetBrains Mono', monospace">DEPARTMENT:</text>
+          <text x="24" y="124" fill="#f8fafc" font-size="11" font-weight="700">#13 Mining & Industry</text>
+          <text x="24" y="138" fill="#94a3b8" font-size="9">उद्योग, ऊर्जा व खनिकर्म</text>
+
+          <rect x="16" y="158" width="218" height="48" rx="6" fill="#090e1a" stroke="#1e293b" />
+          <text x="24" y="176" fill="#64748b" font-size="10" font-family="'JetBrains Mono', monospace">ACTION INTENT TAG:</text>
+          <text x="24" y="193" fill="#fbbf24" font-size="11" font-weight="700">🎁 WELFARE_AND_SUBSIDY</text>
+
+          <rect x="16" y="216" width="218" height="48" rx="6" fill="#090e1a" stroke="#1e293b" />
+          <text x="24" y="234" fill="#64748b" font-size="10" font-family="'JetBrains Mono', monospace">AUDIENCE SCOPE:</text>
+          <text x="24" y="251" fill="#38bdf8" font-size="11" font-weight="700">👥 CITIZEN_PUBLIC</text>
+
+          <rect x="16" y="274" width="218" height="48" rx="6" fill="#090e1a" stroke="#1e293b" />
+          <text x="24" y="292" fill="#64748b" font-size="10" font-family="'JetBrains Mono', monospace">BENEFICIARY:</text>
+          <text x="24" y="309" fill="#a855f7" font-size="11" font-weight="700">👷 LABOUR_WORKERS</text>
+
+          <rect x="16" y="332" width="218" height="58" rx="6" fill="#090e1a" stroke="#1e293b" />
+          <text x="24" y="350" fill="#64748b" font-size="10" font-family="'JetBrains Mono', monospace">GEOGRAPHY:</text>
+          <text x="24" y="367" fill="#34d399" font-size="11" font-weight="700">📍 Pune District</text>
+          <text x="24" y="380" fill="#94a3b8" font-size="9">(Division: Pune)</text>
+
+          <rect x="16" y="400" width="218" height="44" rx="6" fill="#090e1a" stroke="#1e293b" />
+          <text x="24" y="418" fill="#64748b" font-size="10" font-family="'JetBrains Mono', monospace">AMENDMENT STATUS:</text>
+          <text x="24" y="433" fill="#38bdf8" font-size="11" font-weight="700">is_amendment: false</text>
+
+          <text x="18" y="465" fill="#64748b" font-size="10" font-style="italic">Evaluated against Subscriber Base</text>
+        </g>
+
+        <!-- Connector Arrow from GR into Engine -->
+        <path d="M 280 310 L 330 310" stroke="#38bdf8" stroke-width="3" stroke-linecap="round" marker-end="url(#arrow)" />
+
+        <!-- ==================== 2. THE 5-GATE ENGINE (CENTER) ==================== -->
+        <!-- Outer Engine Container -->
+        <rect x="330" y="45" width="450" height="530" rx="14" fill="#0b1324" stroke="#475569" stroke-width="1.5" stroke-dasharray="4 2" />
+        <rect x="345" y="55" width="420" height="28" rx="6" fill="#1e293b" />
+        <text x="355" y="74" fill="#cbd5e1" font-weight="700" font-size="11" font-family="'JetBrains Mono', monospace">MATCHING ENGINE: checkUserMatch(user, gr)</text>
+
+        <!-- GATE 1: Integrity & Corrigendum -->
+        <g transform="translate(355, 95)">
+          <rect width="400" height="74" rx="8" fill="#111c33" stroke="#3b82f6" stroke-width="1.5" />
+          <circle cx="20" cy="20" r="12" fill="#1e3a8a" />
+          <text x="16" y="24" fill="#93c5fd" font-size="11" font-weight="800">1</text>
+          <text x="40" y="24" fill="#ffffff" font-size="12" font-weight="700">Gate 1: Account Active & Corrigendum Check</text>
+          <text x="40" y="44" fill="#94a3b8" font-size="10" font-family="'JetBrains Mono', monospace">IF user.is_active === false &rarr; DROP</text>
+          <text x="40" y="60" fill="#94a3b8" font-size="10" font-family="'JetBrains Mono', monospace">IF user.exclude_amendments && gr.is_amendment &rarr; DROP</text>
+        </g>
+
+        <!-- Arrow 1 -> 2 -->
+        <path d="M 555 169 L 555 185" stroke="#38bdf8" stroke-width="2.5" />
+
+        <!-- GATE 2: Strict Department Boundary -->
+        <g transform="translate(355, 185)">
+          <rect width="400" height="88" rx="8" fill="#111c33" stroke="#ef4444" stroke-width="2" />
+          <circle cx="20" cy="22" r="12" fill="#7f1d1d" />
+          <text x="16" y="26" fill="#fca5a5" font-size="11" font-weight="800">2</text>
+          <text x="40" y="24" fill="#f87171" font-size="12" font-weight="800">Gate 2: Strict Department Boundary [ABSOLUTE]</text>
+          <text x="40" y="44" fill="#cbd5e1" font-size="10" font-family="'JetBrains Mono', monospace">user.preferred_departments.includes(gr.deptCode)</text>
+          <rect x="40" y="52" width="345" height="24" rx="4" fill="#450a0a" />
+          <text x="48" y="68" fill="#fca5a5" font-size="10" font-weight="700">🔒 RULE: Matching intents NEVER bypass unselected depts!</text>
+        </g>
+
+        <!-- Arrow 2 -> 3 -->
+        <path d="M 555 273 L 555 289" stroke="#38bdf8" stroke-width="2.5" />
+
+        <!-- GATE 3: Per-Department Intent Customisation -->
+        <g transform="translate(355, 289)">
+          <rect width="400" height="88" rx="8" fill="#111c33" stroke="#f59e0b" stroke-width="1.5" />
+          <circle cx="20" cy="22" r="12" fill="#78350f" />
+          <text x="16" y="26" fill="#fde68a" font-size="11" font-weight="800">3</text>
+          <text x="40" y="24" fill="#fbbf24" font-size="12" font-weight="800">Gate 3: Per-Department Intent Customisation</text>
+          <text x="40" y="44" fill="#cbd5e1" font-size="10" font-family="'JetBrains Mono', monospace">specificIntents = user.department_intents[deptCode]</text>
+          <text x="40" y="60" fill="#94a3b8" font-size="10">IF customized &rarr; MUST match department's chosen tags!</text>
+          <text x="40" y="74" fill="#94a3b8" font-size="10">ELSE &rarr; Fallback to user.preferred_intents</text>
+        </g>
+
+        <!-- Arrow 3 -> 4 -->
+        <path d="M 555 377 L 555 393" stroke="#38bdf8" stroke-width="2.5" />
+
+        <!-- GATE 4: Audience & Beneficiary -->
+        <g transform="translate(355, 393)">
+          <rect width="400" height="74" rx="8" fill="#111c33" stroke="#a855f7" stroke-width="1.5" />
+          <circle cx="20" cy="20" r="12" fill="#581c87" />
+          <text x="16" y="24" fill="#e9d5ff" font-size="11" font-weight="800">4</text>
+          <text x="40" y="22" fill="#d8b4fe" font-size="12" font-weight="700">Gate 4: Audience Scope & Beneficiary</text>
+          <text x="40" y="42" fill="#cbd5e1" font-size="10" font-family="'JetBrains Mono', monospace">matchesAudience(user.audiences, gr.audience)</text>
+          <text x="40" y="58" fill="#cbd5e1" font-size="10" font-family="'JetBrains Mono', monospace">matchesBeneficiary(user.beneficiaries, gr.tags)</text>
+        </g>
+
+        <!-- Arrow 4 -> 5 -->
+        <path d="M 555 467 L 555 483" stroke="#38bdf8" stroke-width="2.5" />
+
+        <!-- GATE 5: Geographic Cascade -->
+        <g transform="translate(355, 483)">
+          <rect width="400" height="74" rx="8" fill="#111c33" stroke="#10b981" stroke-width="1.5" />
+          <circle cx="20" cy="20" r="12" fill="#064e3b" />
+          <text x="16" y="24" fill="#6ee7b7" font-size="11" font-weight="800">5</text>
+          <text x="40" y="22" fill="#34d399" font-size="12" font-weight="700">Gate 5: 3-Tier Geographic Cascade</text>
+          <text x="40" y="42" fill="#cbd5e1" font-size="10" font-family="'JetBrains Mono', monospace">IF Statewide &rarr; PASS</text>
+          <text x="40" y="58" fill="#94a3b8" font-size="10">ELSE &rarr; District match OR Division match OR Region match</text>
+        </g>
+
+        <!-- ==================== 3. SUBSCRIBER EVALUATION OUTCOMES (RIGHT) ==================== -->
+        <!-- User A: Rejected at Gate 2 (Dept Mismatch) -->
+        <path d="M 755 229 Q 810 229 840 140 L 890 140" stroke="#ef4444" stroke-width="2" stroke-dasharray="4 3" fill="none" />
+        <g transform="translate(890, 80)">
+          <rect width="390" height="115" rx="10" fill="url(#gateGrad)" stroke="#ef4444" stroke-width="1.5" />
+          <rect x="0" y="0" width="390" height="28" rx="10" fill="#7f1d1d" />
+          <text x="14" y="19" fill="#fecaca" font-size="11" font-weight="800">🛑 USER A (PWD CONTRACTOR): REJECTED AT GATE 2</text>
+          
+          <text x="14" y="48" fill="#94a3b8" font-size="10" font-family="'JetBrains Mono', monospace">DEPT PREF: [18 PWD] • INTENT: [TENDER_AND_PROCUREMENT]</text>
+          <rect x="12" y="58" width="366" height="46" rx="6" fill="#450a0a" />
+          <text x="20" y="74" fill="#f87171" font-size="10" font-weight="700">❌ RESULT: REJECTED (Dept #13 Mining is not in user depts)</text>
+          <text x="20" y="92" fill="#fca5a5" font-size="10">Even though user wants tenders, this GR is from Mining!</text>
+        </g>
+
+        <!-- User B: Rejected at Gate 3 (Intent Mismatch) -->
+        <path d="M 755 333 Q 810 333 840 270 L 890 270" stroke="#f59e0b" stroke-width="2" stroke-dasharray="4 3" fill="none" />
+        <g transform="translate(890, 215)">
+          <rect width="390" height="115" rx="10" fill="url(#gateGrad)" stroke="#f59e0b" stroke-width="1.5" />
+          <rect x="0" y="0" width="390" height="28" rx="10" fill="#78350f" />
+          <text x="14" y="19" fill="#fef3c7" font-size="11" font-weight="800">⚠️ USER B (MINING OFFICER): REJECTED AT GATE 3</text>
+          
+          <text x="14" y="48" fill="#94a3b8" font-size="10" font-family="'JetBrains Mono', monospace">DEPT PREF: [13 Mining] • INTENT TAG: [TRANSFER_AND_POSTING]</text>
+          <rect x="12" y="58" width="366" height="46" rx="6" fill="#451a03" />
+          <text x="20" y="74" fill="#fbbf24" font-size="10" font-weight="700">❌ RESULT: REJECTED (Dept #13 Intent Mismatch)</text>
+          <text x="20" y="92" fill="#fed7aa" font-size="10">Dept matches (#13), but user only chose Transfers, not Welfare!</text>
+        </g>
+
+        <!-- User C: 100% MATCHED (Passed All 5 Gates) -->
+        <path d="M 755 520 Q 820 520 850 430 L 890 430" stroke="#10b981" stroke-width="3" fill="none" />
+        <g transform="translate(890, 360)">
+          <rect width="390" height="185" rx="10" fill="#042f2e" stroke="#10b981" stroke-width="2.5" />
+          <rect x="0" y="0" width="390" height="32" rx="10" fill="#065f46" />
+          <text x="14" y="22" fill="#a7f3d0" font-size="12" font-weight="800">✅ USER C (LABOUR SUBSCRIBER): 100% MATCH!</text>
+          
+          <text x="14" y="52" fill="#94a3b8" font-size="10" font-family="'JetBrains Mono', monospace">DEPT: [13 Mining] • TAG: [WELFARE_AND_SUBSIDY]</text>
+          <text x="14" y="68" fill="#94a3b8" font-size="10" font-family="'JetBrains Mono', monospace">AUDIENCE: [CITIZEN_PUBLIC] • DISTRICT: [Pune]</text>
+
+          <rect x="12" y="80" width="366" height="48" rx="6" fill="#064e3b" />
+          <text x="20" y="98" fill="#34d399" font-size="11" font-weight="800">🎉 ALL 5 GATES PASSED (100% Compliance)</text>
+          <text x="20" y="116" fill="#a7f3d0" font-size="10">Dept #13 ✓  Welfare ✓  Citizen ✓  Pune ✓</text>
+
+          <!-- WhatsApp Dispatch Badge -->
+          <g transform="translate(12, 136)">
+            <rect width="366" height="38" rx="6" fill="#10b981" />
+            <text x="14" y="24" fill="#ffffff" font-size="12" font-weight="800">🚀 DISPATCHED TO WHATSAPP (+91 9090535272)</text>
+          </g>
+        </g>
+      </svg>
+    </div>
+
+    <!-- Candidate Evaluation Walkthrough -->
+    <h2 class="cases-heading">🧪 Concrete Rule Walkthrough (Real Test Scenarios)</h2>
+    <div class="cases-grid">
+      <!-- Case 1 -->
+      <div class="case-card rejected">
+        <span class="case-status status-fail">GATE 2 FAILS • UNSELECTED DEPARTMENT</span>
+        <h3 class="case-user-title">Candidate User 1 (Commercial Contractor)</h3>
+        <div class="case-user-prefs">
+          role_preset: "COMMERCIAL_VENDOR"<br>
+          preferred_departments: [18] (Public Works)<br>
+          preferred_intents: ["TENDER_AND_PROCUREMENT"]
+        </div>
+        <p class="case-result-reason">
+          <strong>Outcome: SILENTLY DROPPED.</strong><br>
+          Even though the incoming GR has intent <code>TENDER_AND_PROCUREMENT</code>, it was published by Ministry #13 (Mining). Because the contractor only selected Dept #18 (PWD), the strict department boundary immediately rejects this GR.
+        </p>
       </div>
 
-      <!-- Stage 4 -->
-      <div class="stage-card">
-        <span class="stage-num">STAGE 04</span>
-        <span class="stage-icon">👥</span>
-        <h3 class="stage-title">Audience & Beneficiary Filter</h3>
-        <p class="stage-desc">Matches target group (Citizens, Officials, Commercial Vendors) and verifies specific beneficiary demographics (Farmers, Students, Women).</p>
-        <div class="code-rule">matchesAudience && matchesBeneficiaries</div>
-        <span class="guarantee-tag tag-dynamic">Demographic Alignment</span>
+      <!-- Case 2 -->
+      <div class="case-card rejected">
+        <span class="case-status status-fail">GATE 3 FAILS • FINE-TUNED INTENT MISMATCH</span>
+        <h3 class="case-user-title">Candidate User 2 (Mining Officer)</h3>
+        <div class="case-user-prefs">
+          role_preset: "GOVT_OFFICIAL"<br>
+          preferred_departments: [13] (Mining)<br>
+          department_intents["13"]: ["TRANSFER_AND_POSTING"]
+        </div>
+        <p class="case-result-reason">
+          <strong>Outcome: SILENTLY DROPPED.</strong><br>
+          The department matches (#13), but the user explicitly fine-tuned their subscription to only receive cadre transfers. Because this GR has intent <code>WELFARE_AND_SUBSIDY</code>, it is filtered out at Gate 3.
+        </p>
       </div>
 
-      <!-- Stage 5 -->
-      <div class="stage-card">
-        <span class="stage-num">STAGE 05</span>
-        <span class="stage-icon">📍</span>
-        <h3 class="stage-title">3-Tier Geographic Cascade</h3>
-        <p class="stage-desc">Statewide policies deliver automatically. Localized GRs check a 3-tier cascade: District → Division hierarchy → Macro-Region hierarchy.</p>
-        <div class="code-rule">isStatewide || matchesDistrict || matchesDivision</div>
-        <span class="guarantee-tag tag-cascade">Regional Hierarchy</span>
-      </div>
-
-      <!-- Stage 6 -->
-      <div class="stage-card">
-        <span class="stage-num">STAGE 06</span>
-        <span class="stage-icon">🚀</span>
-        <h3 class="stage-title">Instant WhatsApp Alert</h3>
-        <p class="stage-desc">Formats certified Marathi summary, issuing ministry, action intent icons, and verified official PDF link for direct delivery to subscriber.</p>
-        <div class="code-rule">dispatchWhatsAppAlert(phone, payload)</div>
-        <span class="guarantee-tag tag-dynamic">Real-Time Delivery</span>
+      <!-- Case 3 -->
+      <div class="case-card matched">
+        <span class="case-status status-pass">ALL 5 GATES PASSED • 100% MATCH</span>
+        <h3 class="case-user-title">Candidate User 3 (Citizen in Pune)</h3>
+        <div class="case-user-prefs">
+          preferred_departments: [13] (Mining)<br>
+          department_intents["13"]: ["WELFARE_AND_SUBSIDY"]<br>
+          preferred_districts: ["Pune"]
+        </div>
+        <p class="case-result-reason">
+          <strong>Outcome: DELIVERED TO WHATSAPP.</strong><br>
+          Passes Gate 1 (Active), Gate 2 (Dept #13 matches), Gate 3 (Welfare intent matches), Gate 4 (Citizen audience matches), and Gate 5 (Pune district matches). Delivers instantly with Marathi summary and official PDF.
+        </p>
       </div>
     </div>
 
-    <div class="back-bar">
-      <a href="/" class="btn-portal">← Return to MahaGRInfo Portal</a>
+    <div class="back-nav">
+      <a href="/" class="back-btn">← Back to MahaGRInfo Portal</a>
     </div>
   </div>
 </body>
