@@ -413,8 +413,17 @@ app.post("/api/auth/login", async (req, res) => {
       });
     }
 
+    let departmentIntents = {};
+    if (user.interests) {
+      try {
+        const meta = typeof user.interests === "string" ? JSON.parse(user.interests) : user.interests;
+        if (meta.department_intents) departmentIntents = meta.department_intents;
+      } catch {}
+    }
+
     const resolvedUser = {
       ...user,
+      department_intents: user.department_intents || departmentIntents,
       first_name: firstName || user.first_name || "Citizen",
       last_name: lastName || user.last_name || "",
       dob: dob || user.dob || "",
@@ -465,6 +474,12 @@ app.post("/api/preferences", async (req, res) => {
       } catch {}
     }
 
+    const incomingDeptIntents = payload.department_intents || 
+      (typeof payload.interests === "object" && payload.interests?.department_intents) ||
+      mergedInterests.department_intents || {};
+
+    mergedInterests.department_intents = incomingDeptIntents;
+
     const dbPayload = {
       phone: standardPhone,
       role_preset: payload.role_preset || existingUser?.role_preset || "CITIZEN_PUBLIC",
@@ -486,7 +501,7 @@ app.post("/api/preferences", async (req, res) => {
     if (payload.dob || existingUser?.dob) dbPayload.dob = payload.dob || existingUser?.dob;
 
     if (!supabase) {
-      return res.json({ success: true, user: dbPayload, offline: true });
+      return res.json({ success: true, user: { ...dbPayload, department_intents: incomingDeptIntents }, offline: true });
     }
 
     const updated = await upsertUserRecord(dbPayload);
@@ -495,6 +510,7 @@ app.post("/api/preferences", async (req, res) => {
       success: true,
       user: {
         ...updated,
+        department_intents: incomingDeptIntents,
         first_name: payload.first_name || updated.first_name,
         last_name: payload.last_name || updated.last_name,
         dob: payload.dob || updated.dob,
@@ -631,7 +647,16 @@ app.get("/api/admin/users", verifyAdminSession, async (req, res) => {
 
     if (error) throw error;
 
-    const userList = users || [];
+    const userList = (users || []).map((u) => {
+      let deptIntents = u.department_intents || null;
+      if (!deptIntents && u.interests) {
+        try {
+          const meta = typeof u.interests === "string" ? JSON.parse(u.interests) : u.interests;
+          if (meta.department_intents) deptIntents = meta.department_intents;
+        } catch {}
+      }
+      return { ...u, department_intents: deptIntents };
+    });
     const activeSubscribers = userList.filter((u) => u.is_active !== false).length;
     const pausedSubscribers = userList.filter((u) => u.is_active === false).length;
 

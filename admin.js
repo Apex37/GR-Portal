@@ -1186,6 +1186,10 @@
         if (depts.length > 3) {
           deptsHtml += `<span class="dept-badge">+${depts.length - 3}</span>`;
         }
+        const hasCustomIntents = user.department_intents && typeof user.department_intents === "object" && Object.keys(user.department_intents).length > 0;
+        if (hasCustomIntents) {
+          deptsHtml += `<span class="dept-badge" style="background:#fef3c7; color:#92400e; border:1px solid #fde68a;" title="Fine-tuned action types per ministry">⚙️ Fine-tuned</span>`;
+        }
       }
 
       // Intents HTML
@@ -1372,9 +1376,19 @@
       deptSectionHtml = depts
         .map((code) => {
           const meta = DEPARTMENTS_MAP[code];
-          return `<div style="margin-bottom: 6px;">
+          const deptIntents = user.department_intents && user.department_intents[String(code)];
+          let customIntentsHtml = "";
+          if (Array.isArray(deptIntents) && deptIntents.length > 0) {
+            const labels = deptIntents.map((id) => {
+              const im = INTENTS_MAP[id];
+              return `<span style="display:inline-block; font-size:0.75rem; background:#eff6ff; color:#1d4ed8; border:1px solid #bfdbfe; padding:2px 6px; border-radius:4px; margin-right:4px; margin-top:2px;">${im ? im.icon + " " + im.label : id}</span>`;
+            }).join("");
+            customIntentsHtml = `<div style="margin-top:4px;"><strong style="font-size:0.75rem; color:#475569;">Fine-tuned Actions:</strong><br>${labels}</div>`;
+          }
+          return `<div style="margin-bottom: 8px; padding-bottom: 6px; border-bottom: 1px dashed #e2e8f0;">
             <strong style="color: #0f284c;">Dept ${code}:</strong> ${meta ? meta.name : "Department " + code}
             <div style="font-size: 0.75rem; color: #64748b;">${meta ? meta.marathi : ""}</div>
+            ${customIntentsHtml}
           </div>`;
         })
         .join("");

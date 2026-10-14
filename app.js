@@ -156,6 +156,7 @@
     activeHeaderTab: "preferences", // "preferences" | "profile"
     geoScopeMode: "statewide", // "statewide" | "specific"
     preferredDepartments: [],
+    departmentIntents: {}, // { [deptCode: string]: string[] }
     preferredIntents: [],
     preferredAudiences: [],
     preferredBeneficiaries: [],
@@ -571,6 +572,19 @@
       }
       state.rolePreset = state.selectedPresets.length === 1 ? state.selectedPresets[0] : "CUSTOM";
 
+      let loadedDeptIntents = {};
+      if (state.user.department_intents && typeof state.user.department_intents === "object") {
+        loadedDeptIntents = state.user.department_intents;
+      } else if (state.user.interests) {
+        try {
+          const meta = typeof state.user.interests === "string" ? JSON.parse(state.user.interests) : state.user.interests;
+          if (meta.department_intents && typeof meta.department_intents === "object") {
+            loadedDeptIntents = meta.department_intents;
+          }
+        } catch {}
+      }
+      state.departmentIntents = loadedDeptIntents;
+
       state.preferredDepartments = state.user.preferred_departments || [];
       // Populate defaults if user had no preferred departments saved (customisation is compulsory)
       if (!state.preferredDepartments || state.preferredDepartments.length === 0) {
@@ -954,6 +968,7 @@
       role_preset: state.rolePreset,
       preferred_departments: state.preferredDepartments,
       preferred_intents: state.preferredIntents,
+      department_intents: state.departmentIntents,
       preferred_audiences: state.preferredAudiences,
       preferred_beneficiaries: state.preferredBeneficiaries,
       preferred_regions: state.preferredRegions,
@@ -970,6 +985,7 @@
         dob: state.user.dob || null,
         password: state.user.password || null,
         selected_presets: state.selectedPresets,
+        department_intents: state.departmentIntents,
       };
 
       // Derive divisions from selected districts
@@ -991,6 +1007,7 @@
         role_preset: derivedRolePreset,
         preferred_departments: state.preferredDepartments,
         preferred_intents: state.preferredIntents,
+        department_intents: state.departmentIntents,
         preferred_audiences: state.preferredAudiences,
         preferred_beneficiaries: state.preferredBeneficiaries,
         preferred_regions: state.preferredRegions,
@@ -1281,7 +1298,7 @@
     updateUI();
   }
 
-  // Render Departments in Accordion
+  // Render Departments in Accordion with Per-Department Intent Customisation
   function renderDepartments(filterQuery = "") {
     if (!state.config || !state.config.departments) return;
     el.departmentsList.innerHTML = "";
@@ -1292,33 +1309,183 @@
       return dept.name.toLowerCase().includes(query) || (dept.marathi && dept.marathi.includes(query));
     });
 
+    const allIntentsCount = state.config?.intents?.length || 11;
+
     filtered.forEach((dept) => {
-      const item = document.createElement("div");
-      item.className = `dept-list-item ${state.preferredDepartments.includes(dept.code) ? "active" : ""}`;
-      item.dataset.code = dept.code;
-      item.innerHTML = `
-        <span class="dept-code-tag">#${String(dept.code).padStart(2, "0")}</span>
-        <span class="dept-name-text">${dept.name}</span>
+      const isSelected = state.preferredDepartments.includes(dept.code);
+      const codeStr = String(dept.code);
+      const customIntents = state.departmentIntents[codeStr] || [];
+
+      let summaryText = "🎯 All Actions";
+      let isCustom = false;
+      if (customIntents.length > 0 && customIntents.length < allIntentsCount) {
+        isCustom = true;
+        if (customIntents.length === 1) {
+          const m = state.config?.intents?.find((i) => i.id === customIntents[0]);
+          summaryText = `🎯 ${m ? m.label.split("&")[0].trim() : "1 Action"}`;
+        } else {
+          summaryText = `🎯 ${customIntents.length} Actions`;
+        }
+      }
+
+      const card = document.createElement("div");
+      card.className = `dept-card ${isSelected ? "active" : ""}`;
+      card.dataset.code = dept.code;
+
+      card.innerHTML = `
+        <div class="dept-card-main">
+          <label class="dept-checkbox-label" for="dept-check-${dept.code}">
+            <input type="checkbox" id="dept-check-${dept.code}" class="dept-card-checkbox" ${isSelected ? "checked" : ""}>
+            <span class="dept-code-tag">#${String(dept.code).padStart(2, "0")}</span>
+            <div class="dept-info-col">
+              <span class="dept-name-text">${dept.name}</span>
+              ${dept.marathi ? `<span class="dept-marathi-text">${dept.marathi}</span>` : ""}
+            </div>
+          </label>
+          <div class="dept-card-actions">
+            <button type="button" class="btn-dept-intent-toggle ${isCustom ? "has-custom" : ""}" data-code="${dept.code}" title="Fine-tune action intents for this ministry">
+              <span class="dept-intent-summary-badge ${isCustom ? "custom-actions" : ""}">${summaryText}</span>
+              <span class="dept-intent-chevron">▼</span>
+            </button>
+          </div>
+        </div>
+        <div class="dept-intent-drawer hidden" id="dept-drawer-${dept.code}">
+          <div class="drawer-header">
+            <div class="drawer-title-group">
+              <span class="drawer-title-icon">⚡</span>
+              <div>
+                <strong class="drawer-title-main">Action Types for ${dept.name}</strong>
+                <p class="drawer-title-sub">Select which notifications you want from this department (e.g. Fund Sanction, Welfare Schemes):</p>
+              </div>
+            </div>
+            <div class="drawer-quick-btns">
+              <button type="button" class="btn-drawer-all" data-code="${dept.code}">All Actions</button>
+              <button type="button" class="btn-drawer-clear" data-code="${dept.code}">Clear All</button>
+            </div>
+          </div>
+          <div class="drawer-chips-grid">
+            ${(state.config?.intents || []).map((intentItem) => {
+              const isChipActive = customIntents.includes(intentItem.id);
+              return `
+                <button type="button" class="dept-intent-chip ${isChipActive ? "active" : ""}" data-code="${dept.code}" data-intent="${intentItem.id}">
+                  <span class="chip-icon">${intentItem.icon || "📌"}</span>
+                  <span class="chip-label">${intentItem.label}</span>
+                  ${isChipActive ? '<span class="chip-check">✓</span>' : ''}
+                </button>
+              `;
+            }).join("")}
+          </div>
+        </div>
       `;
 
-      item.addEventListener("click", () => {
-        toggleDepartment(dept.code);
+      // Checkbox listener
+      const checkbox = card.querySelector(".dept-card-checkbox");
+      if (checkbox) {
+        checkbox.addEventListener("change", (e) => {
+          e.stopPropagation();
+          toggleDepartment(dept.code);
+        });
+      }
+
+      // Drawer toggle button listener
+      const toggleBtn = card.querySelector(".btn-dept-intent-toggle");
+      const drawer = card.querySelector(".dept-intent-drawer");
+      if (toggleBtn && drawer) {
+        toggleBtn.addEventListener("click", (e) => {
+          e.stopPropagation();
+          const isCurrentlyHidden = drawer.classList.contains("hidden");
+          // If department not selected, automatically select it when user wants to customize its intents
+          if (!state.preferredDepartments.includes(dept.code)) {
+            toggleDepartment(dept.code);
+          }
+          drawer.classList.toggle("hidden", !isCurrentlyHidden);
+          toggleBtn.classList.toggle("drawer-open", isCurrentlyHidden);
+        });
+      }
+
+      // Chip listeners
+      card.querySelectorAll(".dept-intent-chip").forEach((chip) => {
+        chip.addEventListener("click", (e) => {
+          e.stopPropagation();
+          toggleDepartmentIntent(dept.code, chip.dataset.intent);
+        });
       });
 
-      el.departmentsList.appendChild(item);
+      // Quick buttons
+      const btnAll = card.querySelector(".btn-drawer-all");
+      if (btnAll) {
+        btnAll.addEventListener("click", (e) => {
+          e.stopPropagation();
+          setDepartmentAllIntents(dept.code);
+        });
+      }
+
+      const btnClear = card.querySelector(".btn-drawer-clear");
+      if (btnClear) {
+        btnClear.addEventListener("click", (e) => {
+          e.stopPropagation();
+          clearDepartmentIntents(dept.code);
+        });
+      }
+
+      el.departmentsList.appendChild(card);
     });
   }
 
   function toggleDepartment(code) {
     const idx = state.preferredDepartments.indexOf(code);
+    const codeStr = String(code);
     if (idx > -1) {
       state.preferredDepartments.splice(idx, 1);
     } else {
       state.preferredDepartments.push(code);
+      if (!state.departmentIntents[codeStr]) {
+        state.departmentIntents[codeStr] = state.preferredIntents.length > 0 
+          ? [...state.preferredIntents] 
+          : [];
+      }
     }
     if (state.preferredAudiences && state.preferredAudiences.includes("POLITICAL_LEADERSHIP")) {
       state.preferredAudiences = ["POLITICAL_LEADERSHIP", "CITIZEN_PUBLIC", "BUREAUCRACY_OFFICIALS"];
     }
+    updateUI();
+  }
+
+  function toggleDepartmentIntent(deptCode, intentId) {
+    const codeStr = String(deptCode);
+    const codeNum = parseInt(deptCode, 10);
+    if (!state.preferredDepartments.includes(codeNum)) {
+      state.preferredDepartments.push(codeNum);
+    }
+
+    if (!Array.isArray(state.departmentIntents[codeStr])) {
+      state.departmentIntents[codeStr] = [];
+    }
+
+    const currentList = state.departmentIntents[codeStr];
+    const idx = currentList.indexOf(intentId);
+    if (idx > -1) {
+      currentList.splice(idx, 1);
+    } else {
+      currentList.push(intentId);
+    }
+
+    updateUI();
+  }
+
+  function setDepartmentAllIntents(deptCode) {
+    const codeStr = String(deptCode);
+    const codeNum = parseInt(deptCode, 10);
+    if (!state.preferredDepartments.includes(codeNum)) {
+      state.preferredDepartments.push(codeNum);
+    }
+    state.departmentIntents[codeStr] = (state.config?.intents || []).map((i) => i.id);
+    updateUI();
+  }
+
+  function clearDepartmentIntents(deptCode) {
+    const codeStr = String(deptCode);
+    state.departmentIntents[codeStr] = [];
     updateUI();
   }
 
@@ -1359,7 +1526,13 @@
 
     state.selectedPresets.forEach((pName) => {
       const conf = PRESET_CONFIGS[pName] || PRESET_CONFIGS.CITIZEN_PUBLIC;
-      conf.departments.forEach((d) => combinedDepts.add(d));
+      conf.departments.forEach((d) => {
+        combinedDepts.add(d);
+        const dStr = String(d);
+        if (!state.departmentIntents[dStr]) {
+          state.departmentIntents[dStr] = [...conf.intents];
+        }
+      });
       conf.intents.forEach((i) => combinedIntents.add(i));
       conf.audiences.forEach((a) => combinedAudiences.add(a));
       conf.beneficiaries.forEach((b) => combinedBeneficiaries.add(b));
@@ -1411,9 +1584,58 @@
       btn.classList.toggle("active", state.preferredIntents.includes(btn.dataset.intentId));
     });
 
-    // 3. Update Department Items
-    document.querySelectorAll(".dept-list-item").forEach((item) => {
-      item.classList.toggle("active", state.preferredDepartments.includes(parseInt(item.dataset.code, 10)));
+    // 3. Update Department Items and Drawer States
+    const allIntentsCount = state.config?.intents?.length || 11;
+    let fineTunedCount = 0;
+
+    document.querySelectorAll(".dept-card").forEach((card) => {
+      const code = parseInt(card.dataset.code, 10);
+      const codeStr = String(code);
+      const isSelected = state.preferredDepartments.includes(code);
+      card.classList.toggle("active", isSelected);
+      
+      const checkbox = card.querySelector(".dept-card-checkbox");
+      if (checkbox) checkbox.checked = isSelected;
+
+      const customIntents = state.departmentIntents[codeStr] || [];
+      const toggleBtn = card.querySelector(".btn-dept-intent-toggle");
+      const badge = card.querySelector(".dept-intent-summary-badge");
+
+      let summaryText = "🎯 All Actions";
+      let isCustom = false;
+      if (customIntents.length > 0 && customIntents.length < allIntentsCount) {
+        isCustom = true;
+        fineTunedCount++;
+        if (customIntents.length === 1) {
+          const m = state.config?.intents?.find((i) => i.id === customIntents[0]);
+          summaryText = `🎯 ${m ? m.label.split("&")[0].trim() : "1 Action"}`;
+        } else {
+          summaryText = `🎯 ${customIntents.length} Actions`;
+        }
+      }
+
+      if (badge) {
+        badge.textContent = summaryText;
+        badge.classList.toggle("custom-actions", isCustom);
+      }
+      if (toggleBtn) {
+        toggleBtn.classList.toggle("has-custom", isCustom);
+      }
+
+      card.querySelectorAll(".dept-intent-chip").forEach((chip) => {
+        const intentId = chip.dataset.intent;
+        const isActive = customIntents.includes(intentId);
+        chip.classList.toggle("active", isActive);
+        let checkSpan = chip.querySelector(".chip-check");
+        if (isActive && !checkSpan) {
+          const s = document.createElement("span");
+          s.className = "chip-check";
+          s.textContent = "✓";
+          chip.appendChild(s);
+        } else if (!isActive && checkSpan) {
+          checkSpan.remove();
+        }
+      });
     });
 
     // 4. Update Header Badges in Step 3: Compulsory Customisation
@@ -1421,6 +1643,9 @@
       if (state.preferredDepartments.length === 0) {
         el.deptCountBadge.textContent = "⚠️ None Selected (Compulsory)";
         el.deptCountBadge.classList.add("error-pill");
+      } else if (fineTunedCount > 0) {
+        el.deptCountBadge.textContent = `${state.preferredDepartments.length} Ministries (${fineTunedCount} fine-tuned)`;
+        el.deptCountBadge.classList.remove("error-pill");
       } else {
         el.deptCountBadge.textContent = `${state.preferredDepartments.length} Ministry(s) Selected`;
         el.deptCountBadge.classList.remove("error-pill");
@@ -1549,19 +1774,32 @@
 
     if (el.waPreviewDept) {
       if (state.preferredDepartments.length > 0 && state.config?.departments) {
-        const dObj = state.config.departments.find((d) => d.code === state.preferredDepartments[0]);
+        const allIntentsCount = state.config?.intents?.length || 11;
+        const fineTunedDept = state.preferredDepartments.find((c) => {
+          const list = state.departmentIntents[String(c)];
+          return Array.isArray(list) && list.length > 0 && list.length < allIntentsCount;
+        });
+        const targetDeptCode = fineTunedDept || state.preferredDepartments[0];
+        const dObj = state.config.departments.find((d) => d.code === targetDeptCode);
         el.waPreviewDept.textContent = dObj ? dObj.name : p.sampleDept;
+
+        if (el.waPreviewIntent) {
+          const deptIntents = state.departmentIntents[String(targetDeptCode)];
+          if (Array.isArray(deptIntents) && deptIntents.length > 0 && state.config?.intents) {
+            const iObj = state.config.intents.find((i) => i.id === deptIntents[0]);
+            el.waPreviewIntent.textContent = iObj ? `${iObj.icon} ${iObj.label}` : p.sampleIntent;
+          } else if (state.preferredIntents.length > 0 && state.config?.intents) {
+            const iObj = state.config.intents.find((i) => i.id === state.preferredIntents[0]);
+            el.waPreviewIntent.textContent = iObj ? `${iObj.icon} ${iObj.label}` : p.sampleIntent;
+          } else {
+            el.waPreviewIntent.textContent = p.sampleIntent;
+          }
+        }
       } else {
         el.waPreviewDept.textContent = p.sampleDept;
-      }
-    }
-
-    if (el.waPreviewIntent) {
-      if (state.preferredIntents.length > 0 && state.config?.intents) {
-        const iObj = state.config.intents.find((i) => i.id === state.preferredIntents[0]);
-        el.waPreviewIntent.textContent = iObj ? `${iObj.icon} ${iObj.label}` : p.sampleIntent;
-      } else {
-        el.waPreviewIntent.textContent = p.sampleIntent;
+        if (el.waPreviewIntent) {
+          el.waPreviewIntent.textContent = p.sampleIntent;
+        }
       }
     }
 

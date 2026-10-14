@@ -1348,41 +1348,276 @@ body {
 }
 
 .departments-scroll-list {
-  max-height: 220px;
+  max-height: 480px;
   overflow-y: auto;
   border: 1px solid var(--border-light);
-  border-radius: var(--radius-sm);
-  background: #ffffff;
-  padding: 4px;
+  border-radius: var(--radius-md);
+  background: var(--bg-subtle);
+  padding: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
 
-.dept-list-item {
+.dept-card {
+  background: #ffffff;
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-sm);
+  transition: all 0.18s ease;
+  overflow: hidden;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+}
+
+.dept-card:hover {
+  border-color: var(--border-medium);
+}
+
+.dept-card.active {
+  border-color: #93c5fd;
+  background: #fafcff;
+  box-shadow: 0 2px 8px rgba(37, 99, 235, 0.07);
+}
+
+.dept-card-main {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  padding: 0.45rem 0.65rem;
-  border-radius: var(--radius-xs);
+  justify-content: space-between;
+  padding: 0.65rem 0.85rem;
+  gap: 0.75rem;
+}
+
+.dept-checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
   cursor: pointer;
-  font-size: 0.82rem;
-  color: var(--text-secondary);
-  transition: all 0.12s ease;
+  flex: 1;
+  user-select: none;
 }
 
-.dept-list-item:hover {
-  background: var(--bg-subtle);
-  color: var(--text-primary);
-}
-
-.dept-list-item.active {
-  background: var(--accent-blue-subtle);
-  color: var(--accent-blue);
-  font-weight: 600;
+.dept-card-checkbox {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--accent-blue);
+  cursor: pointer;
+  flex-shrink: 0;
 }
 
 .dept-code-tag {
-  font-size: 0.7rem;
-  color: var(--text-muted);
+  font-size: 0.72rem;
+  color: #334155;
   font-family: monospace;
+  font-weight: 700;
+  background: #e2e8f0;
+  padding: 0.15rem 0.4rem;
+  border-radius: 4px;
+  flex-shrink: 0;
+}
+
+.dept-info-col {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.dept-name-text {
+  font-size: 0.86rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  line-height: 1.3;
+}
+
+.dept-marathi-text {
+  font-size: 0.74rem;
+  color: var(--text-muted);
+  line-height: 1.2;
+}
+
+.dept-card-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-shrink: 0;
+}
+
+.btn-dept-intent-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.32rem 0.65rem;
+  border-radius: var(--radius-pill);
+  border: 1px solid #cbd5e1;
+  background: #f8fafc;
+  font-size: 0.74rem;
+  font-weight: 600;
+  color: #334155;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.btn-dept-intent-toggle:hover {
+  background: #eff6ff;
+  border-color: #93c5fd;
+  color: #1d4ed8;
+}
+
+.btn-dept-intent-toggle.has-custom {
+  background: #f0fdf4;
+  border-color: #86efac;
+  color: #15803d;
+}
+
+.dept-intent-summary-badge {
+  font-size: 0.72rem;
+  font-weight: 600;
+}
+
+.dept-intent-summary-badge.custom-actions {
+  color: #16a34a;
+}
+
+.dept-intent-chevron {
+  font-size: 0.65rem;
+  transition: transform 0.2s ease;
+  display: inline-block;
+}
+
+.btn-dept-intent-toggle.drawer-open .dept-intent-chevron {
+  transform: rotate(180deg);
+}
+
+.dept-intent-drawer {
+  background: #f8fafc;
+  border-top: 1px solid #e2e8f0;
+  padding: 0.85rem 1rem;
+  animation: deptDrawerSlide 0.2s ease;
+}
+
+.dept-intent-drawer.hidden {
+  display: none;
+}
+
+@keyframes deptDrawerSlide {
+  from { opacity: 0; transform: translateY(-4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.drawer-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.drawer-title-group {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+}
+
+.drawer-title-icon {
+  font-size: 1.1rem;
+}
+
+.drawer-title-main {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: #0f172a;
+  display: block;
+}
+
+.drawer-title-sub {
+  font-size: 0.73rem;
+  color: #64748b;
+  margin-top: 0.1rem;
+}
+
+.drawer-quick-btns {
+  display: flex;
+  gap: 0.4rem;
+  flex-shrink: 0;
+}
+
+.btn-drawer-all,
+.btn-drawer-clear {
+  font-size: 0.7rem;
+  font-weight: 600;
+  padding: 0.22rem 0.55rem;
+  border-radius: 4px;
+  border: 1px solid #cbd5e1;
+  background: #ffffff;
+  color: #334155;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.btn-drawer-all:hover {
+  background: #eff6ff;
+  border-color: #3b82f6;
+  color: #1d4ed8;
+}
+
+.btn-drawer-clear:hover {
+  background: #fef2f2;
+  border-color: #f87171;
+  color: #dc2626;
+}
+
+.drawer-chips-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(185px, 1fr));
+  gap: 0.45rem;
+}
+
+.dept-intent-chip {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.42rem 0.65rem;
+  border-radius: 6px;
+  border: 1px solid #e2e8f0;
+  background: #ffffff;
+  font-size: 0.78rem;
+  color: #334155;
+  cursor: pointer;
+  text-align: left;
+  transition: all 0.15s ease;
+  user-select: none;
+}
+
+.dept-intent-chip:hover {
+  border-color: #94a3b8;
+  background: #f1f5f9;
+}
+
+.dept-intent-chip.active {
+  background: #eff6ff;
+  border-color: #3b82f6;
+  color: #1d4ed8;
+  font-weight: 600;
+  box-shadow: 0 1px 3px rgba(59, 130, 246, 0.12);
+}
+
+.chip-icon {
+  font-size: 0.9rem;
+  flex-shrink: 0;
+}
+
+.chip-label {
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.chip-check {
+  margin-left: auto;
+  font-size: 0.75rem;
+  font-weight: 800;
+  color: #2563eb;
+  flex-shrink: 0;
 }
 
 /* Tags Checkbox Grid (Intents) */
