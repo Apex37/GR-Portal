@@ -51,7 +51,9 @@ const rootAssets = [
   'mitra-banner.png',
   'admin.html',
   'admin.css',
-  'admin.js'
+  'admin.js',
+  'algorithm.html',
+  'gr_matching_diagram.jpg'
 ];
 rootAssets.forEach((file) => {
   if (fs.existsSync(file)) {

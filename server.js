@@ -740,6 +740,12 @@ app.get(["/admin", "/admin.html"], (req, res) => {
   res.sendFile(path.join(__dirname, "admin.html"));
 });
 
+// Serve Algorithm Architecture Diagram
+app.get(["/algorithm", "/algorithm.html"], (req, res) => {
+  res.setHeader("Cache-Control", "no-cache, no-store, must-revalidate");
+  res.sendFile(path.join(__dirname, "algorithm.html"));
+});
+
 // Serve Static Assets with production cache headers
 const ONE_WEEK = 7 * 24 * 60 * 60 * 1000;
 

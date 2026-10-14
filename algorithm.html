@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GR Matching Algorithm Architecture • MahaGRInfo</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #090d16;
+      --card-bg: #111827;
+      --card-border: #1f2937;
+      --accent: #38bdf8;
+      --accent-green: #10b981;
+      --accent-amber: #f59e0b;
+      --accent-red: #ef4444;
+      --text: #f9fafb;
+      --text-muted: #9ca3af;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      padding: 2rem 1rem;
+      min-height: 100vh;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 2.5rem;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.35rem 0.85rem;
+      border-radius: 9999px;
+      font-size: 0.8rem;
+      font-weight: 700;
+      background: rgba(56, 189, 248, 0.1);
+      border: 1px solid rgba(56, 189, 248, 0.3);
+      color: var(--accent);
+      margin-bottom: 1rem;
+    }
+
+    h1 {
+      font-size: 2.25rem;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      margin-bottom: 0.5rem;
+      background: linear-gradient(135deg, #ffffff, #94a3b8);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .subtitle {
+      color: var(--text-muted);
+      font-size: 1.05rem;
+      max-width: 700px;
+      margin: 0 auto;
+    }
+
+    /* Diagram Image Card */
+    .infographic-wrapper {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 16px;
+      overflow: hidden;
+      margin-bottom: 3rem;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+    }
+
+    .infographic-header {
+      padding: 1.25rem 1.5rem;
+      border-bottom: 1px solid var(--card-border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .infographic-header strong {
+      font-size: 1.1rem;
+      color: #fff;
+    }
+
+    .infographic-img {
+      width: 100%;
+      height: auto;
+      display: block;
+    }
+
+    /* Interactive Pipeline Stages */
+    .pipeline-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 1.25rem;
+      margin-bottom: 3rem;
+    }
+
+    .stage-card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      padding: 1.5rem;
+      position: relative;
+      transition: all 0.2s ease;
+    }
+
+    .stage-card:hover {
+      border-color: rgba(56, 189, 248, 0.4);
+      transform: translateY(-2px);
+    }
+
+    .stage-num {
+      position: absolute;
+      top: 1.25rem;
+      right: 1.25rem;
+      font-size: 0.75rem;
+      font-weight: 800;
+      font-family: 'JetBrains Mono', monospace;
+      color: #64748b;
+      background: #1e293b;
+      padding: 0.2rem 0.5rem;
+      border-radius: 4px;
+    }
+
+    .stage-icon {
+      font-size: 1.75rem;
+      margin-bottom: 0.75rem;
+      display: inline-block;
+    }
+
+    .stage-title {
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: #fff;
+      margin-bottom: 0.5rem;
+    }
+
+    .stage-desc {
+      font-size: 0.88rem;
+      color: var(--text-muted);
+      line-height: 1.5;
+      margin-bottom: 1rem;
+    }
+
+    .code-rule {
+      background: #0b0f19;
+      border: 1px solid #1e293b;
+      border-radius: 8px;
+      padding: 0.75rem 1rem;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.78rem;
+      color: #38bdf8;
+      overflow-x: auto;
+    }
+
+    .guarantee-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      font-size: 0.75rem;
+      font-weight: 700;
+      padding: 0.2rem 0.5rem;
+      border-radius: 4px;
+      margin-top: 0.75rem;
+    }
+
+    .tag-strict {
+      background: rgba(239, 68, 68, 0.15);
+      border: 1px solid rgba(239, 68, 68, 0.3);
+      color: #f87171;
+    }
+
+    .tag-dynamic {
+      background: rgba(16, 185, 129, 0.15);
+      border: 1px solid rgba(16, 185, 129, 0.3);
+      color: #34d399;
+    }
+
+    .tag-cascade {
+      background: rgba(245, 158, 11, 0.15);
+      border: 1px solid rgba(245, 158, 11, 0.3);
+      color: #fbbf24;
+    }
+
+    /* Back Button */
+    .back-bar {
+      text-align: center;
+      margin-top: 2rem;
+    }
+
+    .btn-portal {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.75rem 1.75rem;
+      background: #2563eb;
+      color: #fff;
+      border-radius: 8px;
+      text-decoration: none;
+      font-weight: 600;
+      font-size: 0.95rem;
+      transition: background 0.15s ease;
+    }
+
+    .btn-portal:hover {
+      background: #1d4ed8;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <div class="badge">⚙️ Engine Architecture • checkUserMatch()</div>
+      <h1>Maharashtra GR Matching Pipeline</h1>
+      <p class="subtitle">Deterministic 5-Dimension progressive evaluation engine powering real-time WhatsApp government alerts.</p>
+    </header>
+
+    <!-- Visual Infographic -->
+    <div class="infographic-wrapper">
+      <div class="infographic-header">
+        <strong>🗺️ System Architecture Flowchart</strong>
+        <span style="font-size: 0.85rem; color: #64748b;">42/42 Test Suites Passing</span>
+      </div>
+      <img src="/gr_matching_diagram.jpg" alt="Maharashtra GR Matching Algorithm Flowchart" class="infographic-img" onerror="this.src='/gr_matching_diagram_1791988714722.jpg'">
+    </div>
+
+    <!-- Progressive Stage Breakdown -->
+    <div class="pipeline-grid">
+      <!-- Stage 1 -->
+      <div class="stage-card">
+        <span class="stage-num">STAGE 01</span>
+        <span class="stage-icon">🛡️</span>
+        <h3 class="stage-title">Integrity & Quality Safeguards</h3>
+        <p class="stage-desc">Drops inactive user accounts and filters out routine clerical amendments (शुद्धीपत्रक) like date extensions or typos if configured.</p>
+        <div class="code-rule">user.is_active !== false && !is_amendment</div>
+        <span class="guarantee-tag tag-strict">Zero Noise Guarantee</span>
+      </div>
+
+      <!-- Stage 2 -->
+      <div class="stage-card">
+        <span class="stage-num">STAGE 02</span>
+        <span class="stage-icon">🏛️</span>
+        <h3 class="stage-title">Strict Department Boundary</h3>
+        <p class="stage-desc">Verifies issuing ministry against user's selected departments. Intent matches (like Tenders or Schemes) can <strong>never</strong> bypass this boundary.</p>
+        <div class="code-rule">user.preferred_departments.includes(deptCode)</div>
+        <span class="guarantee-tag tag-strict">Strict Boundary • No Intent Bypass</span>
+      </div>
+
+      <!-- Stage 3 -->
+      <div class="stage-card">
+        <span class="stage-num">STAGE 03</span>
+        <span class="stage-icon">🎯</span>
+        <h3 class="stage-title">Per-Department Intent Matrix</h3>
+        <p class="stage-desc">Checks custom action tags fine-tuned specifically for this ministry (e.g. Mining → Welfare Schemes, Ministry → Fund Sanctions).</p>
+        <div class="code-rule">department_intents[deptCode].includes(intent)</div>
+        <span class="guarantee-tag tag-dynamic">Compulsory Tag Customisation</span>
+      </div>
+
+      <!-- Stage 4 -->
+      <div class="stage-card">
+        <span class="stage-num">STAGE 04</span>
+        <span class="stage-icon">👥</span>
+        <h3 class="stage-title">Audience & Beneficiary Filter</h3>
+        <p class="stage-desc">Matches target group (Citizens, Officials, Commercial Vendors) and verifies specific beneficiary demographics (Farmers, Students, Women).</p>
+        <div class="code-rule">matchesAudience && matchesBeneficiaries</div>
+        <span class="guarantee-tag tag-dynamic">Demographic Alignment</span>
+      </div>
+
+      <!-- Stage 5 -->
+      <div class="stage-card">
+        <span class="stage-num">STAGE 05</span>
+        <span class="stage-icon">📍</span>
+        <h3 class="stage-title">3-Tier Geographic Cascade</h3>
+        <p class="stage-desc">Statewide policies deliver automatically. Localized GRs check a 3-tier cascade: District → Division hierarchy → Macro-Region hierarchy.</p>
+        <div class="code-rule">isStatewide || matchesDistrict || matchesDivision</div>
+        <span class="guarantee-tag tag-cascade">Regional Hierarchy</span>
+      </div>
+
+      <!-- Stage 6 -->
+      <div class="stage-card">
+        <span class="stage-num">STAGE 06</span>
+        <span class="stage-icon">🚀</span>
+        <h3 class="stage-title">Instant WhatsApp Alert</h3>
+        <p class="stage-desc">Formats certified Marathi summary, issuing ministry, action intent icons, and verified official PDF link for direct delivery to subscriber.</p>
+        <div class="code-rule">dispatchWhatsAppAlert(phone, payload)</div>
+        <span class="guarantee-tag tag-dynamic">Real-Time Delivery</span>
+      </div>
+    </div>
+
+    <div class="back-bar">
+      <a href="/" class="btn-portal">← Return to MahaGRInfo Portal</a>
+    </div>
+  </div>
+</body>
+</html>
