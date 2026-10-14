@@ -985,6 +985,18 @@
     showPreferencesBanner("", "");
     if (el.saveInlineFeedback) el.saveInlineFeedback.classList.add("hidden");
 
+    // Derive overall preferred intents from department intents
+    const allSelectedDeptIntents = new Set();
+    state.preferredDepartments.forEach((dCode) => {
+      const list = state.departmentIntents[String(dCode)];
+      if (Array.isArray(list)) {
+        list.forEach((intentId) => allSelectedDeptIntents.add(intentId));
+      }
+    });
+    if (allSelectedDeptIntents.size > 0) {
+      state.preferredIntents = Array.from(allSelectedDeptIntents);
+    }
+
     const payload = {
       phone: state.user.phone,
       first_name: state.user.first_name || null,
@@ -1291,6 +1303,7 @@
 
   // Render Operational Intents in Accordion
   function renderIntents() {
+    if (!el.intentsGrid) return;
     if (!state.config || !state.config.intents) return;
     el.intentsGrid.innerHTML = "";
 
@@ -2086,17 +2099,21 @@
       updateUI();
     });
 
-    // Intent Actions
-    el.selectAllIntentsBtn.addEventListener("click", () => {
-      if (!state.config) return;
-      state.preferredIntents = state.config.intents.map((i) => i.id);
-      updateUI();
-    });
+    // Intent Actions (if global intent selector present)
+    if (el.selectAllIntentsBtn) {
+      el.selectAllIntentsBtn.addEventListener("click", () => {
+        if (!state.config) return;
+        state.preferredIntents = state.config.intents.map((i) => i.id);
+        updateUI();
+      });
+    }
 
-    el.clearIntentsBtn.addEventListener("click", () => {
-      state.preferredIntents = [];
-      updateUI();
-    });
+    if (el.clearIntentsBtn) {
+      el.clearIntentsBtn.addEventListener("click", () => {
+        state.preferredIntents = [];
+        updateUI();
+      });
+    }
 
     // Quality Switches
     if (el.excludeAmendmentsToggle) {
