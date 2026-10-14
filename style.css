@@ -1472,6 +1472,12 @@ body {
   color: #15803d;
 }
 
+.dept-card.needs-tag-selection {
+  border-color: #f59e0b !important;
+  background: #fffdf5 !important;
+  box-shadow: 0 2px 10px rgba(245, 158, 11, 0.15) !important;
+}
+
 .dept-intent-summary-badge {
   font-size: 0.72rem;
   font-weight: 600;
@@ -1479,6 +1485,59 @@ body {
 
 .dept-intent-summary-badge.custom-actions {
   color: #16a34a;
+}
+
+.dept-intent-summary-badge.required-warning {
+  color: #b45309;
+  background: #fef3c7;
+  padding: 0.15rem 0.5rem;
+  border-radius: 4px;
+  border: 1px solid #fde68a;
+  font-weight: 700;
+}
+
+.btn-dept-intent-toggle.is-required {
+  background: #fffbeb;
+  border-color: #f59e0b;
+  color: #b45309;
+}
+
+.drawer-compulsory-prompt {
+  margin-top: 0.35rem;
+}
+
+.compulsory-tag-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 0.2rem 0.6rem;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+}
+
+.compulsory-tag-badge.warning {
+  background: #fef3c7;
+  color: #b45309;
+  border: 1px solid #fde68a;
+}
+
+.compulsory-tag-badge.valid {
+  background: #ecfdf5;
+  color: #047857;
+  border: 1px solid #a7f3d0;
+}
+
+@keyframes cardErrorPulse {
+  0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.5); }
+  50% { transform: scale(1.01); box-shadow: 0 0 0 8px rgba(239, 68, 68, 0.2); }
+  100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+}
+
+.dept-card-error-pulse {
+  animation: cardErrorPulse 0.7s ease 3;
+  border-color: #ef4444 !important;
 }
 
 .dept-intent-chevron {

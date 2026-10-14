@@ -949,6 +949,33 @@
       return;
     }
 
+    // Compulsory Department Action Tag Validation
+    const unpickedDepts = state.preferredDepartments.filter((dCode) => {
+      const intents = state.departmentIntents[String(dCode)];
+      return !Array.isArray(intents) || intents.length === 0;
+    });
+
+    if (unpickedDepts.length > 0) {
+      const firstUnpicked = unpickedDepts[0];
+      const deptObj = state.config?.departments?.find((d) => d.code === firstUnpicked);
+      const deptName = deptObj ? deptObj.name : `Dept #${firstUnpicked}`;
+      
+      showPreferencesBanner(`⚠️ Action tag selection is compulsory: Please choose at least 1 action tag for ${deptName}.`, "error");
+      showToast(`Action tag required for ${deptName}!`, "warning");
+      
+      const targetDrawer = document.getElementById(`dept-drawer-${firstUnpicked}`);
+      const targetCard = document.querySelector(`.dept-card[data-code="${firstUnpicked}"]`);
+      const targetToggleBtn = document.querySelector(`.btn-dept-intent-toggle[data-code="${firstUnpicked}"]`);
+      if (targetDrawer) targetDrawer.classList.remove("hidden");
+      if (targetToggleBtn) targetToggleBtn.classList.add("drawer-open");
+      if (targetCard) {
+        targetCard.scrollIntoView({ behavior: "smooth", block: "center" });
+        targetCard.classList.add("dept-card-error-pulse");
+        setTimeout(() => targetCard.classList.remove("dept-card-error-pulse"), 2500);
+      }
+      return;
+    }
+
     if (saveBtnResetTimer) clearTimeout(saveBtnResetTimer);
     if (el.savePreferencesBtn) {
       el.savePreferencesBtn.classList.remove("btn-success-state", "btn-error-state");
@@ -1356,6 +1383,12 @@
               <div>
                 <strong class="drawer-title-main">Action Types for ${dept.name}</strong>
                 <p class="drawer-title-sub">Select which notifications you want from this department (e.g. Fund Sanction, Welfare Schemes):</p>
+                <div class="drawer-compulsory-prompt" id="drawer-prompt-${dept.code}">
+                  ${customIntents.length === 0
+                    ? '<span class="compulsory-tag-badge warning">⚠️ Compulsory: Select at least 1 action tag below</span>'
+                    : `<span class="compulsory-tag-badge valid">✓ ${customIntents.length} Tag(s) Selected</span>`
+                  }
+                </div>
               </div>
             </div>
             <div class="drawer-quick-btns">
@@ -1383,7 +1416,7 @@
       if (checkbox) {
         checkbox.addEventListener("change", (e) => {
           e.stopPropagation();
-          toggleDepartment(dept.code);
+          toggleDepartment(dept.code, true);
         });
       }
 
@@ -1396,10 +1429,16 @@
           const isCurrentlyHidden = drawer.classList.contains("hidden");
           // If department not selected, automatically select it when user wants to customize its intents
           if (!state.preferredDepartments.includes(dept.code)) {
-            toggleDepartment(dept.code);
+            toggleDepartment(dept.code, true);
+          } else {
+            const hasTags = Array.isArray(state.departmentIntents[String(dept.code)]) && state.departmentIntents[String(dept.code)].length > 0;
+            if (!isCurrentlyHidden && !hasTags) {
+              showToast("⚠️ Action tag selection is compulsory for this department.", "warning");
+              return;
+            }
+            drawer.classList.toggle("hidden", !isCurrentlyHidden);
+            toggleBtn.classList.toggle("drawer-open", isCurrentlyHidden);
           }
-          drawer.classList.toggle("hidden", !isCurrentlyHidden);
-          toggleBtn.classList.toggle("drawer-open", isCurrentlyHidden);
         });
       }
 
@@ -1432,18 +1471,32 @@
     });
   }
 
-  function toggleDepartment(code) {
+  function toggleDepartment(code, forceOpenDrawer = true) {
     const idx = state.preferredDepartments.indexOf(code);
     const codeStr = String(code);
+    const drawer = document.getElementById(`dept-drawer-${code}`);
+    const toggleBtn = document.querySelector(`.btn-dept-intent-toggle[data-code="${code}"]`);
+
     if (idx > -1) {
+      // Unselecting department: remove and close drawer
       state.preferredDepartments.splice(idx, 1);
+      if (drawer) drawer.classList.add("hidden");
+      if (toggleBtn) toggleBtn.classList.remove("drawer-open");
     } else {
+      // Selecting department: add to preferred
       state.preferredDepartments.push(code);
+      // Compulsory customisation: Start as empty [] so user explicitly chooses!
       if (!state.departmentIntents[codeStr]) {
-        state.departmentIntents[codeStr] = state.preferredIntents.length > 0 
-          ? [...state.preferredIntents] 
-          : [];
+        state.departmentIntents[codeStr] = [];
       }
+      // AUTOMATICALLY OPEN INTENT BOX
+      if (forceOpenDrawer && drawer) {
+        drawer.classList.remove("hidden");
+        setTimeout(() => {
+          drawer.scrollIntoView({ behavior: "smooth", block: "nearest" });
+        }, 60);
+      }
+      if (toggleBtn) toggleBtn.classList.add("drawer-open");
     }
     if (state.preferredAudiences && state.preferredAudiences.includes("POLITICAL_LEADERSHIP")) {
       state.preferredAudiences = ["POLITICAL_LEADERSHIP", "CITIZEN_PUBLIC", "BUREAUCRACY_OFFICIALS"];
@@ -1487,6 +1540,7 @@
     const codeStr = String(deptCode);
     state.departmentIntents[codeStr] = [];
     updateUI();
+    showToast("Action tags cleared. Tag selection is compulsory.", "warning");
   }
 
   // Toggle a Preset for Multi-Select
@@ -1603,7 +1657,12 @@
 
       let summaryText = "🎯 All Actions";
       let isCustom = false;
-      if (customIntents.length > 0 && customIntents.length < allIntentsCount) {
+      let isMissingRequired = false;
+
+      if (isSelected && customIntents.length === 0) {
+        isMissingRequired = true;
+        summaryText = "⚠️ Pick Action (Required)";
+      } else if (customIntents.length > 0 && customIntents.length < allIntentsCount) {
         isCustom = true;
         fineTunedCount++;
         if (customIntents.length === 1) {
@@ -1614,12 +1673,25 @@
         }
       }
 
+      card.classList.toggle("needs-tag-selection", isMissingRequired);
+
       if (badge) {
         badge.textContent = summaryText;
-        badge.classList.toggle("custom-actions", isCustom);
+        badge.classList.toggle("custom-actions", isCustom && !isMissingRequired);
+        badge.classList.toggle("required-warning", isMissingRequired);
       }
       if (toggleBtn) {
-        toggleBtn.classList.toggle("has-custom", isCustom);
+        toggleBtn.classList.toggle("has-custom", isCustom && !isMissingRequired);
+        toggleBtn.classList.toggle("is-required", isMissingRequired);
+      }
+
+      const promptEl = card.querySelector(".drawer-compulsory-prompt");
+      if (promptEl) {
+        if (customIntents.length === 0) {
+          promptEl.innerHTML = '<span class="compulsory-tag-badge warning">⚠️ Compulsory: Select at least 1 action tag below</span>';
+        } else {
+          promptEl.innerHTML = `<span class="compulsory-tag-badge valid">✓ ${customIntents.length} Tag(s) Selected</span>`;
+        }
       }
 
       card.querySelectorAll(".dept-intent-chip").forEach((chip) => {
@@ -1639,9 +1711,17 @@
     });
 
     // 4. Update Header Badges in Step 3: Compulsory Customisation
+    const unpickedCount = state.preferredDepartments.filter((c) => {
+      const list = state.departmentIntents[String(c)];
+      return !Array.isArray(list) || list.length === 0;
+    }).length;
+
     if (el.deptCountBadge) {
       if (state.preferredDepartments.length === 0) {
         el.deptCountBadge.textContent = "⚠️ None Selected (Compulsory)";
+        el.deptCountBadge.classList.add("error-pill");
+      } else if (unpickedCount > 0) {
+        el.deptCountBadge.textContent = `⚠️ ${unpickedCount} Ministry needs tag selection`;
         el.deptCountBadge.classList.add("error-pill");
       } else if (fineTunedCount > 0) {
         el.deptCountBadge.textContent = `${state.preferredDepartments.length} Ministries (${fineTunedCount} fine-tuned)`;
