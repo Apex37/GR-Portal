@@ -234,16 +234,16 @@
 <body>
   <div class="container">
     <header>
-      <div class="badge-bar">⚡ CORE ENGINE ARCHITECTURE • checkUserMatch(user, resolution)</div>
-      <h1>Tagged GR to User Matching Architecture</h1>
-      <p class="subtitle">How a Classified & Tagged Government Resolution (GR) traverses the 5-Gate Deterministic Pipeline to identify exactly which subscribers receive the instant alert.</p>
+      <div class="badge-bar">⚡ SMART NOTIFICATION ENGINE • RELEVANCE PIPELINE</div>
+      <h1>How Government Resolutions Reach The Right Citizens</h1>
+      <p class="subtitle">An intuitive look at how our 5-step relevance filter eliminates spam and instantly routes official Maharashtra government orders to the right citizens, officers, and businesses on WhatsApp.</p>
     </header>
 
     <!-- TAB / SECTION SELECTOR -->
     <div style="display: flex; gap: 0.75rem; justify-content: center; margin-bottom: 2rem;">
       <a href="#system-architecture" style="text-decoration: none; padding: 0.6rem 1.25rem; border-radius: 8px; font-weight: 700; font-size: 0.88rem; background: #0284c7; color: #fff;">1. End-to-End System Topology</a>
-      <a href="#matching-pipeline" style="text-decoration: none; padding: 0.6rem 1.25rem; border-radius: 8px; font-weight: 700; font-size: 0.88rem; background: #1e293b; color: #94a3b8; border: 1px solid #334155;">2. 5-Gate Matching Algorithm</a>
-      <a href="#rule-cases" style="text-decoration: none; padding: 0.6rem 1.25rem; border-radius: 8px; font-weight: 700; font-size: 0.88rem; background: #1e293b; color: #94a3b8; border: 1px solid #334155;">3. Candidate Walkthrough</a>
+      <a href="#matching-pipeline" style="text-decoration: none; padding: 0.6rem 1.25rem; border-radius: 8px; font-weight: 700; font-size: 0.88rem; background: #1e293b; color: #94a3b8; border: 1px solid #334155;">2. 5-Step Relevance Flowchart</a>
+      <a href="#rule-cases" style="text-decoration: none; padding: 0.6rem 1.25rem; border-radius: 8px; font-weight: 700; font-size: 0.88rem; background: #1e293b; color: #94a3b8; border: 1px solid #334155;">3. Real-World Subscriber Cases</a>
     </div>
 
     <!-- ==================== 1. END-TO-END SYSTEM ARCHITECTURE ==================== -->
@@ -394,250 +394,354 @@
     <!-- ==================== 2. 5-GATE MATCHING ALGORITHM EXECUTION FLOWCHART ==================== -->
     <div class="diagram-frame" id="matching-pipeline">
       <div class="diagram-frame-title">
-        <strong><span>📐</span> Algorithm Deep Dive: 5-Gate Deterministic Evaluation Flowchart</strong>
-        <span class="diagram-meta">Engine: resolutionNotifier.ts • Tested on 42 Scenarios</span>
+        <strong><span>📐</span> Visual Flowchart: The 5-Step Smart Relevance Pipeline</strong>
+        <span class="diagram-meta">Zero Spam Architecture • Tested across 46 Real Scenarios</span>
       </div>
 
-      <svg class="matching-svg" viewBox="0 0 1320 620" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <svg class="matching-svg" viewBox="0 0 1340 670" fill="none" xmlns="http://www.w3.org/2000/svg">
         <defs>
-          <!-- Gradients -->
-          <linearGradient id="grGrad" x1="0" y1="0" x2="1" y2="1">
+          <!-- Flowchart Gradients -->
+          <linearGradient id="bgCanvasGrad" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#0b1120" />
+            <stop offset="100%" stop-color="#060911" />
+          </linearGradient>
+
+          <linearGradient id="docHdrGrad" x1="0" y1="0" x2="1" y2="0">
             <stop offset="0%" stop-color="#0284c7" />
-            <stop offset="100%" stop-color="#0369a1" />
+            <stop offset="100%" stop-color="#0ea5e9" />
           </linearGradient>
-          <linearGradient id="gateGrad" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stop-color="#1e293b" />
-            <stop offset="100%" stop-color="#0f172a" />
+
+          <linearGradient id="docBodyGrad" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#0d172a" />
+            <stop offset="100%" stop-color="#070c18" />
           </linearGradient>
-          <linearGradient id="matchedGrad" x1="0" y1="0" x2="1" y2="1">
+
+          <linearGradient id="nodeGrad" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#141f36" />
+            <stop offset="100%" stop-color="#0b1324" />
+          </linearGradient>
+
+          <linearGradient id="redCardGrad" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#241118" />
+            <stop offset="100%" stop-color="#140a0e" />
+          </linearGradient>
+
+          <linearGradient id="amberCardGrad" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#261a0d" />
+            <stop offset="100%" stop-color="#140d05" />
+          </linearGradient>
+
+          <linearGradient id="greenCardGrad" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#062e24" />
+            <stop offset="100%" stop-color="#021a14" />
+          </linearGradient>
+
+          <linearGradient id="greenBtnGrad" x1="0" y1="0" x2="1" y2="0">
             <stop offset="0%" stop-color="#059669" />
-            <stop offset="100%" stop-color="#047857" />
+            <stop offset="100%" stop-color="#10b981" />
           </linearGradient>
-          <linearGradient id="rejectedGrad" x1="0" y1="0" x2="1" y2="1">
-            <stop offset="0%" stop-color="#b91c1c" />
-            <stop offset="100%" stop-color="#991b1b" />
-          </linearGradient>
-          <filter id="glow">
+
+          <!-- Markers -->
+          <marker id="arrowCyan" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+            <path d="M 0 1 L 9 5 L 0 9 z" fill="#38bdf8" />
+          </marker>
+          <marker id="arrowGreen" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+            <path d="M 0 1 L 9 5 L 0 9 z" fill="#10b981" />
+          </marker>
+          <marker id="arrowRed" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+            <path d="M 0 1 L 9 5 L 0 9 z" fill="#f43f5e" />
+          </marker>
+          <marker id="arrowAmber" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+            <path d="M 0 1 L 9 5 L 0 9 z" fill="#f59e0b" />
+          </marker>
+
+          <!-- Drop Shadows & Glow -->
+          <filter id="softGlow" x="-10%" y="-10%" width="120%" height="120%">
             <feGaussianBlur stdDeviation="3" result="blur" />
             <feComposite in="SourceGraphic" in2="blur" operator="over" />
           </filter>
         </defs>
 
-        <!-- Background grid lines subtle -->
-        <g opacity="0.1" stroke="#334155" stroke-width="1">
-          <line x1="0" y1="100" x2="1320" y2="100" />
-          <line x1="0" y1="200" x2="1320" y2="200" />
-          <line x1="0" y1="300" x2="1320" y2="300" />
-          <line x1="0" y1="400" x2="1320" y2="400" />
-          <line x1="0" y1="500" x2="1320" y2="500" />
+        <!-- Subtle Canvas Grid -->
+        <g opacity="0.07" stroke="#38bdf8" stroke-width="1">
+          <line x1="0" y1="110" x2="1340" y2="110" />
+          <line x1="0" y1="220" x2="1340" y2="220" />
+          <line x1="0" y1="330" x2="1340" y2="330" />
+          <line x1="0" y1="440" x2="1340" y2="440" />
+          <line x1="0" y1="550" x2="1340" y2="550" />
         </g>
 
-        <!-- ==================== 1. TAGGED GR INPUT (LEFT) ==================== -->
-        <g transform="translate(30, 70)">
-          <rect width="250" height="480" rx="12" fill="url(#gateGrad)" stroke="#38bdf8" stroke-width="2" />
-          <rect x="0" y="0" width="250" height="42" rx="12" fill="#0284c7" />
-          <text x="20" y="26" fill="#ffffff" font-weight="800" font-size="14" font-family="'Plus Jakarta Sans', sans-serif">📄 INCOMING TAGGED GR</text>
-
-          <!-- GR Details -->
-          <text x="18" y="72" fill="#38bdf8" font-size="11" font-weight="700" font-family="'JetBrains Mono', monospace">REF_ID: 202610141300000013</text>
+        <!-- ==================== COLUMN 1: INCOMING RESOLUTION ==================== -->
+        <g transform="translate(25, 30)">
+          <!-- Document Card -->
+          <rect width="265" height="610" rx="14" fill="url(#docBodyGrad)" stroke="#0284c7" stroke-width="1.8" />
           
-          <rect x="16" y="90" width="218" height="58" rx="6" fill="#090e1a" stroke="#1e293b" />
-          <text x="24" y="108" fill="#64748b" font-size="10" font-family="'JetBrains Mono', monospace">DEPARTMENT:</text>
-          <text x="24" y="124" fill="#f8fafc" font-size="11" font-weight="700">#13 Mining & Industry</text>
-          <text x="24" y="138" fill="#94a3b8" font-size="9">उद्योग, ऊर्जा व खनिकर्म</text>
+          <!-- Header Banner -->
+          <rect width="265" height="46" rx="14" fill="url(#docHdrGrad)" />
+          <text x="18" y="29" fill="#ffffff" font-size="13" font-weight="800" letter-spacing="0.02em">📄 NEW RESOLUTION ARRIVES</text>
 
-          <rect x="16" y="158" width="218" height="48" rx="6" fill="#090e1a" stroke="#1e293b" />
-          <text x="24" y="176" fill="#64748b" font-size="10" font-family="'JetBrains Mono', monospace">ACTION INTENT TAG:</text>
-          <text x="24" y="193" fill="#fbbf24" font-size="11" font-weight="700">🎁 WELFARE_AND_SUBSIDY</text>
-
-          <rect x="16" y="216" width="218" height="48" rx="6" fill="#090e1a" stroke="#1e293b" />
-          <text x="24" y="234" fill="#64748b" font-size="10" font-family="'JetBrains Mono', monospace">AUDIENCE SCOPE:</text>
-          <text x="24" y="251" fill="#38bdf8" font-size="11" font-weight="700">👥 CITIZEN_PUBLIC</text>
-
-          <rect x="16" y="274" width="218" height="48" rx="6" fill="#090e1a" stroke="#1e293b" />
-          <text x="24" y="292" fill="#64748b" font-size="10" font-family="'JetBrains Mono', monospace">BENEFICIARY:</text>
-          <text x="24" y="309" fill="#a855f7" font-size="11" font-weight="700">👷 LABOUR_WORKERS</text>
-
-          <rect x="16" y="332" width="218" height="58" rx="6" fill="#090e1a" stroke="#1e293b" />
-          <text x="24" y="350" fill="#64748b" font-size="10" font-family="'JetBrains Mono', monospace">GEOGRAPHY:</text>
-          <text x="24" y="367" fill="#34d399" font-size="11" font-weight="700">📍 Pune District</text>
-          <text x="24" y="380" fill="#94a3b8" font-size="9">(Division: Pune)</text>
-
-          <rect x="16" y="400" width="218" height="44" rx="6" fill="#090e1a" stroke="#1e293b" />
-          <text x="24" y="418" fill="#64748b" font-size="10" font-family="'JetBrains Mono', monospace">AMENDMENT STATUS:</text>
-          <text x="24" y="433" fill="#38bdf8" font-size="11" font-weight="700">is_amendment: false</text>
-
-          <text x="18" y="465" fill="#64748b" font-size="10" font-style="italic">Evaluated against Subscriber Base</text>
-        </g>
-
-        <!-- Connector Arrow from GR into Engine -->
-        <path d="M 280 310 L 330 310" stroke="#38bdf8" stroke-width="3" stroke-linecap="round" marker-end="url(#arrow)" />
-
-        <!-- ==================== 2. THE 5-GATE ENGINE (CENTER) ==================== -->
-        <!-- Outer Engine Container -->
-        <rect x="330" y="45" width="450" height="530" rx="14" fill="#0b1324" stroke="#475569" stroke-width="1.5" stroke-dasharray="4 2" />
-        <rect x="345" y="55" width="420" height="28" rx="6" fill="#1e293b" />
-        <text x="355" y="74" fill="#cbd5e1" font-weight="700" font-size="11" font-family="'JetBrains Mono', monospace">MATCHING ENGINE: checkUserMatch(user, gr)</text>
-
-        <!-- GATE 1: Integrity & Corrigendum -->
-        <g transform="translate(355, 95)">
-          <rect width="400" height="74" rx="8" fill="#111c33" stroke="#3b82f6" stroke-width="1.5" />
-          <circle cx="20" cy="20" r="12" fill="#1e3a8a" />
-          <text x="16" y="24" fill="#93c5fd" font-size="11" font-weight="800">1</text>
-          <text x="40" y="24" fill="#ffffff" font-size="12" font-weight="700">Gate 1: Account Active & Corrigendum Check</text>
-          <text x="40" y="44" fill="#94a3b8" font-size="10" font-family="'JetBrains Mono', monospace">IF user.is_active === false &rarr; DROP</text>
-          <text x="40" y="60" fill="#94a3b8" font-size="10" font-family="'JetBrains Mono', monospace">IF user.exclude_amendments && gr.is_amendment &rarr; DROP</text>
-        </g>
-
-        <!-- Arrow 1 -> 2 -->
-        <path d="M 555 169 L 555 185" stroke="#38bdf8" stroke-width="2.5" />
-
-        <!-- GATE 2: Strict Department Boundary -->
-        <g transform="translate(355, 185)">
-          <rect width="400" height="88" rx="8" fill="#111c33" stroke="#ef4444" stroke-width="2" />
-          <circle cx="20" cy="22" r="12" fill="#7f1d1d" />
-          <text x="16" y="26" fill="#fca5a5" font-size="11" font-weight="800">2</text>
-          <text x="40" y="24" fill="#f87171" font-size="12" font-weight="800">Gate 2: Strict Department Boundary [ABSOLUTE]</text>
-          <text x="40" y="44" fill="#cbd5e1" font-size="10" font-family="'JetBrains Mono', monospace">user.preferred_departments.includes(gr.deptCode)</text>
-          <rect x="40" y="52" width="345" height="24" rx="4" fill="#450a0a" />
-          <text x="48" y="68" fill="#fca5a5" font-size="10" font-weight="700">🔒 RULE: Matching intents NEVER bypass unselected depts!</text>
-        </g>
-
-        <!-- Arrow 2 -> 3 -->
-        <path d="M 555 273 L 555 289" stroke="#38bdf8" stroke-width="2.5" />
-
-        <!-- GATE 3: Per-Department Intent Customisation -->
-        <g transform="translate(355, 289)">
-          <rect width="400" height="88" rx="8" fill="#111c33" stroke="#f59e0b" stroke-width="1.5" />
-          <circle cx="20" cy="22" r="12" fill="#78350f" />
-          <text x="16" y="26" fill="#fde68a" font-size="11" font-weight="800">3</text>
-          <text x="40" y="24" fill="#fbbf24" font-size="12" font-weight="800">Gate 3: Per-Department Intent Customisation</text>
-          <text x="40" y="44" fill="#cbd5e1" font-size="10" font-family="'JetBrains Mono', monospace">specificIntents = user.department_intents[deptCode]</text>
-          <text x="40" y="60" fill="#94a3b8" font-size="10">IF customized &rarr; MUST match department's chosen tags!</text>
-          <text x="40" y="74" fill="#94a3b8" font-size="10">ELSE &rarr; Fallback to user.preferred_intents</text>
-        </g>
-
-        <!-- Arrow 3 -> 4 -->
-        <path d="M 555 377 L 555 393" stroke="#38bdf8" stroke-width="2.5" />
-
-        <!-- GATE 4: Audience & Beneficiary -->
-        <g transform="translate(355, 393)">
-          <rect width="400" height="74" rx="8" fill="#111c33" stroke="#a855f7" stroke-width="1.5" />
-          <circle cx="20" cy="20" r="12" fill="#581c87" />
-          <text x="16" y="24" fill="#e9d5ff" font-size="11" font-weight="800">4</text>
-          <text x="40" y="22" fill="#d8b4fe" font-size="12" font-weight="700">Gate 4: Audience Scope & Beneficiary</text>
-          <text x="40" y="42" fill="#cbd5e1" font-size="10" font-family="'JetBrains Mono', monospace">matchesAudience(user.audiences, gr.audience)</text>
-          <text x="40" y="58" fill="#cbd5e1" font-size="10" font-family="'JetBrains Mono', monospace">matchesBeneficiary(user.beneficiaries, gr.tags)</text>
-        </g>
-
-        <!-- Arrow 4 -> 5 -->
-        <path d="M 555 467 L 555 483" stroke="#38bdf8" stroke-width="2.5" />
-
-        <!-- GATE 5: Geographic Cascade -->
-        <g transform="translate(355, 483)">
-          <rect width="400" height="74" rx="8" fill="#111c33" stroke="#10b981" stroke-width="1.5" />
-          <circle cx="20" cy="20" r="12" fill="#064e3b" />
-          <text x="16" y="24" fill="#6ee7b7" font-size="11" font-weight="800">5</text>
-          <text x="40" y="22" fill="#34d399" font-size="12" font-weight="700">Gate 5: 3-Tier Geographic Cascade</text>
-          <text x="40" y="42" fill="#cbd5e1" font-size="10" font-family="'JetBrains Mono', monospace">IF Statewide &rarr; PASS</text>
-          <text x="40" y="58" fill="#94a3b8" font-size="10">ELSE &rarr; District match OR Division match OR Region match</text>
-        </g>
-
-        <!-- ==================== 3. SUBSCRIBER EVALUATION OUTCOMES (RIGHT) ==================== -->
-        <!-- User A: Rejected at Gate 2 (Dept Mismatch) -->
-        <path d="M 755 229 Q 810 229 840 140 L 890 140" stroke="#ef4444" stroke-width="2" stroke-dasharray="4 3" fill="none" />
-        <g transform="translate(890, 80)">
-          <rect width="390" height="115" rx="10" fill="url(#gateGrad)" stroke="#ef4444" stroke-width="1.5" />
-          <rect x="0" y="0" width="390" height="28" rx="10" fill="#7f1d1d" />
-          <text x="14" y="19" fill="#fecaca" font-size="11" font-weight="800">🛑 USER A (PWD CONTRACTOR): REJECTED AT GATE 2</text>
+          <!-- Subtitle -->
+          <text x="18" y="68" fill="#38bdf8" font-size="10.5" font-weight="700">Official Order Published on Portal</text>
           
-          <text x="14" y="48" fill="#94a3b8" font-size="10" font-family="'JetBrains Mono', monospace">DEPT PREF: [18 PWD] • INTENT: [TENDER_AND_PROCUREMENT]</text>
-          <rect x="12" y="58" width="366" height="46" rx="6" fill="#450a0a" />
-          <text x="20" y="74" fill="#f87171" font-size="10" font-weight="700">❌ RESULT: REJECTED (Dept #13 Mining is not in user depts)</text>
-          <text x="20" y="92" fill="#fca5a5" font-size="10">Even though user wants tenders, this GR is from Mining!</text>
-        </g>
+          <!-- Tile 1: Document ID -->
+          <rect x="14" y="82" width="237" height="52" rx="7" fill="#060b17" stroke="#1e293b" />
+          <text x="22" y="99" fill="#64748b" font-size="9" font-weight="700">DOCUMENT REFERENCE ID</text>
+          <text x="22" y="118" fill="#38bdf8" font-size="11" font-family="'JetBrains Mono', monospace" font-weight="700">202610141300000013</text>
 
-        <!-- User B: Rejected at Gate 3 (Intent Mismatch) -->
-        <path d="M 755 333 Q 810 333 840 270 L 890 270" stroke="#f59e0b" stroke-width="2" stroke-dasharray="4 3" fill="none" />
-        <g transform="translate(890, 215)">
-          <rect width="390" height="115" rx="10" fill="url(#gateGrad)" stroke="#f59e0b" stroke-width="1.5" />
-          <rect x="0" y="0" width="390" height="28" rx="10" fill="#78350f" />
-          <text x="14" y="19" fill="#fef3c7" font-size="11" font-weight="800">⚠️ USER B (MINING OFFICER): REJECTED AT GATE 3</text>
-          
-          <text x="14" y="48" fill="#94a3b8" font-size="10" font-family="'JetBrains Mono', monospace">DEPT PREF: [13 Mining] • INTENT TAG: [TRANSFER_AND_POSTING]</text>
-          <rect x="12" y="58" width="366" height="46" rx="6" fill="#451a03" />
-          <text x="20" y="74" fill="#fbbf24" font-size="10" font-weight="700">❌ RESULT: REJECTED (Dept #13 Intent Mismatch)</text>
-          <text x="20" y="92" fill="#fed7aa" font-size="10">Dept matches (#13), but user only chose Transfers, not Welfare!</text>
-        </g>
+          <!-- Tile 2: Ministry -->
+          <rect x="14" y="142" width="237" height="64" rx="7" fill="#060b17" stroke="#1e293b" />
+          <text x="22" y="159" fill="#64748b" font-size="9" font-weight="700">ISSUING MINISTRY</text>
+          <text x="22" y="177" fill="#f8fafc" font-size="11.5" font-weight="800">Industry, Energy & Mining</text>
+          <text x="22" y="193" fill="#94a3b8" font-size="9.5">उद्योग, ऊर्जा व खनिकर्म विभाग</text>
 
-        <!-- User C: 100% MATCHED (Passed All 5 Gates) -->
-        <path d="M 755 520 Q 820 520 850 430 L 890 430" stroke="#10b981" stroke-width="3" fill="none" />
-        <g transform="translate(890, 360)">
-          <rect width="390" height="185" rx="10" fill="#042f2e" stroke="#10b981" stroke-width="2.5" />
-          <rect x="0" y="0" width="390" height="32" rx="10" fill="#065f46" />
-          <text x="14" y="22" fill="#a7f3d0" font-size="12" font-weight="800">✅ USER C (LABOUR SUBSCRIBER): 100% MATCH!</text>
-          
-          <text x="14" y="52" fill="#94a3b8" font-size="10" font-family="'JetBrains Mono', monospace">DEPT: [13 Mining] • TAG: [WELFARE_AND_SUBSIDY]</text>
-          <text x="14" y="68" fill="#94a3b8" font-size="10" font-family="'JetBrains Mono', monospace">AUDIENCE: [CITIZEN_PUBLIC] • DISTRICT: [Pune]</text>
+          <!-- Tile 3: Policy Topic -->
+          <rect x="14" y="214" width="237" height="64" rx="7" fill="#060b17" stroke="#1e293b" />
+          <text x="22" y="231" fill="#64748b" font-size="9" font-weight="700">POLICY ACTION / TOPIC</text>
+          <text x="22" y="249" fill="#fbbf24" font-size="11.5" font-weight="800">🎁 Worker Welfare & Financial Aid</text>
+          <text x="22" y="265" fill="#94a3b8" font-size="9.5">Direct Benefit Financial Subsidy</text>
 
-          <rect x="12" y="80" width="366" height="48" rx="6" fill="#064e3b" />
-          <text x="20" y="98" fill="#34d399" font-size="11" font-weight="800">🎉 ALL 5 GATES PASSED (100% Compliance)</text>
-          <text x="20" y="116" fill="#a7f3d0" font-size="10">Dept #13 ✓  Welfare ✓  Citizen ✓  Pune ✓</text>
+          <!-- Tile 4: Target Audience -->
+          <rect x="14" y="286" width="237" height="58" rx="7" fill="#060b17" stroke="#1e293b" />
+          <text x="22" y="303" fill="#64748b" font-size="9" font-weight="700">ELIGIBLE AUDIENCE</text>
+          <text x="22" y="321" fill="#c084fc" font-size="11.5" font-weight="800">👥 General Public & Labor</text>
+          <text x="22" y="335" fill="#94a3b8" font-size="9">Beneficiary: Mining Workers</text>
 
-          <!-- WhatsApp Dispatch Badge -->
-          <g transform="translate(12, 136)">
-            <rect width="366" height="38" rx="6" fill="#10b981" />
-            <text x="14" y="24" fill="#ffffff" font-size="12" font-weight="800">🚀 DISPATCHED TO WHATSAPP (+91 9090535272)</text>
+          <!-- Tile 5: Jurisdiction -->
+          <rect x="14" y="352" width="237" height="58" rx="7" fill="#060b17" stroke="#1e293b" />
+          <text x="22" y="369" fill="#64748b" font-size="9" font-weight="700">APPLICABLE LOCATION</text>
+          <text x="22" y="387" fill="#34d399" font-size="11.5" font-weight="800">📍 Pune District</text>
+          <text x="22" y="401" fill="#94a3b8" font-size="9">Division: Pune Region</text>
+
+          <!-- Tile 6: Document Type -->
+          <rect x="14" y="418" width="237" height="54" rx="7" fill="#060b17" stroke="#1e293b" />
+          <text x="22" y="435" fill="#64748b" font-size="9" font-weight="700">DOCUMENT TYPE</text>
+          <text x="22" y="453" fill="#38bdf8" font-size="11.5" font-weight="800">✨ Original Government Order</text>
+          <text x="22" y="465" fill="#94a3b8" font-size="9">Not an amendment / corrigendum</text>
+
+          <!-- Pipeline Entry Banner -->
+          <g transform="translate(14, 550)">
+            <rect width="237" height="42" rx="8" fill="#0284c7" />
+            <text x="20" y="26" fill="#ffffff" font-size="11.5" font-weight="800">Entering Smart Filter ➔</text>
           </g>
+        </g>
+
+        <!-- Connector Path: Doc -> Pipeline Funnel -->
+        <path d="M 290 350 L 330 350" stroke="#38bdf8" stroke-width="3" stroke-linecap="round" marker-end="url(#arrowCyan)" />
+
+        <!-- ==================== COLUMN 2: 5-STEP DECISION PIPELINE ==================== -->
+        <g transform="translate(330, 30)">
+          <!-- Outer Pipeline Enclosure -->
+          <rect width="505" height="610" rx="14" fill="#080e1c" stroke="#1e293b" stroke-width="1.5" stroke-dasharray="6 3" />
+          
+          <!-- Funnel Title Header -->
+          <rect x="16" y="12" width="473" height="30" rx="6" fill="#131e36" stroke="#1e293b" />
+          <text x="26" y="32" fill="#93c5fd" font-size="11" font-weight="800" font-family="'JetBrains Mono', monospace">⚡ THE 5-STEP SMART RELEVANCE FILTER (ALL MUST PASS)</text>
+
+          <!-- STEP 1: SUBSCRIBER ACTIVE CHECK -->
+          <g transform="translate(18, 52)">
+            <rect width="469" height="74" rx="9" fill="url(#nodeGrad)" stroke="#38bdf8" stroke-width="1.5" />
+            <circle cx="24" cy="24" r="13" fill="#0284c7" />
+            <text x="20" y="28" fill="#ffffff" font-size="12" font-weight="800">1</text>
+            <text x="48" y="24" fill="#ffffff" font-size="12.5" font-weight="800">Step 1 • Is Subscriber Active & Ready for Alerts?</text>
+            <text x="48" y="43" fill="#94a3b8" font-size="10">• Verifies account status is active and notifications are turned on</text>
+            <text x="48" y="59" fill="#94a3b8" font-size="10">• Filters out revisions if user opted for original orders only</text>
+            <!-- Status Badge -->
+            <rect x="360" y="14" width="95" height="20" rx="4" fill="#064e3b" />
+            <text x="367" y="28" fill="#34d399" font-size="9" font-weight="800">✓ Account Active</text>
+          </g>
+
+          <!-- Connector 1 -> 2 -->
+          <path d="M 252 126 L 252 142" stroke="#38bdf8" stroke-width="2.5" marker-end="url(#arrowCyan)" />
+
+          <!-- STEP 2: MINISTRY CHECK (STRICT FIREWALL) -->
+          <g transform="translate(18, 142)">
+            <rect width="469" height="88" rx="9" fill="url(#nodeGrad)" stroke="#f43f5e" stroke-width="2" />
+            <circle cx="24" cy="24" r="13" fill="#be123c" />
+            <text x="20" y="28" fill="#ffffff" font-size="12" font-weight="800">2</text>
+            <text x="48" y="24" fill="#fda4af" font-size="12.5" font-weight="800">Step 2 • Ministry Check: Did user select Industry & Mining?</text>
+            <text x="48" y="44" fill="#e2e8f0" font-size="10">• Checks if Ministry #13 is in the subscriber's chosen department list</text>
+            <!-- Strict Rule Banner -->
+            <rect x="48" y="54" width="406" height="24" rx="4" fill="#4c0519" />
+            <text x="56" y="70" fill="#fecdd3" font-size="9.5" font-weight="700">🔒 STRICT FIREWALL: Unselected ministries are NEVER sent (Zero Spam)</text>
+          </g>
+
+          <!-- Connector 2 -> 3 -->
+          <path d="M 252 230 L 252 246" stroke="#38bdf8" stroke-width="2.5" marker-end="url(#arrowCyan)" />
+
+          <!-- STEP 3: TOPIC / CATEGORY CHECK -->
+          <g transform="translate(18, 246)">
+            <rect width="469" height="84" rx="9" fill="url(#nodeGrad)" stroke="#f59e0b" stroke-width="1.8" />
+            <circle cx="24" cy="24" r="13" fill="#b45309" />
+            <text x="20" y="28" fill="#ffffff" font-size="12" font-weight="800">3</text>
+            <text x="48" y="24" fill="#fde68a" font-size="12" font-weight="800">Step 3 • Topic Filter: Did user select Worker Welfare?</text>
+            <text x="48" y="44" fill="#e2e8f0" font-size="10">• Evaluates user's fine-tuned topic preferences for this specific ministry</text>
+            <text x="48" y="60" fill="#94a3b8" font-size="10">• Matches 'Worker Welfare & Financial Aid' against user's alert tags</text>
+            <text x="48" y="74" fill="#64748b" font-size="9.5">Fallback: General intent topics if no department customisation set</text>
+          </g>
+
+          <!-- Connector 3 -> 4 -->
+          <path d="M 252 330 L 252 346" stroke="#38bdf8" stroke-width="2.5" marker-end="url(#arrowCyan)" />
+
+          <!-- STEP 4: AUDIENCE & BENEFICIARY CHECK -->
+          <g transform="translate(18, 346)">
+            <rect width="469" height="78" rx="9" fill="url(#nodeGrad)" stroke="#a855f7" stroke-width="1.5" />
+            <circle cx="24" cy="24" r="13" fill="#7e22ce" />
+            <text x="20" y="28" fill="#ffffff" font-size="12" font-weight="800">4</text>
+            <text x="48" y="24" fill="#e9d5ff" font-size="12" font-weight="800">Step 4 • Target Group: Does policy apply to user?</text>
+            <text x="48" y="44" fill="#e2e8f0" font-size="10">• Ensures public welfare schemes go to citizens/labor, not internal staff</text>
+            <text x="48" y="60" fill="#94a3b8" font-size="10">• Prevents civil service seniority lists from reaching general citizens</text>
+            <!-- Badge -->
+            <rect x="350" y="14" width="105" height="20" rx="4" fill="#3b0764" />
+            <text x="402" y="28" text-anchor="middle" fill="#d8b4fe" font-size="9" font-weight="700">✓ Citizen & Labor</text>
+          </g>
+
+          <!-- Connector 4 -> 5 -->
+          <path d="M 252 424 L 252 440" stroke="#38bdf8" stroke-width="2.5" marker-end="url(#arrowCyan)" />
+
+          <!-- STEP 5: GEOGRAPHIC CASCADE CHECK -->
+          <g transform="translate(18, 440)">
+            <rect width="469" height="84" rx="9" fill="url(#nodeGrad)" stroke="#10b981" stroke-width="2" />
+            <circle cx="24" cy="24" r="13" fill="#047857" />
+            <text x="20" y="28" fill="#ffffff" font-size="12" font-weight="800">5</text>
+            <text x="48" y="24" fill="#6ee7b7" font-size="12" font-weight="800">Step 5 • Location: Is user in applicable district?</text>
+            <text x="48" y="44" fill="#e2e8f0" font-size="10">• Statewide decisions deliver to all; local orders require district match</text>
+            <text x="48" y="60" fill="#94a3b8" font-size="10">• Resolution is specific to Pune District ➔ matches user's home location</text>
+            <!-- Badge -->
+            <rect x="358" y="14" width="97" height="20" rx="4" fill="#064e3b" />
+            <text x="406" y="28" text-anchor="middle" fill="#34d399" font-size="9" font-weight="800">✓ Pune Matches</text>
+          </g>
+
+          <!-- Bottom Funnel Indicator -->
+          <g transform="translate(18, 545)">
+            <rect width="469" height="48" rx="8" fill="#052e16" stroke="#10b981" stroke-width="1.2" />
+            <text x="20" y="28" fill="#34d399" font-size="12" font-weight="800">🎯 FULL 5-STEP COMPLIANCE ACHIEVED</text>
+            <text x="20" y="42" fill="#a7f3d0" font-size="9.5">Active Account ✓  Mining Dept ✓  Welfare Topic ✓  Citizen Audience ✓  Pune District ✓</text>
+          </g>
+        </g>
+
+        <!-- ==================== FLOWCHART BRANCH CONNECTORS ==================== -->
+        <!-- Branch 1: Gate 2 Rejection -> User A (PWD Contractor) -->
+        <path d="M 818 215 C 845 215, 855 130, 875 130" stroke="#f43f5e" stroke-width="2.5" stroke-dasharray="5 3" fill="none" marker-end="url(#arrowRed)" />
+        <rect x="825" y="160" width="46" height="18" rx="4" fill="#4c0519" stroke="#f43f5e" stroke-width="0.8" />
+        <text x="848" y="173" text-anchor="middle" fill="#fda4af" font-size="9" font-weight="800">NO</text>
+
+        <!-- Branch 2: Gate 3 Rejection -> User B (Mining Officer) -->
+        <path d="M 818 318 C 845 318, 855 272, 875 272" stroke="#f59e0b" stroke-width="2.5" stroke-dasharray="5 3" fill="none" marker-end="url(#arrowAmber)" />
+        <rect x="825" y="286" width="46" height="18" rx="4" fill="#451a03" stroke="#f59e0b" stroke-width="0.8" />
+        <text x="848" y="299" text-anchor="middle" fill="#fde68a" font-size="9" font-weight="800">NO</text>
+
+        <!-- Branch 3: Gate 5 100% Pass -> User C (Pune Citizen) -->
+        <path d="M 818 510 C 845 510, 855 450, 875 450" stroke="#10b981" stroke-width="3.5" fill="none" marker-end="url(#arrowGreen)" />
+        <rect x="823" y="470" width="48" height="18" rx="4" fill="#064e3b" stroke="#10b981" stroke-width="0.8" />
+        <text x="847" y="483" text-anchor="middle" fill="#a7f3d0" font-size="9" font-weight="800">YES</text>
+
+        <!-- ==================== COLUMN 3: SUBSCRIBER OUTCOMES ==================== -->
+        <!-- OUTCOME A: PWD CONTRACTOR (FILTERED AT STEP 2) -->
+        <g transform="translate(875, 45)">
+          <rect width="440" height="135" rx="12" fill="url(#redCardGrad)" stroke="#f43f5e" stroke-width="1.8" />
+          
+          <rect width="440" height="32" rx="12" fill="#881337" />
+          <text x="16" y="21" fill="#fecdd3" font-size="11.5" font-weight="800">🛑 USER A (PWD CONTRACTOR) • SAFELY BLOCKED</text>
+          
+          <text x="16" y="52" fill="#94a3b8" font-size="10">Subscribed to: <tspan fill="#f1f5f9" font-weight="700">Public Works (PWD)</tspan> • Interests: <tspan fill="#f1f5f9" font-weight="700">Tenders & Contracts</tspan></text>
+
+          <rect x="14" y="62" width="412" height="42" rx="6" fill="#3b0716" stroke="#f43f5e" stroke-width="0.8" />
+          <text x="24" y="79" fill="#fda4af" font-size="10.5" font-weight="800">❌ Filtered at Step 2: Unselected Department</text>
+          <text x="24" y="94" fill="#fecdd3" font-size="9.5">Even though user wants tenders, this GR is from Mining. Unselected ministries are blocked.</text>
+
+          <text x="16" y="122" fill="#fda4af" font-size="9.5" font-weight="700">🛡️ Zero Spam Guaranteed • No Alert Sent</text>
+        </g>
+
+        <!-- OUTCOME B: MINING OFFICER (FILTERED AT STEP 3) -->
+        <g transform="translate(875, 200)">
+          <rect width="440" height="135" rx="12" fill="url(#amberCardGrad)" stroke="#f59e0b" stroke-width="1.8" />
+          
+          <rect width="440" height="32" rx="12" fill="#78350f" />
+          <text x="16" y="21" fill="#fef3c7" font-size="11.5" font-weight="800">⚠️ USER B (MINING OFFICER) • SAFELY BLOCKED</text>
+          
+          <text x="16" y="52" fill="#94a3b8" font-size="10">Subscribed to: <tspan fill="#f1f5f9" font-weight="700">Industry & Mining</tspan> • Interests: <tspan fill="#f1f5f9" font-weight="700">Transfers & Postings Only</tspan></text>
+
+          <rect x="14" y="62" width="412" height="42" rx="6" fill="#3b1d07" stroke="#f59e0b" stroke-width="0.8" />
+          <text x="24" y="79" fill="#fde68a" font-size="10.5" font-weight="800">❌ Filtered at Step 3: Specific Topic Mismatch</text>
+          <text x="24" y="94" fill="#fed7aa" font-size="9.5">Ministry matches, but user specifically tuned for Staff Transfers, not Welfare Schemes.</text>
+
+          <text x="16" y="122" fill="#fde68a" font-size="9.5" font-weight="700">🛡️ Relevance Protected • No Alert Sent</text>
+        </g>
+
+        <!-- OUTCOME C: PUNE WORKER (100% MATCH DELIVERED) -->
+        <g transform="translate(875, 355)">
+          <rect width="440" height="285" rx="12" fill="url(#greenCardGrad)" stroke="#10b981" stroke-width="2.2" />
+          
+          <rect width="440" height="36" rx="12" fill="#065f46" />
+          <text x="16" y="24" fill="#a7f3d0" font-size="12.5" font-weight="800">✨ USER C (PUNE CITIZEN) • 100% VERIFIED MATCH!</text>
+          
+          <text x="16" y="58" fill="#cbd5e1" font-size="10.5">Subscribed to: <tspan fill="#ffffff" font-weight="700">Industry & Mining</tspan> • Topic: <tspan fill="#ffffff" font-weight="700">Worker Welfare</tspan> • District: <tspan fill="#ffffff" font-weight="700">Pune</tspan></text>
+
+          <!-- 5-Point Checklist Box -->
+          <rect x="14" y="70" width="412" height="88" rx="8" fill="#043224" stroke="#10b981" stroke-width="1" />
+          <text x="24" y="90" fill="#34d399" font-size="11" font-weight="800">🎉 Passed All 5 Relevance Gates With 100% Compliance</text>
+          <text x="24" y="110" fill="#a7f3d0" font-size="10">[✓] Step 1: Active Subscriber Profile   [✓] Step 2: Subscribed to Ministry #13</text>
+          <text x="24" y="126" fill="#a7f3d0" font-size="10">[✓] Step 3: Selected Worker Welfare Tag   [✓] Step 4: Eligible Audience (Public & Labor)</text>
+          <text x="24" y="142" fill="#a7f3d0" font-size="10">[✓] Step 5: Matches Pune District Jurisdiction</text>
+
+          <!-- WhatsApp Dispatch Card -->
+          <g transform="translate(14, 172)">
+            <rect width="412" height="52" rx="8" fill="url(#greenBtnGrad)" />
+            <text x="20" y="26" fill="#ffffff" font-size="13" font-weight="800">📲 INSTANT WHATSAPP ALERT DELIVERED</text>
+            <text x="20" y="42" fill="#e6fffa" font-size="10.5" font-weight="600">Target Phone: +91 90905 35272 • Delivery Latency: 2.1s</text>
+          </g>
+
+          <text x="18" y="246" fill="#6ee7b7" font-size="10" font-weight="600">Includes executive Marathi summary, direct PDF download link, and key metrics.</text>
         </g>
       </svg>
     </div>
 
     <!-- Candidate Evaluation Walkthrough -->
-    <h2 class="cases-heading">🧪 Concrete Rule Walkthrough (Real Test Scenarios)</h2>
+    <h2 class="cases-heading">🧪 Real-World Subscriber Test Scenarios</h2>
     <div class="cases-grid">
       <!-- Case 1 -->
       <div class="case-card rejected">
-        <span class="case-status status-fail">GATE 2 FAILS • UNSELECTED DEPARTMENT</span>
-        <h3 class="case-user-title">Candidate User 1 (Commercial Contractor)</h3>
+        <span class="case-status status-fail">BLOCKED AT STEP 2 • UNSELECTED MINISTRY</span>
+        <h3 class="case-user-title">User A (Commercial Contractor)</h3>
         <div class="case-user-prefs">
-          role_preset: "COMMERCIAL_VENDOR"<br>
-          preferred_departments: [18] (Public Works)<br>
-          preferred_intents: ["TENDER_AND_PROCUREMENT"]
+          Target Role: Commercial Contractor<br>
+          Selected Ministries: [18] Public Works Department (PWD)<br>
+          Selected Topics: Tenders & Procurement
         </div>
         <p class="case-result-reason">
-          <strong>Outcome: SILENTLY DROPPED.</strong><br>
-          Even though the incoming GR has intent <code>TENDER_AND_PROCUREMENT</code>, it was published by Ministry #13 (Mining). Because the contractor only selected Dept #18 (PWD), the strict department boundary immediately rejects this GR.
+          <strong>Outcome: Suppressed Silently.</strong><br>
+          Even though the incoming resolution is for tender procurement, it belongs to Ministry #13 (Mining). The strict department firewall ensures users never receive notifications for ministries they haven't explicitly chosen.
         </p>
       </div>
 
       <!-- Case 2 -->
       <div class="case-card rejected">
-        <span class="case-status status-fail">GATE 3 FAILS • FINE-TUNED INTENT MISMATCH</span>
-        <h3 class="case-user-title">Candidate User 2 (Mining Officer)</h3>
+        <span class="case-status status-fail">BLOCKED AT STEP 3 • TOPIC FILTER MISMATCH</span>
+        <h3 class="case-user-title">User B (Mining Department Officer)</h3>
         <div class="case-user-prefs">
-          role_preset: "GOVT_OFFICIAL"<br>
-          preferred_departments: [13] (Mining)<br>
-          department_intents["13"]: ["TRANSFER_AND_POSTING"]
+          Target Role: Government Administrative Officer<br>
+          Selected Ministries: [13] Industry & Mining<br>
+          Customized Topics for Mining: Staff Transfers & Postings Only
         </div>
         <p class="case-result-reason">
-          <strong>Outcome: SILENTLY DROPPED.</strong><br>
-          The department matches (#13), but the user explicitly fine-tuned their subscription to only receive cadre transfers. Because this GR has intent <code>WELFARE_AND_SUBSIDY</code>, it is filtered out at Gate 3.
+          <strong>Outcome: Suppressed Silently.</strong><br>
+          The department matches (#13), but the officer fine-tuned their alerts to receive cadre transfers only. Because this resolution is a welfare subsidy, it is filtered out at Step 3.
         </p>
       </div>
 
       <!-- Case 3 -->
       <div class="case-card matched">
-        <span class="case-status status-pass">ALL 5 GATES PASSED • 100% MATCH</span>
-        <h3 class="case-user-title">Candidate User 3 (Citizen in Pune)</h3>
+        <span class="case-status status-pass">PASSED ALL 5 CHECKS • 100% MATCH</span>
+        <h3 class="case-user-title">User C (Citizen / Labor in Pune)</h3>
         <div class="case-user-prefs">
-          preferred_departments: [13] (Mining)<br>
-          department_intents["13"]: ["WELFARE_AND_SUBSIDY"]<br>
-          preferred_districts: ["Pune"]
+          Target Role: Citizen & Labor Subscriber<br>
+          Selected Ministries: [13] Industry & Mining<br>
+          Selected Topics: Worker Welfare & Subsidies<br>
+          Home District: Pune District
         </div>
         <p class="case-result-reason">
-          <strong>Outcome: DELIVERED TO WHATSAPP.</strong><br>
-          Passes Gate 1 (Active), Gate 2 (Dept #13 matches), Gate 3 (Welfare intent matches), Gate 4 (Citizen audience matches), and Gate 5 (Pune district matches). Delivers instantly with Marathi summary and official PDF.
+          <strong>Outcome: Delivered to WhatsApp in &lt; 2.5s.</strong><br>
+          Passes Step 1 (Active), Step 2 (Mining #13), Step 3 (Welfare Tag), Step 4 (Citizen Group), and Step 5 (Pune District). Delivers cleanly formatted alert with executive summary and official PDF link.
         </p>
       </div>
     </div>
