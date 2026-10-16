@@ -229,6 +229,655 @@
     .back-btn:hover {
       background: #1e40af;
     }
+
+    /* =========================================================================
+       MODERN FLOWCHART PIPELINE STYLES (INTUITIVE & RESPONSIVE)
+       ========================================================================= */
+    .flowchart-wrapper {
+      max-width: 1040px;
+      margin: 0 auto;
+      padding: 1rem 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0;
+    }
+
+    /* 1. Trigger Card */
+    .fc-trigger-card {
+      width: 100%;
+      background: linear-gradient(135deg, rgba(2, 132, 199, 0.15) 0%, rgba(15, 23, 42, 0.95) 100%);
+      border: 1.5px solid #0284c7;
+      border-radius: 14px;
+      padding: 1.4rem 1.6rem;
+      box-shadow: 0 12px 30px rgba(2, 132, 199, 0.15);
+      position: relative;
+    }
+
+    .fc-trigger-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 0.75rem;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+    }
+
+    .fc-badge-cyan {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      padding: 0.3rem 0.75rem;
+      background: rgba(56, 189, 248, 0.15);
+      border: 1px solid rgba(56, 189, 248, 0.35);
+      border-radius: 9999px;
+      color: #38bdf8;
+      font-size: 0.75rem;
+      font-weight: 800;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+
+    .fc-pulse-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #38bdf8;
+      box-shadow: 0 0 8px #38bdf8;
+      animation: pulse 1.8s infinite;
+    }
+
+    @keyframes pulse {
+      0% { opacity: 0.4; transform: scale(0.9); }
+      50% { opacity: 1; transform: scale(1.15); }
+      100% { opacity: 0.4; transform: scale(0.9); }
+    }
+
+    .fc-trigger-title {
+      font-size: 1.25rem;
+      font-weight: 800;
+      color: #ffffff;
+      margin-bottom: 0.85rem;
+      line-height: 1.4;
+    }
+
+    .fc-trigger-title span.highlight {
+      color: #38bdf8;
+    }
+
+    .fc-chips-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+      gap: 0.65rem;
+    }
+
+    .fc-chip {
+      background: #090e1a;
+      border: 1px solid #1e293b;
+      border-radius: 8px;
+      padding: 0.6rem 0.8rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.2rem;
+    }
+
+    .fc-chip-label {
+      font-size: 0.7rem;
+      font-weight: 700;
+      color: #64748b;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+    }
+
+    .fc-chip-val {
+      font-size: 0.88rem;
+      font-weight: 700;
+      color: #f1f5f9;
+    }
+
+    /* Vertical Connectors with direction arrows */
+    .fc-arrow-connector {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      position: relative;
+      width: 100%;
+      padding: 0.35rem 0;
+    }
+
+    .fc-arrow-line {
+      width: 2.5px;
+      height: 28px;
+      background: linear-gradient(180deg, #38bdf8 0%, #0284c7 100%);
+    }
+
+    .fc-arrow-line.green {
+      background: linear-gradient(180deg, #10b981 0%, #059669 100%);
+      height: 34px;
+    }
+
+    .fc-arrow-head {
+      width: 0;
+      height: 0;
+      border-left: 6px solid transparent;
+      border-right: 6px solid transparent;
+      border-top: 8px solid #0284c7;
+      margin-top: -1px;
+    }
+
+    .fc-arrow-head.green {
+      border-top-color: #10b981;
+    }
+
+    .fc-flow-badge {
+      margin-top: -16px;
+      margin-bottom: 4px;
+      font-size: 0.72rem;
+      font-weight: 800;
+      padding: 0.15rem 0.6rem;
+      border-radius: 9999px;
+      background: #0f172a;
+      border: 1px solid #38bdf8;
+      color: #38bdf8;
+      z-index: 2;
+    }
+
+    .fc-flow-badge.pass {
+      border-color: #10b981;
+      color: #34d399;
+      background: #064e3b;
+    }
+
+    /* Single Step Node */
+    .fc-step-node {
+      background: #0e172a;
+      border: 1px solid #1e293b;
+      border-radius: 12px;
+      padding: 1.1rem 1.4rem;
+      width: 100%;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
+      display: flex;
+      align-items: flex-start;
+      gap: 1rem;
+      transition: border-color 0.15s ease, transform 0.15s ease;
+    }
+
+    .fc-step-node:hover {
+      border-color: #38bdf8;
+      transform: translateY(-1px);
+    }
+
+    .fc-step-num {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: #0284c7;
+      color: #ffffff;
+      font-size: 0.88rem;
+      font-weight: 800;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .fc-step-num.amber {
+      background: #d97706;
+    }
+
+    .fc-step-num.green {
+      background: #059669;
+    }
+
+    .fc-step-body {
+      flex: 1;
+    }
+
+    .fc-step-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 0.35rem;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+    }
+
+    .fc-step-title {
+      font-size: 1.05rem;
+      font-weight: 800;
+      color: #ffffff;
+      margin: 0;
+    }
+
+    .fc-step-desc {
+      font-size: 0.85rem;
+      color: #94a3b8;
+      line-height: 1.45;
+      margin: 0;
+    }
+
+    .fc-pill-pass {
+      font-size: 0.72rem;
+      font-weight: 800;
+      padding: 0.2rem 0.55rem;
+      border-radius: 6px;
+      background: rgba(16, 185, 129, 0.15);
+      color: #34d399;
+      border: 1px solid rgba(16, 185, 129, 0.35);
+    }
+
+    /* Decision Branching Layout */
+    .fc-fork-container {
+      display: grid;
+      grid-template-columns: 1.15fr 60px 1fr;
+      align-items: center;
+      width: 100%;
+      position: relative;
+    }
+
+    @media (max-width: 900px) {
+      .fc-fork-container {
+        grid-template-columns: 1fr;
+        gap: 0.75rem;
+      }
+      .fc-branch-arm {
+        display: none;
+      }
+    }
+
+    .fc-decision-card {
+      background: #0e172a;
+      border: 1.5px solid #38bdf8;
+      border-radius: 12px;
+      padding: 1.1rem 1.4rem;
+      box-shadow: 0 4px 20px rgba(2, 132, 199, 0.15);
+    }
+
+    .fc-decision-card.amber {
+      border-color: #f59e0b;
+      box-shadow: 0 4px 20px rgba(245, 158, 11, 0.15);
+    }
+
+    .fc-decision-badge {
+      font-size: 0.68rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      color: #38bdf8;
+      margin-bottom: 0.25rem;
+    }
+
+    .fc-decision-badge.amber {
+      color: #fbbf24;
+    }
+
+    .fc-decision-paths {
+      display: flex;
+      gap: 0.75rem;
+      margin-top: 0.75rem;
+      padding-top: 0.6rem;
+      border-top: 1px solid #1e293b;
+      font-size: 0.78rem;
+    }
+
+    .fc-path-yes {
+      color: #34d399;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 0.3rem;
+    }
+
+    .fc-path-no {
+      color: #fda4af;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 0.3rem;
+    }
+
+    .fc-path-no.amber {
+      color: #fde68a;
+    }
+
+    /* Branch Arm (Connecting Line pointing to rejection) */
+    .fc-branch-arm {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      width: 100%;
+    }
+
+    .fc-branch-line {
+      height: 2.5px;
+      width: 100%;
+      background: #f43f5e;
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .fc-branch-line.amber {
+      background: #f59e0b;
+    }
+
+    .fc-branch-line::after {
+      content: '';
+      position: absolute;
+      right: 0;
+      top: -4px;
+      width: 0;
+      height: 0;
+      border-top: 5px solid transparent;
+      border-bottom: 5px solid transparent;
+      border-left: 7px solid #f43f5e;
+    }
+
+    .fc-branch-line.amber::after {
+      border-left-color: #f59e0b;
+    }
+
+    .fc-branch-pill {
+      position: absolute;
+      top: -24px;
+      font-size: 0.68rem;
+      font-weight: 800;
+      padding: 0.15rem 0.45rem;
+      border-radius: 4px;
+      background: #4c0519;
+      color: #fda4af;
+      border: 1px solid #f43f5e;
+      white-space: nowrap;
+    }
+
+    .fc-branch-pill.amber {
+      background: #451a03;
+      color: #fde68a;
+      border-color: #f59e0b;
+    }
+
+    /* Rejection Card */
+    .fc-outcome-card {
+      background: rgba(244, 63, 94, 0.06);
+      border: 1.5px solid rgba(244, 63, 94, 0.4);
+      border-radius: 12px;
+      padding: 1rem 1.25rem;
+    }
+
+    .fc-outcome-card.amber {
+      background: rgba(245, 158, 11, 0.06);
+      border-color: rgba(245, 158, 11, 0.4);
+    }
+
+    .fc-outcome-status {
+      font-size: 0.72rem;
+      font-weight: 800;
+      color: #fb7185;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+      margin-bottom: 0.35rem;
+    }
+
+    .fc-outcome-status.amber {
+      color: #fbbf24;
+    }
+
+    .fc-outcome-user {
+      font-size: 0.98rem;
+      font-weight: 800;
+      color: #f8fafc;
+      margin-bottom: 0.25rem;
+    }
+
+    .fc-outcome-pref {
+      font-size: 0.8rem;
+      color: #94a3b8;
+      margin-bottom: 0.5rem;
+    }
+
+    .fc-outcome-pref b {
+      color: #e2e8f0;
+    }
+
+    .fc-outcome-reason {
+      font-size: 0.82rem;
+      color: #cbd5e1;
+      line-height: 1.4;
+      margin-bottom: 0.6rem;
+    }
+
+    .fc-outcome-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      font-size: 0.72rem;
+      font-weight: 700;
+      color: #fda4af;
+      background: rgba(244, 63, 94, 0.15);
+      padding: 0.2rem 0.55rem;
+      border-radius: 4px;
+    }
+
+    .fc-outcome-badge.amber {
+      color: #fde68a;
+      background: rgba(245, 158, 11, 0.15);
+    }
+
+    /* 4 & 5 Duo Grid */
+    .fc-duo-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+      width: 100%;
+    }
+
+    @media (max-width: 768px) {
+      .fc-duo-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    /* 5. Climax Delivery Card & WhatsApp Mockup */
+    .fc-delivery-wrapper {
+      width: 100%;
+      background: linear-gradient(135deg, rgba(16, 185, 129, 0.12) 0%, rgba(6, 78, 59, 0.35) 100%);
+      border: 2px solid #10b981;
+      border-radius: 14px;
+      padding: 1.4rem 1.6rem;
+      box-shadow: 0 15px 35px rgba(16, 185, 129, 0.15);
+    }
+
+    .fc-delivery-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 1rem;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+      padding-bottom: 0.85rem;
+      border-bottom: 1px solid rgba(16, 185, 129, 0.25);
+    }
+
+    .fc-delivery-title-box {
+      display: flex;
+      gap: 0.8rem;
+      align-items: flex-start;
+    }
+
+    .fc-delivery-icon {
+      font-size: 1.6rem;
+      line-height: 1;
+    }
+
+    .fc-delivery-badge {
+      font-size: 0.72rem;
+      font-weight: 800;
+      color: #34d399;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    .fc-delivery-h3 {
+      font-size: 1.25rem;
+      font-weight: 800;
+      color: #ffffff;
+      margin: 0.15rem 0 0.35rem 0;
+    }
+
+    .fc-delivery-sub {
+      font-size: 0.85rem;
+      color: #cbd5e1;
+      margin: 0;
+    }
+
+    .fc-delivery-sub b {
+      color: #ffffff;
+    }
+
+    .fc-speed-tag {
+      font-size: 0.78rem;
+      font-weight: 700;
+      padding: 0.35rem 0.75rem;
+      background: #064e3b;
+      border: 1px solid #10b981;
+      color: #a7f3d0;
+      border-radius: 8px;
+    }
+
+    .fc-checks-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      margin-bottom: 1.25rem;
+    }
+
+    .fc-chk {
+      font-size: 0.78rem;
+      font-weight: 700;
+      color: #a7f3d0;
+      background: rgba(16, 185, 129, 0.12);
+      border: 1px solid rgba(16, 185, 129, 0.3);
+      border-radius: 6px;
+      padding: 0.25rem 0.6rem;
+    }
+
+    /* WhatsApp Phone Frame Mockup */
+    .fc-wa-phone {
+      background: #0b141a;
+      border: 1px solid #1f2c34;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+    }
+
+    .fc-wa-topbar {
+      background: #202c33;
+      padding: 0.75rem 1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      border-bottom: 1px solid #111b21;
+    }
+
+    .fc-wa-avatar {
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      background: #00a884;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.2rem;
+      flex-shrink: 0;
+    }
+
+    .fc-wa-name {
+      font-size: 0.92rem;
+      font-weight: 700;
+      color: #e9edef;
+      display: flex;
+      align-items: center;
+      gap: 0.35rem;
+    }
+
+    .fc-wa-verified {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      background: #00a884;
+      color: #111b21;
+      font-size: 0.65rem;
+      font-weight: 900;
+    }
+
+    .fc-wa-status {
+      font-size: 0.72rem;
+      color: #8696a0;
+    }
+
+    .fc-wa-chatbody {
+      padding: 1.25rem;
+      background: #0b141a;
+      background-image: radial-gradient(#1f2c34 1px, transparent 1px);
+      background-size: 16px 16px;
+      display: flex;
+      justify-content: flex-start;
+    }
+
+    .fc-wa-bubble {
+      background: #005c4b;
+      color: #e9edef;
+      border-radius: 8px 8px 8px 0;
+      padding: 0.9rem 1.1rem;
+      max-width: 680px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+      position: relative;
+      font-size: 0.88rem;
+      line-height: 1.55;
+    }
+
+    .fc-wa-bubble-title {
+      font-weight: 800;
+      font-size: 0.95rem;
+      color: #ffffff;
+      margin-bottom: 0.5rem;
+      padding-bottom: 0.4rem;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+    }
+
+    .fc-wa-meta-row {
+      margin-bottom: 0.3rem;
+      color: #e9edef;
+    }
+
+    .fc-wa-meta-row b {
+      color: #ffffff;
+    }
+
+    .fc-wa-meta-row.link {
+      margin-top: 0.6rem;
+      padding-top: 0.5rem;
+      border-top: 1px dashed rgba(255, 255, 255, 0.2);
+    }
+
+    .fc-wa-meta-row a {
+      color: #53bdeb;
+      font-weight: 700;
+      text-decoration: underline;
+    }
+
+    .fc-wa-time {
+      text-align: right;
+      font-size: 0.7rem;
+      color: #aebac1;
+      margin-top: 0.4rem;
+      letter-spacing: 0.02em;
+    }
   </style>
 </head>
 <body>
@@ -398,306 +1047,237 @@
         <span class="diagram-meta">Zero Spam Architecture • Tested across 46 Real Scenarios</span>
       </div>
 
-      <svg class="matching-svg" viewBox="0 0 1340 670" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <defs>
-          <!-- Flowchart Gradients -->
-          <linearGradient id="bgCanvasGrad" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stop-color="#0b1120" />
-            <stop offset="100%" stop-color="#060911" />
-          </linearGradient>
+      <div class="flowchart-wrapper">
+        <!-- 1. ORIGIN / TRIGGER: INCOMING RESOLUTION PUBLISHED -->
+        <div class="fc-trigger-card">
+          <div class="fc-trigger-header">
+            <span class="fc-badge-cyan"><span class="fc-pulse-dot"></span> New Official Order Published</span>
+            <span style="font-family: 'JetBrains Mono', monospace; font-size: 0.78rem; color: #94a3b8;">Order Ref: #202610141300000013</span>
+          </div>
+          <div class="fc-trigger-title">
+            📄 Maharashtra Government Order Published: <span class="highlight">Worker Welfare & Direct Financial Aid</span>
+          </div>
+          <div class="fc-chips-grid">
+            <div class="fc-chip">
+              <span class="fc-chip-label">Issuing Department</span>
+              <span class="fc-chip-val" style="color: #38bdf8;">Industry, Energy & Mining</span>
+            </div>
+            <div class="fc-chip">
+              <span class="fc-chip-label">Subject / Topic</span>
+              <span class="fc-chip-val" style="color: #fbbf24;">Worker Welfare & Financial Subsidy</span>
+            </div>
+            <div class="fc-chip">
+              <span class="fc-chip-label">Target Beneficiary</span>
+              <span class="fc-chip-val" style="color: #c084fc;">General Public & Mining Laborers</span>
+            </div>
+            <div class="fc-chip">
+              <span class="fc-chip-label">Applicable Location</span>
+              <span class="fc-chip-val" style="color: #34d399;">Pune District Only</span>
+            </div>
+            <div class="fc-chip">
+              <span class="fc-chip-label">Document Nature</span>
+              <span class="fc-chip-val" style="color: #94a3b8;">Original Order (Fresh Policy)</span>
+            </div>
+          </div>
+        </div>
 
-          <linearGradient id="docHdrGrad" x1="0" y1="0" x2="1" y2="0">
-            <stop offset="0%" stop-color="#0284c7" />
-            <stop offset="100%" stop-color="#0ea5e9" />
-          </linearGradient>
+        <!-- CONNECTOR 1 -->
+        <div class="fc-arrow-connector">
+          <div class="fc-arrow-line"></div>
+          <span class="fc-flow-badge">Enters Relevance Filter ⬇</span>
+          <div class="fc-arrow-head"></div>
+        </div>
 
-          <linearGradient id="docBodyGrad" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stop-color="#0d172a" />
-            <stop offset="100%" stop-color="#070c18" />
-          </linearGradient>
+        <!-- STEP 1: ACTIVE SUBSCRIBER CHECK -->
+        <div class="fc-step-node">
+          <div class="fc-step-num">1</div>
+          <div class="fc-step-body">
+            <div class="fc-step-top">
+              <h4 class="fc-step-title">Step 1 • Subscriber Account Verification</h4>
+              <span class="fc-pill-pass">✓ Account Active</span>
+            </div>
+            <p class="fc-step-desc">
+              Confirms subscriber profile is active, valid phone format exists, and alert notifications are enabled. Revisions are filtered out if user opted for original orders only.
+            </p>
+          </div>
+        </div>
 
-          <linearGradient id="nodeGrad" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stop-color="#141f36" />
-            <stop offset="100%" stop-color="#0b1324" />
-          </linearGradient>
+        <!-- CONNECTOR 2 -->
+        <div class="fc-arrow-connector">
+          <div class="fc-arrow-line"></div>
+          <div class="fc-arrow-head"></div>
+        </div>
 
-          <linearGradient id="redCardGrad" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stop-color="#241118" />
-            <stop offset="100%" stop-color="#140a0e" />
-          </linearGradient>
+        <!-- STEP 2: DEPARTMENT FILTER FORK (DECISION & USER A SUPPRESSION) -->
+        <div class="fc-fork-container">
+          <!-- Decision Box -->
+          <div class="fc-decision-card">
+            <div class="fc-decision-badge">Step 2 • Department Firewall</div>
+            <h4 class="fc-step-title" style="margin-bottom: 0.4rem;">Did Subscriber Select Industry & Mining?</h4>
+            <p class="fc-step-desc">
+              Cross-references the order's department against subscriber's chosen departments list. Unselected ministries are stopped immediately.
+            </p>
+            <div class="fc-decision-paths">
+              <span class="fc-path-yes">YES ⬇ Matches Department</span>
+              <span class="fc-path-no">NO ➔ Unselected Ministry</span>
+            </div>
+          </div>
 
-          <linearGradient id="amberCardGrad" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stop-color="#261a0d" />
-            <stop offset="100%" stop-color="#140d05" />
-          </linearGradient>
+          <!-- Branch Connector Line -->
+          <div class="fc-branch-arm">
+            <div class="fc-branch-line">
+              <span class="fc-branch-pill">NO ➔</span>
+            </div>
+          </div>
 
-          <linearGradient id="greenCardGrad" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stop-color="#062e24" />
-            <stop offset="100%" stop-color="#021a14" />
-          </linearGradient>
+          <!-- Outcome for User A -->
+          <div class="fc-outcome-card">
+            <div class="fc-outcome-status">🛑 BLOCKED AT STEP 2 • UNSELECTED DEPARTMENT</div>
+            <div class="fc-outcome-user">User A (PWD Contractor)</div>
+            <div class="fc-outcome-pref">Subscribed to: <b>Public Works (PWD)</b> • Interested in: <b>Tenders</b></div>
+            <div class="fc-outcome-reason">
+              Even though the order involves procurement, it belongs to Mining. The strict firewall guarantees users never receive circulars from ministries they did not subscribe to.
+            </div>
+            <div class="fc-outcome-badge">🛡️ Zero Spam Guaranteed • No Alert Sent</div>
+          </div>
+        </div>
 
-          <linearGradient id="greenBtnGrad" x1="0" y1="0" x2="1" y2="0">
-            <stop offset="0%" stop-color="#059669" />
-            <stop offset="100%" stop-color="#10b981" />
-          </linearGradient>
+        <!-- CONNECTOR 3 -->
+        <div class="fc-arrow-connector">
+          <div class="fc-arrow-line"></div>
+          <span class="fc-flow-badge pass">YES ⬇ Department #13 Matched</span>
+          <div class="fc-arrow-head"></div>
+        </div>
 
-          <!-- Markers -->
-          <marker id="arrowCyan" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-            <path d="M 0 1 L 9 5 L 0 9 z" fill="#38bdf8" />
-          </marker>
-          <marker id="arrowGreen" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-            <path d="M 0 1 L 9 5 L 0 9 z" fill="#10b981" />
-          </marker>
-          <marker id="arrowRed" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-            <path d="M 0 1 L 9 5 L 0 9 z" fill="#f43f5e" />
-          </marker>
-          <marker id="arrowAmber" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-            <path d="M 0 1 L 9 5 L 0 9 z" fill="#f59e0b" />
-          </marker>
+        <!-- STEP 3: TOPIC / INTENT FILTER FORK (DECISION & USER B SUPPRESSION) -->
+        <div class="fc-fork-container">
+          <!-- Decision Box -->
+          <div class="fc-decision-card amber">
+            <div class="fc-decision-badge amber">Step 3 • Topic & Scheme Filter</div>
+            <h4 class="fc-step-title" style="margin-bottom: 0.4rem;">Did Subscriber Choose Worker Welfare?</h4>
+            <p class="fc-step-desc">
+              Checks whether the user subscribed to welfare subsidies or tuned their alert preferences for administrative actions (e.g. staff transfers, postings).
+            </p>
+            <div class="fc-decision-paths">
+              <span class="fc-path-yes">YES ⬇ Welfare Schemes Matched</span>
+              <span class="fc-path-no amber">NO ➔ Administrative Topics Only</span>
+            </div>
+          </div>
 
-          <!-- Drop Shadows & Glow -->
-          <filter id="softGlow" x="-10%" y="-10%" width="120%" height="120%">
-            <feGaussianBlur stdDeviation="3" result="blur" />
-            <feComposite in="SourceGraphic" in2="blur" operator="over" />
-          </filter>
-        </defs>
+          <!-- Branch Connector Line -->
+          <div class="fc-branch-arm">
+            <div class="fc-branch-line amber">
+              <span class="fc-branch-pill amber">NO ➔</span>
+            </div>
+          </div>
 
-        <!-- Subtle Canvas Grid -->
-        <g opacity="0.07" stroke="#38bdf8" stroke-width="1">
-          <line x1="0" y1="110" x2="1340" y2="110" />
-          <line x1="0" y1="220" x2="1340" y2="220" />
-          <line x1="0" y1="330" x2="1340" y2="330" />
-          <line x1="0" y1="440" x2="1340" y2="440" />
-          <line x1="0" y1="550" x2="1340" y2="550" />
-        </g>
+          <!-- Outcome for User B -->
+          <div class="fc-outcome-card amber">
+            <div class="fc-outcome-status amber">⚠️ BLOCKED AT STEP 3 • TOPIC MISMATCH</div>
+            <div class="fc-outcome-user">User B (Mining Department Officer)</div>
+            <div class="fc-outcome-pref">Subscribed to: <b>Industry & Mining</b> • Chose: <b>Staff Transfers Only</b></div>
+            <div class="fc-outcome-reason">
+              Department matches, but officer specifically tuned alerts for administrative postings. Citizen welfare grant orders are filtered out to protect signal quality.
+            </div>
+            <div class="fc-outcome-badge amber">🛡️ Relevance Protected • No Alert Sent</div>
+          </div>
+        </div>
 
-        <!-- ==================== COLUMN 1: INCOMING RESOLUTION ==================== -->
-        <g transform="translate(25, 30)">
-          <!-- Document Card -->
-          <rect width="265" height="610" rx="14" fill="url(#docBodyGrad)" stroke="#0284c7" stroke-width="1.8" />
-          
-          <!-- Header Banner -->
-          <rect width="265" height="46" rx="14" fill="url(#docHdrGrad)" />
-          <text x="18" y="29" fill="#ffffff" font-size="13" font-weight="800" letter-spacing="0.02em">📄 NEW RESOLUTION ARRIVES</text>
+        <!-- CONNECTOR 4 -->
+        <div class="fc-arrow-connector">
+          <div class="fc-arrow-line"></div>
+          <span class="fc-flow-badge pass">YES ⬇ Welfare Topic Matched</span>
+          <div class="fc-arrow-head"></div>
+        </div>
 
-          <!-- Subtitle -->
-          <text x="18" y="68" fill="#38bdf8" font-size="10.5" font-weight="700">Official Order Published on Portal</text>
-          
-          <!-- Tile 1: Document ID -->
-          <rect x="14" y="82" width="237" height="52" rx="7" fill="#060b17" stroke="#1e293b" />
-          <text x="22" y="99" fill="#64748b" font-size="9" font-weight="700">DOCUMENT REFERENCE ID</text>
-          <text x="22" y="118" fill="#38bdf8" font-size="11" font-family="'JetBrains Mono', monospace" font-weight="700">202610141300000013</text>
+        <!-- STEP 4 & 5: AUDIENCE & LOCATION (DUO GRID) -->
+        <div class="fc-duo-grid">
+          <div class="fc-step-node">
+            <div class="fc-step-num">4</div>
+            <div class="fc-step-body">
+              <div class="fc-step-top">
+                <h4 class="fc-step-title">Step 4 • Audience Eligibility</h4>
+                <span class="fc-pill-pass">✓ Citizen & Labor</span>
+              </div>
+              <p class="fc-step-desc">
+                Ensures public welfare schemes reach citizen/labor subscribers, while civil service circulars are kept internal.
+              </p>
+            </div>
+          </div>
 
-          <!-- Tile 2: Ministry -->
-          <rect x="14" y="142" width="237" height="64" rx="7" fill="#060b17" stroke="#1e293b" />
-          <text x="22" y="159" fill="#64748b" font-size="9" font-weight="700">ISSUING MINISTRY</text>
-          <text x="22" y="177" fill="#f8fafc" font-size="11.5" font-weight="800">Industry, Energy & Mining</text>
-          <text x="22" y="193" fill="#94a3b8" font-size="9.5">उद्योग, ऊर्जा व खनिकर्म विभाग</text>
+          <div class="fc-step-node">
+            <div class="fc-step-num green">5</div>
+            <div class="fc-step-body">
+              <div class="fc-step-top">
+                <h4 class="fc-step-title">Step 5 • Geographic Location</h4>
+                <span class="fc-pill-pass">✓ Pune District</span>
+              </div>
+              <p class="fc-step-desc">
+                Resolution is targeted specifically to Pune District. Successfully matches user's registered home district.
+              </p>
+            </div>
+          </div>
+        </div>
 
-          <!-- Tile 3: Policy Topic -->
-          <rect x="14" y="214" width="237" height="64" rx="7" fill="#060b17" stroke="#1e293b" />
-          <text x="22" y="231" fill="#64748b" font-size="9" font-weight="700">POLICY ACTION / TOPIC</text>
-          <text x="22" y="249" fill="#fbbf24" font-size="11.5" font-weight="800">🎁 Worker Welfare & Financial Aid</text>
-          <text x="22" y="265" fill="#94a3b8" font-size="9.5">Direct Benefit Financial Subsidy</text>
+        <!-- CONNECTOR 5 -->
+        <div class="fc-arrow-connector">
+          <div class="fc-arrow-line green"></div>
+          <span class="fc-flow-badge pass">🎉 100% RELEVANCE VERIFIED (ALL 5 GATES PASSED)</span>
+          <div class="fc-arrow-head green"></div>
+        </div>
 
-          <!-- Tile 4: Target Audience -->
-          <rect x="14" y="286" width="237" height="58" rx="7" fill="#060b17" stroke="#1e293b" />
-          <text x="22" y="303" fill="#64748b" font-size="9" font-weight="700">ELIGIBLE AUDIENCE</text>
-          <text x="22" y="321" fill="#c084fc" font-size="11.5" font-weight="800">👥 General Public & Labor</text>
-          <text x="22" y="335" fill="#94a3b8" font-size="9">Beneficiary: Mining Workers</text>
+        <!-- STEP 6 / CLIMAX: USER C & REALISTIC WHATSAPP DELIVERY CARD -->
+        <div class="fc-delivery-wrapper">
+          <div class="fc-delivery-header">
+            <div class="fc-delivery-title-box">
+              <span class="fc-delivery-icon">✨</span>
+              <div>
+                <div class="fc-delivery-badge">100% Verified Match Delivered</div>
+                <h3 class="fc-delivery-h3">User C (Pune Citizen / Mining Worker)</h3>
+                <p class="fc-delivery-sub">Subscribed to: <b>Industry & Mining</b> • Topic: <b>Worker Welfare</b> • District: <b>Pune</b></p>
+              </div>
+            </div>
+            <div class="fc-speed-tag">
+              ⚡ Delivery Latency: <b>2.1s</b>
+            </div>
+          </div>
 
-          <!-- Tile 5: Jurisdiction -->
-          <rect x="14" y="352" width="237" height="58" rx="7" fill="#060b17" stroke="#1e293b" />
-          <text x="22" y="369" fill="#64748b" font-size="9" font-weight="700">APPLICABLE LOCATION</text>
-          <text x="22" y="387" fill="#34d399" font-size="11.5" font-weight="800">📍 Pune District</text>
-          <text x="22" y="401" fill="#94a3b8" font-size="9">Division: Pune Region</text>
+          <div class="fc-checks-row">
+            <span class="fc-chk">✓ Step 1: Active Account</span>
+            <span class="fc-chk">✓ Step 2: Mining Dept #13</span>
+            <span class="fc-chk">✓ Step 3: Worker Welfare Tag</span>
+            <span class="fc-chk">✓ Step 4: Public & Labor Beneficiary</span>
+            <span class="fc-chk">✓ Step 5: Pune District Match</span>
+          </div>
 
-          <!-- Tile 6: Document Type -->
-          <rect x="14" y="418" width="237" height="54" rx="7" fill="#060b17" stroke="#1e293b" />
-          <text x="22" y="435" fill="#64748b" font-size="9" font-weight="700">DOCUMENT TYPE</text>
-          <text x="22" y="453" fill="#38bdf8" font-size="11.5" font-weight="800">✨ Original Government Order</text>
-          <text x="22" y="465" fill="#94a3b8" font-size="9">Not an amendment / corrigendum</text>
-
-          <!-- Pipeline Entry Banner -->
-          <g transform="translate(14, 550)">
-            <rect width="237" height="42" rx="8" fill="#0284c7" />
-            <text x="20" y="26" fill="#ffffff" font-size="11.5" font-weight="800">Entering Smart Filter ➔</text>
-          </g>
-        </g>
-
-        <!-- Connector Path: Doc -> Pipeline Funnel -->
-        <path d="M 290 350 L 330 350" stroke="#38bdf8" stroke-width="3" stroke-linecap="round" marker-end="url(#arrowCyan)" />
-
-        <!-- ==================== COLUMN 2: 5-STEP DECISION PIPELINE ==================== -->
-        <g transform="translate(330, 30)">
-          <!-- Outer Pipeline Enclosure -->
-          <rect width="505" height="610" rx="14" fill="#080e1c" stroke="#1e293b" stroke-width="1.5" stroke-dasharray="6 3" />
-          
-          <!-- Funnel Title Header -->
-          <rect x="16" y="12" width="473" height="30" rx="6" fill="#131e36" stroke="#1e293b" />
-          <text x="26" y="32" fill="#93c5fd" font-size="11" font-weight="800" font-family="'JetBrains Mono', monospace">⚡ THE 5-STEP SMART RELEVANCE FILTER (ALL MUST PASS)</text>
-
-          <!-- STEP 1: SUBSCRIBER ACTIVE CHECK -->
-          <g transform="translate(18, 52)">
-            <rect width="469" height="74" rx="9" fill="url(#nodeGrad)" stroke="#38bdf8" stroke-width="1.5" />
-            <circle cx="24" cy="24" r="13" fill="#0284c7" />
-            <text x="20" y="28" fill="#ffffff" font-size="12" font-weight="800">1</text>
-            <text x="48" y="24" fill="#ffffff" font-size="12.5" font-weight="800">Step 1 • Is Subscriber Active & Ready for Alerts?</text>
-            <text x="48" y="43" fill="#94a3b8" font-size="10">• Verifies account status is active and notifications are turned on</text>
-            <text x="48" y="59" fill="#94a3b8" font-size="10">• Filters out revisions if user opted for original orders only</text>
-            <!-- Status Badge -->
-            <rect x="360" y="14" width="95" height="20" rx="4" fill="#064e3b" />
-            <text x="367" y="28" fill="#34d399" font-size="9" font-weight="800">✓ Account Active</text>
-          </g>
-
-          <!-- Connector 1 -> 2 -->
-          <path d="M 252 126 L 252 142" stroke="#38bdf8" stroke-width="2.5" marker-end="url(#arrowCyan)" />
-
-          <!-- STEP 2: MINISTRY CHECK (STRICT FIREWALL) -->
-          <g transform="translate(18, 142)">
-            <rect width="469" height="88" rx="9" fill="url(#nodeGrad)" stroke="#f43f5e" stroke-width="2" />
-            <circle cx="24" cy="24" r="13" fill="#be123c" />
-            <text x="20" y="28" fill="#ffffff" font-size="12" font-weight="800">2</text>
-            <text x="48" y="24" fill="#fda4af" font-size="12.5" font-weight="800">Step 2 • Ministry Check: Did user select Industry & Mining?</text>
-            <text x="48" y="44" fill="#e2e8f0" font-size="10">• Checks if Ministry #13 is in the subscriber's chosen department list</text>
-            <!-- Strict Rule Banner -->
-            <rect x="48" y="54" width="406" height="24" rx="4" fill="#4c0519" />
-            <text x="56" y="70" fill="#fecdd3" font-size="9.5" font-weight="700">🔒 STRICT FIREWALL: Unselected ministries are NEVER sent (Zero Spam)</text>
-          </g>
-
-          <!-- Connector 2 -> 3 -->
-          <path d="M 252 230 L 252 246" stroke="#38bdf8" stroke-width="2.5" marker-end="url(#arrowCyan)" />
-
-          <!-- STEP 3: TOPIC / CATEGORY CHECK -->
-          <g transform="translate(18, 246)">
-            <rect width="469" height="84" rx="9" fill="url(#nodeGrad)" stroke="#f59e0b" stroke-width="1.8" />
-            <circle cx="24" cy="24" r="13" fill="#b45309" />
-            <text x="20" y="28" fill="#ffffff" font-size="12" font-weight="800">3</text>
-            <text x="48" y="24" fill="#fde68a" font-size="12" font-weight="800">Step 3 • Topic Filter: Did user select Worker Welfare?</text>
-            <text x="48" y="44" fill="#e2e8f0" font-size="10">• Evaluates user's fine-tuned topic preferences for this specific ministry</text>
-            <text x="48" y="60" fill="#94a3b8" font-size="10">• Matches 'Worker Welfare & Financial Aid' against user's alert tags</text>
-            <text x="48" y="74" fill="#64748b" font-size="9.5">Fallback: General intent topics if no department customisation set</text>
-          </g>
-
-          <!-- Connector 3 -> 4 -->
-          <path d="M 252 330 L 252 346" stroke="#38bdf8" stroke-width="2.5" marker-end="url(#arrowCyan)" />
-
-          <!-- STEP 4: AUDIENCE & BENEFICIARY CHECK -->
-          <g transform="translate(18, 346)">
-            <rect width="469" height="78" rx="9" fill="url(#nodeGrad)" stroke="#a855f7" stroke-width="1.5" />
-            <circle cx="24" cy="24" r="13" fill="#7e22ce" />
-            <text x="20" y="28" fill="#ffffff" font-size="12" font-weight="800">4</text>
-            <text x="48" y="24" fill="#e9d5ff" font-size="12" font-weight="800">Step 4 • Target Group: Does policy apply to user?</text>
-            <text x="48" y="44" fill="#e2e8f0" font-size="10">• Ensures public welfare schemes go to citizens/labor, not internal staff</text>
-            <text x="48" y="60" fill="#94a3b8" font-size="10">• Prevents civil service seniority lists from reaching general citizens</text>
-            <!-- Badge -->
-            <rect x="350" y="14" width="105" height="20" rx="4" fill="#3b0764" />
-            <text x="402" y="28" text-anchor="middle" fill="#d8b4fe" font-size="9" font-weight="700">✓ Citizen & Labor</text>
-          </g>
-
-          <!-- Connector 4 -> 5 -->
-          <path d="M 252 424 L 252 440" stroke="#38bdf8" stroke-width="2.5" marker-end="url(#arrowCyan)" />
-
-          <!-- STEP 5: GEOGRAPHIC CASCADE CHECK -->
-          <g transform="translate(18, 440)">
-            <rect width="469" height="84" rx="9" fill="url(#nodeGrad)" stroke="#10b981" stroke-width="2" />
-            <circle cx="24" cy="24" r="13" fill="#047857" />
-            <text x="20" y="28" fill="#ffffff" font-size="12" font-weight="800">5</text>
-            <text x="48" y="24" fill="#6ee7b7" font-size="12" font-weight="800">Step 5 • Location: Is user in applicable district?</text>
-            <text x="48" y="44" fill="#e2e8f0" font-size="10">• Statewide decisions deliver to all; local orders require district match</text>
-            <text x="48" y="60" fill="#94a3b8" font-size="10">• Resolution is specific to Pune District ➔ matches user's home location</text>
-            <!-- Badge -->
-            <rect x="358" y="14" width="97" height="20" rx="4" fill="#064e3b" />
-            <text x="406" y="28" text-anchor="middle" fill="#34d399" font-size="9" font-weight="800">✓ Pune Matches</text>
-          </g>
-
-          <!-- Bottom Funnel Indicator -->
-          <g transform="translate(18, 545)">
-            <rect width="469" height="48" rx="8" fill="#052e16" stroke="#10b981" stroke-width="1.2" />
-            <text x="20" y="28" fill="#34d399" font-size="12" font-weight="800">🎯 FULL 5-STEP COMPLIANCE ACHIEVED</text>
-            <text x="20" y="42" fill="#a7f3d0" font-size="9.5">Active Account ✓  Mining Dept ✓  Welfare Topic ✓  Citizen Audience ✓  Pune District ✓</text>
-          </g>
-        </g>
-
-        <!-- ==================== FLOWCHART BRANCH CONNECTORS ==================== -->
-        <!-- Branch 1: Gate 2 Rejection -> User A (PWD Contractor) -->
-        <path d="M 818 215 C 845 215, 855 130, 875 130" stroke="#f43f5e" stroke-width="2.5" stroke-dasharray="5 3" fill="none" marker-end="url(#arrowRed)" />
-        <rect x="825" y="160" width="46" height="18" rx="4" fill="#4c0519" stroke="#f43f5e" stroke-width="0.8" />
-        <text x="848" y="173" text-anchor="middle" fill="#fda4af" font-size="9" font-weight="800">NO</text>
-
-        <!-- Branch 2: Gate 3 Rejection -> User B (Mining Officer) -->
-        <path d="M 818 318 C 845 318, 855 272, 875 272" stroke="#f59e0b" stroke-width="2.5" stroke-dasharray="5 3" fill="none" marker-end="url(#arrowAmber)" />
-        <rect x="825" y="286" width="46" height="18" rx="4" fill="#451a03" stroke="#f59e0b" stroke-width="0.8" />
-        <text x="848" y="299" text-anchor="middle" fill="#fde68a" font-size="9" font-weight="800">NO</text>
-
-        <!-- Branch 3: Gate 5 100% Pass -> User C (Pune Citizen) -->
-        <path d="M 818 510 C 845 510, 855 450, 875 450" stroke="#10b981" stroke-width="3.5" fill="none" marker-end="url(#arrowGreen)" />
-        <rect x="823" y="470" width="48" height="18" rx="4" fill="#064e3b" stroke="#10b981" stroke-width="0.8" />
-        <text x="847" y="483" text-anchor="middle" fill="#a7f3d0" font-size="9" font-weight="800">YES</text>
-
-        <!-- ==================== COLUMN 3: SUBSCRIBER OUTCOMES ==================== -->
-        <!-- OUTCOME A: PWD CONTRACTOR (FILTERED AT STEP 2) -->
-        <g transform="translate(875, 45)">
-          <rect width="440" height="135" rx="12" fill="url(#redCardGrad)" stroke="#f43f5e" stroke-width="1.8" />
-          
-          <rect width="440" height="32" rx="12" fill="#881337" />
-          <text x="16" y="21" fill="#fecdd3" font-size="11.5" font-weight="800">🛑 USER A (PWD CONTRACTOR) • SAFELY BLOCKED</text>
-          
-          <text x="16" y="52" fill="#94a3b8" font-size="10">Subscribed to: <tspan fill="#f1f5f9" font-weight="700">Public Works (PWD)</tspan> • Interests: <tspan fill="#f1f5f9" font-weight="700">Tenders & Contracts</tspan></text>
-
-          <rect x="14" y="62" width="412" height="42" rx="6" fill="#3b0716" stroke="#f43f5e" stroke-width="0.8" />
-          <text x="24" y="79" fill="#fda4af" font-size="10.5" font-weight="800">❌ Filtered at Step 2: Unselected Department</text>
-          <text x="24" y="94" fill="#fecdd3" font-size="9.5">Even though user wants tenders, this GR is from Mining. Unselected ministries are blocked.</text>
-
-          <text x="16" y="122" fill="#fda4af" font-size="9.5" font-weight="700">🛡️ Zero Spam Guaranteed • No Alert Sent</text>
-        </g>
-
-        <!-- OUTCOME B: MINING OFFICER (FILTERED AT STEP 3) -->
-        <g transform="translate(875, 200)">
-          <rect width="440" height="135" rx="12" fill="url(#amberCardGrad)" stroke="#f59e0b" stroke-width="1.8" />
-          
-          <rect width="440" height="32" rx="12" fill="#78350f" />
-          <text x="16" y="21" fill="#fef3c7" font-size="11.5" font-weight="800">⚠️ USER B (MINING OFFICER) • SAFELY BLOCKED</text>
-          
-          <text x="16" y="52" fill="#94a3b8" font-size="10">Subscribed to: <tspan fill="#f1f5f9" font-weight="700">Industry & Mining</tspan> • Interests: <tspan fill="#f1f5f9" font-weight="700">Transfers & Postings Only</tspan></text>
-
-          <rect x="14" y="62" width="412" height="42" rx="6" fill="#3b1d07" stroke="#f59e0b" stroke-width="0.8" />
-          <text x="24" y="79" fill="#fde68a" font-size="10.5" font-weight="800">❌ Filtered at Step 3: Specific Topic Mismatch</text>
-          <text x="24" y="94" fill="#fed7aa" font-size="9.5">Ministry matches, but user specifically tuned for Staff Transfers, not Welfare Schemes.</text>
-
-          <text x="16" y="122" fill="#fde68a" font-size="9.5" font-weight="700">🛡️ Relevance Protected • No Alert Sent</text>
-        </g>
-
-        <!-- OUTCOME C: PUNE WORKER (100% MATCH DELIVERED) -->
-        <g transform="translate(875, 355)">
-          <rect width="440" height="285" rx="12" fill="url(#greenCardGrad)" stroke="#10b981" stroke-width="2.2" />
-          
-          <rect width="440" height="36" rx="12" fill="#065f46" />
-          <text x="16" y="24" fill="#a7f3d0" font-size="12.5" font-weight="800">✨ USER C (PUNE CITIZEN) • 100% VERIFIED MATCH!</text>
-          
-          <text x="16" y="58" fill="#cbd5e1" font-size="10.5">Subscribed to: <tspan fill="#ffffff" font-weight="700">Industry & Mining</tspan> • Topic: <tspan fill="#ffffff" font-weight="700">Worker Welfare</tspan> • District: <tspan fill="#ffffff" font-weight="700">Pune</tspan></text>
-
-          <!-- 5-Point Checklist Box -->
-          <rect x="14" y="70" width="412" height="88" rx="8" fill="#043224" stroke="#10b981" stroke-width="1" />
-          <text x="24" y="90" fill="#34d399" font-size="11" font-weight="800">🎉 Passed All 5 Relevance Gates With 100% Compliance</text>
-          <text x="24" y="110" fill="#a7f3d0" font-size="10">[✓] Step 1: Active Subscriber Profile   [✓] Step 2: Subscribed to Ministry #13</text>
-          <text x="24" y="126" fill="#a7f3d0" font-size="10">[✓] Step 3: Selected Worker Welfare Tag   [✓] Step 4: Eligible Audience (Public & Labor)</text>
-          <text x="24" y="142" fill="#a7f3d0" font-size="10">[✓] Step 5: Matches Pune District Jurisdiction</text>
-
-          <!-- WhatsApp Dispatch Card -->
-          <g transform="translate(14, 172)">
-            <rect width="412" height="52" rx="8" fill="url(#greenBtnGrad)" />
-            <text x="20" y="26" fill="#ffffff" font-size="13" font-weight="800">📲 INSTANT WHATSAPP ALERT DELIVERED</text>
-            <text x="20" y="42" fill="#e6fffa" font-size="10.5" font-weight="600">Target Phone: +91 90905 35272 • Delivery Latency: 2.1s</text>
-          </g>
-
-          <text x="18" y="246" fill="#6ee7b7" font-size="10" font-weight="600">Includes executive Marathi summary, direct PDF download link, and key metrics.</text>
-        </g>
-      </svg>
+          <!-- Realistic WhatsApp Chat Preview -->
+          <div class="fc-wa-phone">
+            <div class="fc-wa-topbar">
+              <div class="fc-wa-avatar">🏛️</div>
+              <div class="fc-wa-info">
+                <div class="fc-wa-name">Maharashtra GR Alerts <span class="fc-wa-verified">✓</span></div>
+                <div class="fc-wa-status">Official Notification Bot • Delivered to +91 90905 35272</div>
+              </div>
+            </div>
+            <div class="fc-wa-chatbody">
+              <div class="fc-wa-bubble">
+                <div class="fc-wa-bubble-title">🔔 नवीन शासन निर्णय (GR Alert)</div>
+                <div class="fc-wa-meta-row">🏛️ <b>विभाग:</b> उद्योग, ऊर्जा व खनिकर्म विभाग</div>
+                <div class="fc-wa-meta-row">📋 <b>विषय:</b> खनिकर्म क्षेत्रातील कामगारांसाठी कल्याणकारी योजना व थेट आर्थिक अनुदान मंजुरी २०२६</div>
+                <div class="fc-wa-meta-row">📍 <b>लागू जिल्हा:</b> पुणे जिल्हा</div>
+                <div class="fc-wa-meta-row">👥 <b>पात्र लाभार्थी:</b> कामगार व सर्वसामान्य नागरिक</div>
+                <div class="fc-wa-meta-row">📑 <b>शासन निर्णय क्र:</b> GR-202610141300000013</div>
+                <div class="fc-wa-meta-row link">🔗 <a href="https://gr.maharashtra.gov.in" target="_blank">अधिकृत शासन निर्णय (PDF) डाऊनलोड करा</a></div>
+                <div class="fc-wa-time">16:22 ✓✓</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
 
     <!-- Candidate Evaluation Walkthrough -->
-    <h2 class="cases-heading">🧪 Real-World Subscriber Test Scenarios</h2>
+    <h2 class="cases-heading" id="rule-cases">🧪 Real-World Subscriber Test Scenarios</h2>
     <div class="cases-grid">
       <!-- Case 1 -->
       <div class="case-card rejected">
