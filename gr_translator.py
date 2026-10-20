@@ -234,45 +234,64 @@ def query_glossary_matches(text: str, top_k: int = 25) -> Dict[str, str]:
 
     return matches
 
+# Flow definitions
+FLOW_EXTRACTABLE = "grtext is extractable -> vector DB get glossary -> inject in prompt -> translation"
+FLOW_NOT_EXTRACTABLE = "grtext is not extractable -> send gemini extract text -> vector DB get glossary -> inject in prompt -> translation"
+
 def send_discord_translation_log(
     gr_code: str,
     meta: Dict[str, Any],
     duration_sec: float,
     is_scanned: bool,
     success: bool,
+    flow_used: str = "",
+    user_id: str = "",
     error_msg: Optional[str] = None
 ):
     """
     Sends a structured Discord Embed log of the translation event to GR_TRANSLATION_LOG_WEBHOOK.
+    Logs:
+    1. The flow used (extractable vs not extractable OCR)
+    2. User id (uuid, Primary, Non-nullable)
+    3. GR number translated
     """
-    webhook_url = GR_TRANSLATION_LOG_WEBHOOK or os.getenv("GR_TRANSLATION_LOG_WEBHOOK", "").strip()
+    webhook_url = (
+        GR_TRANSLATION_LOG_WEBHOOK or 
+        os.getenv("GR_TRANSLATION_LOG_WEBHOOK", "") or
+        os.getenv("ORD_QR_WEBHOOK_URL", "") or
+        os.getenv("DISCORD_QR_WEBHOOK_URL", "") or
+        os.getenv("DISCORD_LOG_WEBHOOK_URL", "") or
+        os.getenv("DISCORD_WEBHOOK_URL", "")
+    ).strip().rstrip(">")
     if not webhook_url:
         return
 
     try:
         dept = meta.get("department", "Maharashtra Government Department")
         subject = meta.get("subject", "N/A")
-        gr_number = meta.get("gr_number", "N/A")
+        gr_number = meta.get("gr_number", gr_code)
         gr_date = meta.get("gr_date", "N/A")
 
         status_text = "✅ Successfully Translated & Rendered" if success else f"❌ Failed: {error_msg}"
         color = 0x10b981 if success else 0xef4444
 
+        resolved_flow = flow_used or (
+            FLOW_NOT_EXTRACTABLE if is_scanned else FLOW_EXTRACTABLE
+        )
+        resolved_user_id = str(user_id or meta.get("user_id") or "00000000-0000-0000-0000-000000000000")
+
         embed = {
-            "title": f"🏛️ Maharashtra GR Translation: {gr_code}",
+            "title": f"🏛️ Maharashtra GR Translation Log: {gr_code}",
             "description": f"**Subject:** {subject[:280]}",
             "url": f"https://gr.maharashtra.gov.in/Site/Upload/Government%20Resolutions/English/{gr_code}.pdf",
             "color": color,
             "fields": [
+                {"name": "GR Number Translated", "value": f"**`{gr_code}`**", "inline": True},
+                {"name": "User ID", "value": f"`{resolved_user_id}`", "inline": True},
+                {"name": "Execution Time", "value": f"{duration_sec:.2f}s", "inline": True},
+                {"name": "Flow Used", "value": f"```{resolved_flow}```", "inline": False},
                 {"name": "Department", "value": str(dept)[:100] or "N/A", "inline": True},
                 {"name": "Order Number", "value": str(gr_number)[:100] or "N/A", "inline": True},
-                {"name": "Order Date", "value": str(gr_date)[:50] or "N/A", "inline": True},
-                {
-                    "name": "Text Extraction",
-                    "value": "📸 Gemini Vision OCR (Scanned Page)" if is_scanned else "📄 Local Digital Text Extraction",
-                    "inline": True
-                },
-                {"name": "Execution Time", "value": f"{duration_sec:.2f}s", "inline": True},
                 {"name": "Status", "value": status_text, "inline": False}
             ],
             "footer": {
@@ -392,7 +411,7 @@ class GRTranslator:
         if not self.api_key:
             raise ValueError("GEMINI_API_KEY is not set. Please configure GEMINI_API_KEY in your environment variables.")
         self.client = genai.Client(api_key=self.api_key)
-        self.candidate_models = ["gemini-2.5-flash", "gemini-3.5-flash-lite", "gemini-1.5-flash"]
+        self.candidate_models = ["gemini-3.8-flash", "gemini-2.5-flash", "gemini-2.0-flash", "gemini-3.5-flash-lite", "gemini-1.5-flash"]
 
     def extract_content_from_pdf(self, pdf_path: str) -> Dict[str, Any]:
         """
@@ -451,11 +470,14 @@ class GRTranslator:
             if ocr_text:
                 total_text = ocr_text
 
+        flow_used = FLOW_EXTRACTABLE if is_digitally_extractable else FLOW_NOT_EXTRACTABLE
+
         return {
             "page_count": page_count,
             "text": total_text,
             "is_digitally_extractable": is_digitally_extractable,
             "is_scanned": not is_digitally_extractable,
+            "flow_used": flow_used,
             "images": page_images
         }
 
@@ -472,7 +494,7 @@ class GRTranslator:
         for img_bytes in images:
             contents.append(types.Part.from_bytes(data=img_bytes, mime_type="image/jpeg"))
 
-        models_to_try = ["gemini-2.5-flash", "gemini-3.5-flash-lite", "gemini-1.5-flash"]
+        models_to_try = ["gemini-3.8-flash", "gemini-2.5-flash", "gemini-2.0-flash", "gemini-3.5-flash-lite", "gemini-1.5-flash"]
         for m in models_to_try:
             try:
                 resp = self.client.models.generate_content(
@@ -949,11 +971,20 @@ Strict Translation Guidelines:
         doc.build(story, canvasmaker=canvas_maker)
         return output_pdf_path
 
-    def translate_gr_file(self, input_pdf: str, output_pdf: Optional[str] = None) -> Dict[str, Any]:
+    def translate_gr_file(
+        self,
+        input_pdf: str,
+        output_pdf: Optional[str] = None,
+        user_id: Optional[str] = None
+    ) -> Dict[str, Any]:
         """
         End-to-end pipeline:
         Takes input Marathi PDF -> Extracts content -> Translates via Gemini -> Renders Authentic GR Layout PDF
+        Logs: flow used, user_id (uuid), and gr_number.
         """
+        import uuid
+        resolved_user_id = str(user_id).strip() if (user_id and str(user_id).strip()) else str(uuid.uuid4())
+
         start_time = time.time()
         input_path = Path(input_pdf)
         if not input_path.exists():
@@ -964,7 +995,9 @@ Strict Translation Guidelines:
 
         print(f"[GRTranslator] 1. Extracting content from: {input_path.name}...")
         extraction = self.extract_content_from_pdf(str(input_path))
+        flow_used = extraction.get("flow_used", FLOW_EXTRACTABLE)
         print(f"[GRTranslator]    Pages: {extraction['page_count']}, Is Digitally Extractable: {extraction['is_digitally_extractable']}")
+        print(f"[GRTranslator]    Flow: {flow_used}")
 
         print(f"[GRTranslator] 2. Querying Glossary & Translating with Gemini...")
         translated_data = self.translate_with_gemini(extraction)
@@ -981,13 +1014,16 @@ Strict Translation Guidelines:
 
         result_meta = {
             "success": True,
+            "gr_number": input_path.stem,
+            "user_id": resolved_user_id,
+            "flow_used": flow_used,
             "original_pdf": str(input_path),
             "translated_pdf": output_pdf,
             "json_data": json_cache,
             "unique_code": translated_data.get("unique_code"),
             "department": translated_data.get("department"),
             "subject": translated_data.get("subject"),
-            "gr_number": translated_data.get("gr_number"),
+            "gr_number_code": translated_data.get("gr_number"),
             "gr_date": translated_data.get("gr_date"),
             "execution_time_sec": elapsed
         }
@@ -998,7 +1034,9 @@ Strict Translation Guidelines:
             meta=result_meta,
             duration_sec=elapsed,
             is_scanned=extraction.get("is_scanned", False),
-            success=True
+            success=True,
+            flow_used=flow_used,
+            user_id=resolved_user_id
         )
 
         return result_meta
@@ -1037,12 +1075,20 @@ def _render_first_page_preview(pdf_path: str, png_path: str):
         print(f"[GRTranslator] Preview generation fallback notice: {e}", file=sys.stderr)
 
 
-def fetch_and_process_gr(gr_code: str, output_dir: Optional[str] = None) -> Dict[str, Any]:
+def fetch_and_process_gr(
+    gr_code: str,
+    output_dir: Optional[str] = None,
+    user_id: Optional[str] = None
+) -> Dict[str, Any]:
     """
     Downloads GR PDF by code from official Maharashtra Government repository (English or Marathi),
     renders Page 1 preview of original, translates via Gemini, renders authentic PDF,
     and renders Page 1 preview of translated PDF.
+    Logs: flow used, user_id (uuid), and gr_number.
     """
+    import uuid
+    resolved_user_id = str(user_id).strip() if (user_id and str(user_id).strip()) else str(uuid.uuid4())
+
     start_time = time.time()
     clean_match = re.search(r'\d{10,20}', str(gr_code))
     if not clean_match:
@@ -1056,6 +1102,8 @@ def fetch_and_process_gr(gr_code: str, output_dir: Optional[str] = None) -> Dict
     orig_png_path = out_dir / f"original_{code}_page_1.png"
     trans_pdf_path = out_dir / f"translated_{code}.pdf"
     trans_png_path = out_dir / f"translated_{code}_page_1.png"
+
+    flow_used = FLOW_EXTRACTABLE
 
     try:
         # 1. Download original PDF if not exists
@@ -1101,7 +1149,10 @@ def fetch_and_process_gr(gr_code: str, output_dir: Optional[str] = None) -> Dict
         translator = GRTranslator()
         meta = {}
         if not trans_pdf_path.exists() or trans_pdf_path.stat().st_size < 1000:
-            meta = translator.translate_gr_file(str(orig_pdf_path), str(trans_pdf_path))
+            meta = translator.translate_gr_file(str(orig_pdf_path), str(trans_pdf_path), user_id=resolved_user_id)
+            flow_used = meta.get("flow_used", FLOW_EXTRACTABLE)
+        else:
+            flow_used = FLOW_EXTRACTABLE
 
         # 4. Render translated page 1 image
         if not trans_png_path.exists():
@@ -1112,6 +1163,8 @@ def fetch_and_process_gr(gr_code: str, output_dir: Optional[str] = None) -> Dict
         return {
             "success": True,
             "gr_code": code,
+            "user_id": resolved_user_id,
+            "flow_used": flow_used,
             "original_pdf": str(orig_pdf_path),
             "translated_pdf": str(trans_pdf_path),
             "original_preview": str(orig_png_path),
@@ -1129,21 +1182,32 @@ def fetch_and_process_gr(gr_code: str, output_dir: Optional[str] = None) -> Dict
             duration_sec=elapsed,
             is_scanned=False,
             success=False,
+            flow_used=flow_used,
+            user_id=resolved_user_id,
             error_msg=str(e)
         )
         raise e
 
 if __name__ == "__main__":
-    if len(sys.argv) > 1 and sys.argv[1] == "--code":
-        code = sys.argv[2]
-        target_dir = sys.argv[3] if len(sys.argv) > 3 else None
-        res = fetch_and_process_gr(code, target_dir)
-        print(json.dumps(res, indent=2))
-    else:
-        test_pdf = "202608071854394103.pdf"
-        if len(sys.argv) > 1:
-            test_pdf = sys.argv[1]
+    import argparse
+    parser = argparse.ArgumentParser(description="MahaGR Resolution Translation Engine")
+    parser.add_argument("--code", type=str, help="Numerical GR code to fetch and translate")
+    parser.add_argument("--user-id", type=str, default="", help="User UUID for translation logging")
+    parser.add_argument("paths", nargs="*", help="Optional output directory or input/output PDF paths")
 
+    args = parser.parse_args()
+
+    if args.code:
+        target_dir = args.paths[0] if args.paths else None
+        res = fetch_and_process_gr(args.code, target_dir, user_id=args.user_id)
+        print(json.dumps(res, indent=2))
+    elif args.paths:
+        test_pdf = args.paths[0]
+        out_pdf = args.paths[1] if len(args.paths) > 1 else None
         translator = GRTranslator()
-        result = translator.translate_gr_file(test_pdf)
+        result = translator.translate_gr_file(test_pdf, out_pdf, user_id=args.user_id)
+        print(json.dumps(result, indent=2))
+    else:
+        translator = GRTranslator()
+        result = translator.translate_gr_file("202608071854394103.pdf", user_id=args.user_id)
         print(json.dumps(result, indent=2))

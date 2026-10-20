@@ -2407,10 +2407,23 @@
           translatorStatusText.textContent = `Processing GR No: ${grNo} (downloading & translating via Gemini)...`;
         }
 
+        let userId = state.user?.id || state.user?.user_id;
+        if (!userId) {
+          userId = localStorage.getItem("maha_gr_user_uuid");
+          if (!userId) {
+            userId = (window.crypto && crypto.randomUUID) ? crypto.randomUUID() : null;
+            if (userId) localStorage.setItem("maha_gr_user_uuid", userId);
+          }
+        }
+
         const resp = await fetch("/api/translation/process", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ gr_code: grNo })
+          body: JSON.stringify({
+            gr_code: grNo,
+            user_id: userId,
+            phone: state.user?.phone || ""
+          })
         });
         const data = await resp.json();
 

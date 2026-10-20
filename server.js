@@ -884,6 +884,27 @@ app.post("/api/translation/process", async (req, res) => {
     }
     const grCode = cleanMatch[0];
 
+    // Resolve or generate a valid UUID for user_id (uuid, Primary, Non-nullable)
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+    let userId = req.body && req.body.user_id ? String(req.body.user_id).trim() : "";
+
+    if (!userId || !uuidRegex.test(userId)) {
+      if (req.body && req.body.phone && supabase) {
+        try {
+          const digits = extractPhoneDigits(req.body.phone).slice(-10);
+          const variants = getPhoneVariants(digits);
+          const { data } = await supabase.from(USERS_TABLE).select("id").in("phone", variants).maybeSingle();
+          if (data && data.id && uuidRegex.test(data.id)) {
+            userId = data.id;
+          }
+        } catch {}
+      }
+    }
+    if (!userId || !uuidRegex.test(userId)) {
+      const { randomUUID } = await import("node:crypto");
+      userId = randomUUID();
+    }
+
     const translationsDir = path.join(__dirname, "public", "translations");
     if (!fs.existsSync(translationsDir)) {
       fs.mkdirSync(translationsDir, { recursive: true });
@@ -891,9 +912,29 @@ app.post("/api/translation/process", async (req, res) => {
 
     // Default sample shortcut if present
     if (grCode === "202608071854394103") {
+      const sampleFlow = "grtext is extractable -> vector DB get glossary -> inject in prompt -> translation";
+      if (supabase) {
+        try {
+          await supabase.from("translation_logs").insert({
+            user_id: userId,
+            gr_number: grCode,
+            flow_used: sampleFlow,
+            status: "completed",
+            duration_sec: 1.2,
+            department: "General Administration Department",
+            subject: "Official Administrative Terminology Sample",
+            created_at: new Date().toISOString()
+          });
+        } catch (dbErr) {
+          console.warn("[Supabase] translation_logs note:", dbErr.message);
+        }
+      }
+
       return res.json({
         success: true,
         gr_code: grCode,
+        user_id: userId,
+        flow_used: sampleFlow,
         original_pdf_url: `/translations/202608071854394103.pdf`,
         original_preview_url: `/translations/original_page_1.png`,
         translated_pdf_url: `/translations/authentic_translated_gr.pdf`,
@@ -902,24 +943,53 @@ app.post("/api/translation/process", async (req, res) => {
       });
     }
 
-    // Execute python gr_translator.py --code
+    // Execute python gr_translator.py --code <grCode> --user-id <userId>
     const pythonScript = fs.existsSync(path.join(__dirname, "gr_translator.py"))
       ? path.join(__dirname, "gr_translator.py")
       : path.join(__dirname, "..", "gr_translator.py");
     const pythonCmd = process.platform === "win32" ? "python" : "python3";
     const { exec } = await import("node:child_process");
 
-    console.log(`[API] Processing GR Code: ${grCode}...`);
-    exec(`${pythonCmd} "${pythonScript}" --code ${grCode} "${translationsDir}"`, (error, stdout, stderr) => {
+    console.log(`[API] Processing GR Code: ${grCode} for User ID: ${userId}...`);
+    exec(`${pythonCmd} "${pythonScript}" --code ${grCode} --user-id "${userId}" "${translationsDir}"`, async (error, stdout, stderr) => {
       if (error) {
         console.error("Translation processing error:", stderr || error.message);
         return res.status(500).json({ error: "Failed to process GR: " + (stderr || error.message) });
       }
 
-      console.log(`[API] GR ${grCode} processed successfully.`);
+      let parsedResult = {};
+      try {
+        const jsonMatch = stdout.match(/\{[\s\S]*\}/);
+        if (jsonMatch) parsedResult = JSON.parse(jsonMatch[0]);
+      } catch {}
+
+      const flowUsed = parsedResult.flow_used || "grtext is extractable -> vector DB get glossary -> inject in prompt -> translation";
+
+      // Resilient Supabase database logging into translation_logs table
+      if (supabase) {
+        try {
+          await supabase.from("translation_logs").insert({
+            user_id: userId,
+            gr_number: grCode,
+            flow_used: flowUsed,
+            status: "completed",
+            duration_sec: parsedResult.duration || null,
+            department: parsedResult.department || null,
+            subject: parsedResult.subject || null,
+            created_at: new Date().toISOString()
+          });
+          console.log(`[Supabase] Recorded translation_logs entry: user_id=${userId}, gr=${grCode}`);
+        } catch (dbErr) {
+          console.warn("[Supabase] translation_logs note:", dbErr.message);
+        }
+      }
+
+      console.log(`[API] GR ${grCode} processed successfully. Flow: ${flowUsed}`);
       res.json({
         success: true,
         gr_code: grCode,
+        user_id: userId,
+        flow_used: flowUsed,
         original_pdf_url: `/translations/${grCode}.pdf`,
         original_preview_url: `/translations/original_${grCode}_page_1.png`,
         translated_pdf_url: `/translations/translated_${grCode}.pdf`,

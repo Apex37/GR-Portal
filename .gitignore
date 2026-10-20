@@ -28,3 +28,9 @@ dist-ssr
 
 # Temporary and scratch test files
 scratch/
+translated_*.pdf
+translated_*.json
+translated_*.png
+original_*_page_*.png
+[0-9]*.pdf
+
