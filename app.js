@@ -380,6 +380,8 @@
     el.headerGuestActions = document.getElementById("header-guest-actions");
     el.headerUserActions = document.getElementById("header-user-actions");
     el.headerUserName = document.getElementById("header-user-name");
+    el.headerUserTierBadge = document.getElementById("header-user-tier-badge");
+    el.headerUpgradeBtn = document.getElementById("header-upgrade-btn");
     el.headerLoginBtn = document.getElementById("header-login-btn");
     el.headerRegisterBtn = document.getElementById("header-register-btn");
     el.headerLogoutBtn = document.getElementById("header-logout-btn");
@@ -446,6 +448,11 @@
     el.profileDetailName = document.getElementById("profile-detail-name");
     el.profileDetailPassword = document.getElementById("profile-detail-password");
     el.profileDetailPresets = document.getElementById("profile-detail-presets");
+    el.profilePlanBadge = document.getElementById("profile-plan-badge");
+    el.profileUpgradeBtn = document.getElementById("profile-upgrade-btn");
+    el.proModalPlanPill = document.getElementById("pro-modal-plan-pill");
+    el.proModalPlanDesc = document.getElementById("pro-modal-plan-desc");
+    el.btnProWaitlistCta = document.getElementById("btn-pro-waitlist-cta");
     el.pauseAlertsBtn = document.getElementById("pause-alerts-btn");
     el.pauseBtnIcon = document.getElementById("pause-btn-icon");
     el.pauseBtnText = document.getElementById("pause-btn-text");
@@ -524,11 +531,35 @@
       const savedUser = JSON.parse(rawSaved);
       if (savedUser && savedUser.phone) {
         logUserIn(savedUser);
+        refreshLatestUserProfile(savedUser.phone);
       } else {
         showAuthView("register");
       }
     } catch {
       showAuthView("register");
+    }
+  }
+
+  // Refresh latest profile status (including pro_sub) in background
+  async function refreshLatestUserProfile(rawPhone) {
+    if (!rawPhone) return;
+    try {
+      const phoneDigits = String(rawPhone).replace(/\D/g, "").slice(-10);
+      const res = await fetch(`/api/profile/${phoneDigits}`);
+      if (!res.ok) return;
+      const data = await res.json();
+      if (data && data.user) {
+        const wasPro = Boolean(state.user && (state.user.pro_sub === 1 || state.user.pro_sub === "1" || Number(state.user.pro_sub) > 0));
+        state.user = { ...state.user, ...data.user };
+        localStorage.setItem("maha_gr_user", JSON.stringify(state.user));
+        updateProfileStatusView();
+        const nowPro = Boolean(state.user.pro_sub === 1 || state.user.pro_sub === "1" || Number(state.user.pro_sub) > 0);
+        if (!wasPro && nowPro) {
+          showToast("⭐ MahaGR Pro Subscription Active!", "success");
+        }
+      }
+    } catch (err) {
+      console.warn("Background profile refresh skipped:", err);
     }
   }
 
@@ -561,6 +592,14 @@
       
       el.headerUserName.textContent = displayName;
       el.dashUserName.textContent = displayName;
+      const isProUser = Boolean(state.user && (state.user.pro_sub === 1 || state.user.pro_sub === "1" || Number(state.user.pro_sub) > 0));
+      if (isProUser && el.dashUserName) {
+        const dashProBadge = document.createElement("span");
+        dashProBadge.className = "user-name-pro-crown";
+        dashProBadge.title = "MahaGR Pro Active";
+        dashProBadge.textContent = "⭐ PRO";
+        el.dashUserName.appendChild(dashProBadge);
+      }
       el.dashUserPhone.textContent = `+91 ${String(state.user.phone).slice(-10)}`;
       const birthYear = (state.user.dob && String(state.user.dob).match(/\b(19\d\d|20\d\d)\b/)?.[1]) 
         || (state.user.password && String(state.user.password).match(/\b(19\d\d|20\d\d)\b/)?.[1])
@@ -731,6 +770,99 @@
 
     if (el.pauseAlertsBtn) {
       el.pauseAlertsBtn.classList.toggle("paused", !state.isActive);
+    }
+
+    // Pro Subscription Status Handling
+    const isPro = Boolean(state.user && (state.user.pro_sub === 1 || state.user.pro_sub === "1" || Number(state.user.pro_sub) > 0));
+
+    // Header Tier Badge
+    if (el.headerUserTierBadge) {
+      if (isPro) {
+        el.headerUserTierBadge.textContent = "⭐ MahaGR Pro";
+        el.headerUserTierBadge.className = "user-tier-badge pro-tier-active";
+      } else {
+        el.headerUserTierBadge.textContent = "Free Tier";
+        el.headerUserTierBadge.className = "user-tier-badge";
+      }
+    }
+
+    // Header Upgrade Button
+    if (el.headerUpgradeBtn) {
+      if (isPro) {
+        el.headerUpgradeBtn.textContent = "👑 Pro Member";
+        el.headerUpgradeBtn.className = "btn-upgrade-pro pro-member-btn btn-trigger-pro-modal";
+      } else {
+        el.headerUpgradeBtn.textContent = "Upgrade to Pro ✨";
+        el.headerUpgradeBtn.className = "btn-upgrade-pro btn-trigger-pro-modal";
+      }
+    }
+
+    // Header User Crown / Star
+    if (el.headerUserName) {
+      const baseName = state.user.first_name 
+        ? `${state.user.first_name} ${state.user.last_name || ""}`.trim()
+        : state.user.full_name || "Citizen";
+      el.headerUserName.textContent = baseName;
+      if (isPro) {
+        const proBadge = document.createElement("span");
+        proBadge.className = "user-name-pro-crown";
+        proBadge.title = "MahaGR Pro Active";
+        proBadge.textContent = "⭐ PRO";
+        el.headerUserName.appendChild(proBadge);
+      }
+    }
+
+    // Profile Plan Badge
+    if (el.profilePlanBadge) {
+      if (isPro) {
+        el.profilePlanBadge.textContent = "⭐ MahaGR Pro Active";
+        el.profilePlanBadge.className = "user-tier-badge pro-tier-active";
+      } else {
+        el.profilePlanBadge.textContent = "Free Tier";
+        el.profilePlanBadge.className = "user-tier-badge";
+      }
+    }
+
+    // Profile Upgrade Button
+    if (el.profileUpgradeBtn) {
+      if (isPro) {
+        el.profileUpgradeBtn.textContent = "✓ Active Pro Member";
+        el.profileUpgradeBtn.className = "btn-upgrade-pro-sm pro-member-btn btn-trigger-pro-modal";
+      } else {
+        el.profileUpgradeBtn.textContent = "Upgrade to Pro ✨";
+        el.profileUpgradeBtn.className = "btn-upgrade-pro-sm btn-trigger-pro-modal";
+      }
+    }
+
+    // Pro Modal Plan Card & Button
+    if (el.proModalPlanPill) {
+      if (isPro) {
+        el.proModalPlanPill.textContent = "⭐ Current Plan: MahaGR Pro Active";
+        el.proModalPlanPill.style.background = "#fef3c7";
+        el.proModalPlanPill.style.color = "#92400e";
+      } else {
+        el.proModalPlanPill.textContent = "Current Plan: Free Tier Active";
+        el.proModalPlanPill.style.background = "";
+        el.proModalPlanPill.style.color = "";
+      }
+    }
+
+    if (el.proModalPlanDesc) {
+      if (isPro) {
+        el.proModalPlanDesc.textContent = "Your WhatsApp number has unrestricted active access to MahaGR Translation Studio, priority instant alerts, and upcoming governance AI tools.";
+      } else {
+        el.proModalPlanDesc.textContent = "You currently receive real-time verified WhatsApp alerts for your chosen categories and districts at zero cost.";
+      }
+    }
+
+    if (el.btnProWaitlistCta) {
+      if (isPro) {
+        el.btnProWaitlistCta.textContent = "✓ MahaGR Pro Active";
+        el.btnProWaitlistCta.className = "btn btn-success btn-sm";
+      } else {
+        el.btnProWaitlistCta.textContent = "Join Pro Early Access →";
+        el.btnProWaitlistCta.className = "btn btn-primary btn-sm";
+      }
     }
   }
 
@@ -1077,6 +1209,10 @@
         updated_at: new Date().toISOString(),
       };
 
+      if (state.user && state.user.pro_sub !== undefined && state.user.pro_sub !== null) {
+        dbPayload.pro_sub = Number(state.user.pro_sub);
+      }
+
       let savedUser = null;
       try {
         const response = await fetch("/api/preferences", {
@@ -1086,7 +1222,10 @@
         });
         const resData = await response.json();
         if (!response.ok) throw new Error(resData.error || "Failed to save preferences.");
-        savedUser = { ...resData.user, ...authMeta };
+        savedUser = { ...state.user, ...resData.user, ...authMeta };
+        if (state.user.pro_sub !== undefined && savedUser.pro_sub === undefined) {
+          savedUser.pro_sub = state.user.pro_sub;
+        }
       } catch (saveNetErr) {
         console.warn("Backend save failed, using local copy:", saveNetErr);
         savedUser = { ...state.user, ...dbPayload };
@@ -2209,6 +2348,127 @@
         proWaitlistCta.textContent = "✓ Added to Early Access List";
         showToastNotification("Priority access requested! We will notify your WhatsApp upon launch.", "🚀");
         setTimeout(closeProModal, 1600);
+      });
+    }
+
+    // -------------------------------------------------------------
+    // Simplified GR Translation Logic
+    // -------------------------------------------------------------
+    const translatorModal = document.getElementById("translation-studio-modal");
+    const closeTranslatorModalBtn = document.getElementById("close-translator-modal-btn");
+    const dismissTranslatorModalBtn = document.getElementById("dismiss-translator-modal-btn");
+    const inputGrNo = document.getElementById("input-gr-no");
+    const btnDoTranslate = document.getElementById("btn-do-translate");
+    const translatorStatusText = document.getElementById("translator-status-text");
+    const linkOriginalPdf = document.getElementById("link-original-pdf");
+    const linkTranslatedPdf = document.getElementById("link-translated-pdf");
+    const imgOriginalGr = document.getElementById("img-original-gr");
+    const imgTranslatedGr = document.getElementById("img-translated-gr");
+
+    function openTranslatorModal() {
+      closeProModal();
+      if (translatorModal) {
+        translatorModal.classList.remove("hidden");
+      }
+    }
+
+    function closeTranslatorModal() {
+      if (translatorModal) translatorModal.classList.add("hidden");
+    }
+
+    // Attach click triggers to any .btn-trigger-translator
+    document.addEventListener("click", (e) => {
+      const trigger = e.target.closest(".btn-trigger-translator");
+      if (trigger) {
+        e.preventDefault();
+        e.stopPropagation();
+        openTranslatorModal();
+      }
+    });
+
+    if (closeTranslatorModalBtn) closeTranslatorModalBtn.addEventListener("click", closeTranslatorModal);
+    if (dismissTranslatorModalBtn) dismissTranslatorModalBtn.addEventListener("click", closeTranslatorModal);
+    if (translatorModal) {
+      translatorModal.addEventListener("click", (e) => {
+        if (e.target === translatorModal) closeTranslatorModal();
+      });
+    }
+
+    // Translate button click & dynamic GR processing
+    async function processTranslation() {
+      const grNo = (inputGrNo ? inputGrNo.value : "").trim() || "202608071854394103";
+      const btnDlOriginal = document.getElementById("btn-dl-original");
+      const btnDlTranslated = document.getElementById("btn-dl-translated");
+      
+      try {
+        if (btnDoTranslate) setBtnLoading(btnDoTranslate, true);
+        if (translatorStatusText) {
+          translatorStatusText.classList.remove("hidden");
+          translatorStatusText.textContent = `Processing GR No: ${grNo} (downloading & translating via Gemini)...`;
+        }
+
+        const resp = await fetch("/api/translation/process", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ gr_code: grNo })
+        });
+        const data = await resp.json();
+
+        if (!data.success) {
+          throw new Error(data.error || "Failed to process GR.");
+        }
+
+        const ts = Date.now();
+
+        // Update preview images with cache busting
+        if (imgOriginalGr && data.original_preview_url) {
+          imgOriginalGr.src = `${data.original_preview_url}?t=${ts}`;
+        }
+        if (imgTranslatedGr && data.translated_preview_url) {
+          imgTranslatedGr.src = `${data.translated_preview_url}?t=${ts}`;
+        }
+
+        // Update links to open PDFs in new tab
+        if (linkOriginalPdf && data.original_pdf_url) {
+          linkOriginalPdf.href = data.original_pdf_url;
+        }
+        if (linkTranslatedPdf && data.translated_pdf_url) {
+          linkTranslatedPdf.href = data.translated_pdf_url;
+        }
+
+        // Update download buttons
+        if (btnDlOriginal && data.original_pdf_url) {
+          btnDlOriginal.href = data.original_pdf_url;
+          btnDlOriginal.setAttribute("download", `Maharashtra_GR_${data.gr_code}_Original.pdf`);
+        }
+        if (btnDlTranslated && data.translated_pdf_url) {
+          btnDlTranslated.href = data.translated_pdf_url;
+          btnDlTranslated.setAttribute("download", data.filename || `Maharashtra_GR_${data.gr_code}_Official_English_Translation.pdf`);
+        }
+
+        if (translatorStatusText) {
+          translatorStatusText.textContent = `✓ GR No: ${data.gr_code} processed successfully! Click either preview to open in a new tab.`;
+        }
+      } catch (err) {
+        console.error("Translation processing error:", err);
+        if (translatorStatusText) {
+          translatorStatusText.textContent = `Error: ${err.message || "Failed to process GR. Please check the GR number."}`;
+        }
+      } finally {
+        if (btnDoTranslate) setBtnLoading(btnDoTranslate, false);
+      }
+    }
+
+    if (btnDoTranslate) {
+      btnDoTranslate.addEventListener("click", processTranslation);
+    }
+
+    if (inputGrNo) {
+      inputGrNo.addEventListener("keydown", (e) => {
+        if (e.key === "Enter") {
+          e.preventDefault();
+          processTranslation();
+        }
       });
     }
 

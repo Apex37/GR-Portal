@@ -1645,3 +1645,72 @@ html, body {
     max-width: 100%;
   }
 }
+
+/* -----------------------------------------------------------------------------
+   PRO SUBSCRIBER STYLING (pro_sub: 1)
+   ----------------------------------------------------------------------------- */
+.status-filter-btn .badge.badge-pro {
+  background-color: #fef3c7;
+  color: #92400e;
+  border: 1px solid #fde68a;
+}
+
+.kpi-card.highlight-pro {
+  border-top: 3px solid #f59e0b;
+}
+
+.kpi-card.highlight-pro .kpi-number {
+  color: #b45309;
+}
+
+.col-tier {
+  width: 120px;
+}
+
+.pro-badge-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+  color: #92400e;
+  border: 1px solid #fcd34d;
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 3px 9px;
+  border-radius: 999px;
+  box-shadow: 0 1px 3px rgba(245, 158, 11, 0.2);
+  white-space: nowrap;
+}
+
+.free-badge-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: var(--slate-100);
+  color: var(--slate-600);
+  border: 1px solid var(--slate-200);
+  font-size: 0.72rem;
+  font-weight: 600;
+  padding: 3px 9px;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+
+.btn-toggle-pro {
+  border-color: #fcd34d !important;
+  color: #92400e !important;
+  background: #fffbeb !important;
+}
+
+.btn-toggle-pro:hover {
+  background: #fef3c7 !important;
+  color: #78350f !important;
+}
+
+.btn-toggle-pro.is-pro {
+  border-color: #f59e0b !important;
+  color: #b45309 !important;
+  background: #fef3c7 !important;
+  font-weight: 700 !important;
+}
+

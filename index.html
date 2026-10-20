@@ -33,9 +33,19 @@
           <span>Profile Status</span>
           <span id="header-status-badge" class="header-status-badge active">Active</span>
         </button>
+        <button type="button" id="tab-nav-translator" class="header-tab-btn btn-trigger-translator" title="Open Maharashtra GR Translation Studio">
+          <span class="tab-btn-icon">🌐</span>
+          <span>GR Translator ✨</span>
+        </button>
       </nav>
 
       <div class="header-actions">
+
+        <!-- GR Translation Studio Header Quick Action -->
+        <button id="btn-open-translator-header" class="header-action-btn translator-action-btn btn-trigger-translator" type="button" title="Translate Maharashtra Government Resolutions (Marathi ⇄ English)">
+          <span class="btn-icon">🌐</span>
+          <span class="btn-text">GR Translator ✨</span>
+        </button>
 
         <!-- Shown when NOT logged in -->
         <div id="header-guest-actions">
@@ -50,8 +60,8 @@
             <span id="header-user-name" class="user-display-name">Citizen</span>
           </div>
           <div class="header-tier-stack">
-            <span class="user-tier-badge">Free Tier</span>
-            <button type="button" class="btn-upgrade-pro btn-trigger-pro-modal" title="View MahaGRInfo Pro features">Upgrade to Pro ✨</button>
+            <span class="user-tier-badge" id="header-user-tier-badge">Free Tier</span>
+            <button type="button" class="btn-upgrade-pro btn-trigger-pro-modal" id="header-upgrade-btn" title="View MahaGRInfo Pro features">Upgrade to Pro ✨</button>
           </div>
           <button id="header-logout-btn" class="header-action-btn outline" type="button">Log Out</button>
         </div>
@@ -92,12 +102,18 @@
       <div class="modal-body pro-modal-body">
         <div class="pro-features-grid">
           <!-- Feature 1: Translation of GR's -->
-          <div class="pro-feature-card">
-            <div class="pro-feature-icon">🌐</div>
-            <div class="pro-feature-content">
-              <h4>Translation of GR's</h4>
-              <span class="feature-marathi-tag">मराठी ⇄ इंग्रजी भाषांतर</span>
-              <p>Instant bilingual translation of complex Marathi government resolutions and annexures into clear, readable English with simplified plain-language executive summaries.</p>
+          <div class="pro-feature-card pro-feature-interactive btn-trigger-translator" style="cursor: pointer; border: 1.5px solid #3b82f6; background: #f8faff;">
+            <div class="pro-feature-icon" style="background: #eff6ff; color: #1d4ed8;">🌐</div>
+            <div class="pro-feature-content" style="flex: 1;">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2px;">
+                <h4 style="color: #1e3a8a;">Translation of GR's</h4>
+                <span class="pro-live-badge">⚡ LIVE STUDIO READY</span>
+              </div>
+              <span class="feature-marathi-tag">मराठी ⇄ इंग्रजी भाषांतर (Authentic Gazette Format)</span>
+              <p>Instant bilingual translation of complex Marathi government resolutions and annexures into clear, readable English with authentic Maharashtra Gazette typography, double running headers, and formatted data tables.</p>
+              <div style="margin-top: 8px;">
+                <button type="button" class="btn btn-sm btn-primary" style="font-size: 0.78rem; padding: 4px 12px;">Launch Translation Studio →</button>
+              </div>
             </div>
           </div>
 
@@ -122,10 +138,10 @@
           </div>
         </div>
 
-        <div class="pro-current-plan-card">
+        <div class="pro-current-plan-card" id="pro-current-plan-card">
           <div class="pro-plan-info">
-            <div class="pro-plan-pill">Current Plan: Free Tier Active</div>
-            <p>You currently receive real-time verified WhatsApp alerts for your chosen categories and districts at zero cost.</p>
+            <div class="pro-plan-pill" id="pro-modal-plan-pill">Current Plan: Free Tier Active</div>
+            <p id="pro-modal-plan-desc">You currently receive real-time verified WhatsApp alerts for your chosen categories and districts at zero cost.</p>
           </div>
           <button type="button" id="btn-pro-waitlist-cta" class="btn btn-primary btn-sm">Join Pro Early Access →</button>
         </div>
@@ -134,6 +150,80 @@
       <div class="modal-footer pro-modal-footer">
         <button id="dismiss-pro-modal-btn" class="btn btn-secondary btn-sm" type="button">Close</button>
       </div>
+    </div>
+  </div>
+
+  <!-- =========================================================================
+       MODAL: SIMPLIFIED GR TRANSLATION (Bilingual First-Page Viewer)
+       ========================================================================= -->
+  <div id="translation-studio-modal" class="modal-backdrop hidden" role="dialog" aria-modal="true" aria-labelledby="translator-modal-title">
+    <div class="modal-dialog simplified-translator-dialog">
+      
+      <!-- Simple Header -->
+      <div class="modal-header simplified-translator-header">
+        <h2 id="translator-modal-title" class="simplified-modal-title">GR Translator</h2>
+        <button id="close-translator-modal-btn" class="modal-close-btn" type="button" aria-label="Close dialog">&times;</button>
+      </div>
+
+      <!-- Input Bar: Enter Gr No & Translate Button -->
+      <div class="simplified-input-bar">
+        <label for="input-gr-no" class="simplified-input-label">Enter Gr No:</label>
+        <input type="text" id="input-gr-no" class="form-control simplified-input" value="202608071854394103" placeholder="e.g. 202608071854394103" />
+        <button type="button" id="btn-do-translate" class="btn btn-primary simplified-btn-translate">
+          <span class="btn-label">Translate</span>
+          <span class="btn-spinner hidden" aria-hidden="true"></span>
+        </button>
+      </div>
+
+      <!-- Status Message -->
+      <div id="translator-status-text" class="simplified-status-msg hidden"></div>
+
+      <!-- Side-by-Side First Page Previews -->
+      <div class="simplified-previews-grid">
+        
+        <!-- Original pdf (firstpage) -->
+        <div class="simplified-preview-card">
+          <div class="preview-card-header">
+            <span class="preview-card-title">Original pdf (firstpage)</span>
+            <div class="card-action-links">
+              <a id="btn-dl-original" href="/translations/202608071854394103.pdf" download="Maharashtra_GR_202608071854394103_Original.pdf" class="action-link-pill action-link-dl" title="Download Original PDF">Download PDF 📥</a>
+            </div>
+          </div>
+          <a id="link-original-pdf" href="/translations/202608071854394103.pdf" target="_blank" rel="noopener noreferrer" class="preview-card-link" title="Click to open original PDF in new tab">
+            <div class="preview-img-container">
+              <img id="img-original-gr" src="/translations/original_page_1.png" alt="Original pdf (firstpage)" class="preview-firstpage-img" />
+              <div class="preview-overlay">
+                <span class="overlay-badge">📄 Open Original PDF ↗</span>
+              </div>
+            </div>
+          </a>
+        </div>
+
+        <!-- Translated pdf (first page) -->
+        <div class="simplified-preview-card">
+          <div class="preview-card-header">
+            <span class="preview-card-title">Translated pdf (first page)</span>
+            <div class="card-action-links">
+              <a id="btn-dl-translated" href="/translations/authentic_translated_gr.pdf" download="Maharashtra_GR_202608071854394103_Official_English_Translation.pdf" class="action-link-pill action-link-dl" title="Download Translated PDF">Download PDF 📥</a>
+            </div>
+          </div>
+          <a id="link-translated-pdf" href="/translations/authentic_translated_gr.pdf" target="_blank" rel="noopener noreferrer" class="preview-card-link" title="Click to open translated PDF in new tab">
+            <div class="preview-img-container">
+              <img id="img-translated-gr" src="/translations/authentic_page_1.png" alt="Translated pdf (first page)" class="preview-firstpage-img" />
+              <div class="preview-overlay">
+                <span class="overlay-badge">📥 Open Translated PDF ↗</span>
+              </div>
+            </div>
+          </a>
+        </div>
+
+      </div>
+
+      <!-- Footer -->
+      <div class="modal-footer simplified-modal-footer">
+        <button id="dismiss-translator-modal-btn" class="btn btn-secondary btn-sm" type="button">Close</button>
+      </div>
+
     </div>
   </div>
 
@@ -822,8 +912,8 @@
           <div class="profile-detail-item">
             <span class="detail-label">Active Plan</span>
             <div class="profile-tier-row">
-              <span class="user-tier-badge">Free Tier</span>
-              <button type="button" class="btn-upgrade-pro-sm btn-trigger-pro-modal" title="View Pro features">Upgrade to Pro ✨</button>
+              <span class="user-tier-badge" id="profile-plan-badge">Free Tier</span>
+              <button type="button" class="btn-upgrade-pro-sm btn-trigger-pro-modal" id="profile-upgrade-btn" title="View Pro features">Upgrade to Pro ✨</button>
             </div>
           </div>
         </div>

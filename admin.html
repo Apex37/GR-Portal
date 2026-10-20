@@ -135,6 +135,15 @@
           <div class="kpi-subtext">Alerts temporarily suspended by user</div>
         </div>
 
+        <div class="kpi-card highlight-pro">
+          <div class="kpi-header">
+            <span class="kpi-label">⭐ Pro Subscribers</span>
+            <span class="kpi-icon">👑</span>
+          </div>
+          <div class="kpi-number" id="metric-pro-users">-</div>
+          <div class="kpi-subtext">Premium accounts with Pro access</div>
+        </div>
+
         <div class="kpi-card">
           <div class="kpi-header">
             <span class="kpi-label">Districts Covered</span>
@@ -171,6 +180,10 @@
               <button type="button" class="status-filter-btn" data-status="PAUSED">
                 <span>Paused</span>
                 <span class="badge badge-paused" id="badge-count-paused">0</span>
+              </button>
+              <button type="button" class="status-filter-btn" data-status="PRO">
+                <span>⭐ Pro</span>
+                <span class="badge badge-pro" id="badge-count-pro">0</span>
               </button>
             </div>
 
@@ -260,6 +273,7 @@
                   <th class="col-num">#</th>
                   <th class="col-citizen">Citizen & Contact</th>
                   <th class="col-status">Status</th>
+                  <th class="col-tier">Plan Tier</th>
                   <th class="col-roles">Categories / Roles</th>
                   <th class="col-geo">Geographic Scope</th>
                   <th class="col-depts">Departments & Ministries</th>

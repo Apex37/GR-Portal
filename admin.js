@@ -104,6 +104,7 @@
     metricTotal: document.getElementById("metric-total-users"),
     metricActive: document.getElementById("metric-active-users"),
     metricPaused: document.getElementById("metric-paused-users"),
+    metricPro: document.getElementById("metric-pro-users"),
     metricDistricts: document.getElementById("metric-districts-covered"),
 
     // Filters
@@ -113,6 +114,7 @@
     badgeAll: document.getElementById("badge-count-all"),
     badgeActive: document.getElementById("badge-count-active"),
     badgePaused: document.getElementById("badge-count-paused"),
+    badgePro: document.getElementById("badge-count-pro"),
     roleSelect: document.getElementById("role-filter-select"),
     divisionSelect: document.getElementById("division-filter-select"),
     refreshBtn: document.getElementById("refresh-data-btn"),
@@ -1044,6 +1046,7 @@
     const total = users.length;
     const active = users.filter((u) => u.is_active !== false).length;
     const paused = users.filter((u) => u.is_active === false).length;
+    const proCount = users.filter((u) => Number(u.pro_sub) === 1 || u.pro_sub === 1 || u.pro_sub === "1").length;
 
     // Unique districts across all users
     const districtSet = new Set();
@@ -1056,12 +1059,14 @@
     el.metricTotal.textContent = total;
     el.metricActive.textContent = active;
     el.metricPaused.textContent = paused;
+    if (el.metricPro) el.metricPro.textContent = proCount;
     el.metricDistricts.textContent = `${districtSet.size} Districts`;
 
     // Filter Badges
     el.badgeAll.textContent = total;
     el.badgeActive.textContent = active;
     el.badgePaused.textContent = paused;
+    if (el.badgePro) el.badgePro.textContent = proCount;
   }
 
   // ---------------------------------------------------------------------------
@@ -1076,8 +1081,10 @@
     state.filtered = state.subscribers.filter((user) => {
       // 1. Status Filter
       const isActive = user.is_active !== false;
+      const isPro = Number(user.pro_sub) === 1 || user.pro_sub === 1 || user.pro_sub === "1";
       if (status === "ACTIVE" && !isActive) return false;
       if (status === "PAUSED" && isActive) return false;
+      if (status === "PRO" && !isPro) return false;
 
       // 2. Role / Category Filter
       if (role !== "ALL") {
@@ -1216,12 +1223,19 @@
         ? `<span class="safeguard-badge filtered" title="Routine corrigendums and typographical notices are filtered out">🛡️ Filtered</span>`
         : `<span class="safeguard-badge included" title="Receiving all notices including minor amendments">📢 All Orders</span>`;
 
+      // Pro Tier HTML
+      const isPro = Number(user.pro_sub) === 1 || user.pro_sub === 1 || user.pro_sub === "1";
+      const proBadgeHtml = isPro
+        ? `<span class="pro-badge-pill" title="Active Pro Subscriber (pro_sub = 1)">⭐ PRO Sub</span>`
+        : `<span class="free-badge-pill" title="Standard Free Tier">Free</span>`;
+
       tr.innerHTML = `
         <td class="col-num">${idx + 1}</td>
         <td class="col-citizen">
           <div class="citizen-cell">
             <div class="citizen-name-row">
               <span class="citizen-name">${escapeHtml(user.full_name || "Citizen")}</span>
+              ${isPro ? `<span class="pro-badge-pill" style="font-size:0.65rem; padding:1px 6px;">⭐ PRO</span>` : ""}
             </div>
             <div class="citizen-phone-row">
               <span class="citizen-phone">${cleanPhone}</span>
@@ -1236,6 +1250,7 @@
             <span>${isActive ? "Active" : "Paused"}</span>
           </span>
         </td>
+        <td class="col-tier">${proBadgeHtml}</td>
         <td class="col-roles">
           <div class="tags-list">${catBadgesHtml}</div>
         </td>
@@ -1251,6 +1266,9 @@
           <div class="action-btn-group">
             <button type="button" class="btn-table-action btn-inspect" data-index="${idx}" title="View full subscription breakdown">
               <span>Inspect</span>
+            </button>
+            <button type="button" class="btn-table-action btn-toggle-pro ${isPro ? "is-pro" : ""}" data-phone="${user.phone}" data-pro="${isPro}" title="${isPro ? "Revoke Pro status" : "Upgrade to Pro subscriber"}">
+              <span>${isPro ? "⭐ Pro Active" : "☆ Grant Pro"}</span>
             </button>
             <button type="button" class="btn-table-action btn-toggle-status" data-phone="${user.phone}" data-active="${isActive}" title="${isActive ? "Temporarily pause alerts" : "Resume alerts"}">
               <span>${isActive ? "⏸️ Pause" : "▶️ Activate"}</span>
@@ -1270,6 +1288,14 @@
       btn.addEventListener("click", () => {
         const index = parseInt(btn.dataset.index, 10);
         openDrawer(state.filtered[index]);
+      });
+    });
+
+    el.tableBody.querySelectorAll(".btn-toggle-pro").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const phone = btn.dataset.phone;
+        const currentPro = btn.dataset.pro === "true";
+        toggleUserPro(phone, !currentPro);
       });
     });
 
@@ -1320,6 +1346,35 @@
       showToast(newStatus ? "Alerts resumed for subscriber" : "Alerts paused for subscriber", newStatus ? "🟢" : "⏸️");
     } catch (err) {
       alert("Error updating status: " + err.message);
+    }
+  }
+
+  async function toggleUserPro(phone, makePro) {
+    try {
+      const res = await fetch(`/api/admin/users/${encodeURIComponent(phone)}/pro`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${state.session.token}`,
+        },
+        body: JSON.stringify({ pro_sub: makePro ? 1 : null }),
+      });
+
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        throw new Error(data.error || "Failed to update pro subscription status.");
+      }
+
+      // Optimistically update in local state
+      const target = state.subscribers.find((u) => String(u.phone).slice(-10) === String(phone).slice(-10));
+      if (target) target.pro_sub = makePro ? 1 : null;
+
+      updateKPIs({});
+      applyFilters();
+
+      showToast(makePro ? "⭐ Pro subscription granted (pro_sub = 1)" : "Pro subscription revoked (Free Tier)", makePro ? "⭐" : "🔄");
+    } catch (err) {
+      alert("Error updating pro status: " + err.message);
     }
   }
 
@@ -1442,6 +1497,10 @@
           <div class="drawer-item">
             <span class="drawer-label">Status</span>
             <span class="drawer-val">${isActive ? "🟢 Active (Receiving GRs)" : "⏸️ Paused (Suspended)"}</span>
+          </div>
+          <div class="drawer-item">
+            <span class="drawer-label">Subscription Tier</span>
+            <span class="drawer-val">${Number(user.pro_sub) === 1 ? "⭐ MahaGR Pro Active (pro_sub = 1)" : "Standard Free Tier"}</span>
           </div>
           <div class="drawer-item">
             <span class="drawer-label">Birth Year / Login Key</span>

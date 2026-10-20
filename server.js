@@ -2,6 +2,7 @@ import express from "express";
 import cors from "cors";
 import compression from "compression";
 import path from "node:path";
+import fs from "node:fs";
 import { fileURLToPath } from "node:url";
 import { createClient } from "@supabase/supabase-js";
 import dotenv from "dotenv";
@@ -500,6 +501,12 @@ app.post("/api/preferences", async (req, res) => {
     if (payload.full_name || existingUser?.full_name) dbPayload.full_name = payload.full_name || existingUser?.full_name;
     if (payload.dob || existingUser?.dob) dbPayload.dob = payload.dob || existingUser?.dob;
 
+    // Preserve or update Pro Subscription status (pro_sub int2)
+    const proSubCandidate = payload.pro_sub !== undefined ? payload.pro_sub : existingUser?.pro_sub;
+    if (proSubCandidate !== undefined && proSubCandidate !== null) {
+      dbPayload.pro_sub = Number(proSubCandidate);
+    }
+
     if (!supabase) {
       return res.json({ success: true, user: { ...dbPayload, department_intents: incomingDeptIntents }, offline: true });
     }
@@ -510,6 +517,7 @@ app.post("/api/preferences", async (req, res) => {
       success: true,
       user: {
         ...updated,
+        pro_sub: updated?.pro_sub !== undefined ? updated.pro_sub : (dbPayload.pro_sub ?? existingUser?.pro_sub ?? null),
         department_intents: incomingDeptIntents,
         first_name: payload.first_name || updated.first_name,
         last_name: payload.last_name || updated.last_name,
@@ -519,6 +527,38 @@ app.post("/api/preferences", async (req, res) => {
   } catch (err) {
     console.error("Preferences endpoint error:", err);
     res.status(500).json({ error: err.message || "Could not save preferences." });
+  }
+});
+
+// Get User Profile (live refresh from Supabase)
+app.get("/api/profile/:phone", async (req, res) => {
+  try {
+    const rawDigits = extractPhoneDigits(req.params.phone);
+    const last10 = rawDigits.slice(-10);
+    if (!last10) {
+      return res.status(400).json({ error: "Phone number required." });
+    }
+
+    if (!supabase) {
+      return res.status(503).json({ error: "Database not connected." });
+    }
+
+    const phoneVariants = getPhoneVariants(last10);
+    const { data: user, error } = await supabase
+      .from(USERS_TABLE)
+      .select("*")
+      .in("phone", phoneVariants)
+      .maybeSingle();
+
+    if (error) throw error;
+    if (!user) {
+      return res.status(404).json({ error: "Profile not found." });
+    }
+
+    res.json({ success: true, user });
+  } catch (err) {
+    console.error("Get profile error:", err);
+    res.status(500).json({ error: err.message || "Failed to fetch profile." });
   }
 });
 
@@ -659,6 +699,7 @@ app.get("/api/admin/users", verifyAdminSession, async (req, res) => {
     });
     const activeSubscribers = userList.filter((u) => u.is_active !== false).length;
     const pausedSubscribers = userList.filter((u) => u.is_active === false).length;
+    const proSubscribers = userList.filter((u) => Number(u.pro_sub) === 1 || u.pro_sub === 1 || u.pro_sub === "1").length;
 
     res.json({
       success: true,
@@ -666,6 +707,7 @@ app.get("/api/admin/users", verifyAdminSession, async (req, res) => {
       totalCount: count ?? userList.length,
       activeCount: activeSubscribers,
       pausedCount: pausedSubscribers,
+      proCount: proSubscribers,
       timestamp: new Date().toISOString(),
     });
   } catch (err) {
@@ -731,6 +773,199 @@ app.delete("/api/admin/users/:phone", verifyAdminSession, async (req, res) => {
   } catch (err) {
     console.error("Admin delete subscriber error:", err);
     res.status(500).json({ error: err.message || "Could not delete subscriber." });
+  }
+});
+
+// Admin Toggle Pro Subscription (pro_sub: 1 or null)
+app.patch("/api/admin/users/:phone/pro", verifyAdminSession, async (req, res) => {
+  try {
+    const rawDigits = extractPhoneDigits(req.params.phone);
+    const last10 = rawDigits.slice(-10);
+    const { pro_sub } = req.body || {};
+
+    if (!last10) {
+      return res.status(400).json({ error: "Valid 10-digit mobile number required." });
+    }
+
+    const newProVal = (pro_sub === 1 || pro_sub === true || pro_sub === "1") ? 1 : null;
+
+    if (supabase) {
+      const phoneVariants = getPhoneVariants(last10);
+      const { data, error } = await supabase
+        .from(USERS_TABLE)
+        .update({ pro_sub: newProVal, updated_at: new Date().toISOString() })
+        .in("phone", phoneVariants)
+        .select();
+
+      if (error) throw error;
+      return res.json({ success: true, pro_sub: newProVal, updated: data });
+    }
+
+    res.json({ success: true, pro_sub: newProVal });
+  } catch (err) {
+    console.error("Admin toggle pro error:", err);
+    res.status(500).json({ error: err.message || "Could not update pro subscription." });
+  }
+});
+
+// =========================================================================
+// MAHARASHTRA GR TRANSLATION API (Bilingual Marathi -> English via Gemini)
+// =========================================================================
+
+// 1. Get Translation Sample Metadata & Previews
+app.get("/api/translation/sample", (req, res) => {
+  try {
+    const dataPath = path.join(__dirname, "public", "translations", "translated_gr_data.json");
+    let grData = {};
+    if (fs.existsSync(dataPath)) {
+      grData = JSON.parse(fs.readFileSync(dataPath, "utf-8"));
+    }
+
+    res.json({
+      success: true,
+      gr_code: "202608071854394103",
+      title: "CPTP-12 Skill Development Guidance Officers Field Postings",
+      marathi_title: "एकत्रित परिवीक्षाधीन प्रशिक्षण कार्यक्रम-१२ जिल्हा वाटप",
+      department: grData.department || "Skill Development, Employment, Entrepreneurship and Innovation Department",
+      order_number: grData.gr_number || "Kauviud-2026/Q.No. 99/Prisha-2 (E-1784865)",
+      date: grData.gr_date || "07 August, 2026",
+      pdf_url: "/translations/authentic_translated_gr.pdf",
+      original_pdf_url: "/translations/202608071854394103.pdf",
+      pages_count: 3,
+      previews: {
+        original: [
+          "/translations/original_page_1.png",
+          "/translations/original_page_2.png",
+          "/translations/original_page_3.png"
+        ],
+        translated: [
+          "/translations/authentic_page_1.png",
+          "/translations/authentic_page_2.png",
+          "/translations/authentic_page_3.png"
+        ]
+      },
+      data: grData
+    });
+  } catch (err) {
+    res.status(500).json({ error: err.message || "Failed to load translation sample." });
+  }
+});
+
+// 2. Download / View Authentic Translated PDF
+app.get([
+  "/api/translation/download",
+  "/api/translation/download/:code",
+  "/api/translation/file/:filename"
+], (req, res) => {
+  const filePath = path.join(__dirname, "public", "translations", "authentic_translated_gr.pdf");
+  if (!fs.existsSync(filePath)) {
+    return res.status(404).json({ error: "Translated PDF not found." });
+  }
+  const filename = "Maharashtra_GR_202608071854394103_Official_English_Translation.pdf";
+  const isAttachment = req.query.download === "1" || req.query.attachment === "1";
+
+  res.setHeader("Content-Type", "application/pdf");
+  if (isAttachment) {
+    res.setHeader("Content-Disposition", `attachment; filename="${filename}"`);
+    return res.download(filePath, filename);
+  } else {
+    res.setHeader("Content-Disposition", `inline; filename="${filename}"`);
+    return res.sendFile(filePath);
+  }
+});
+
+// 3. Dynamic GR Processing & Translation via Gemini
+app.post("/api/translation/process", async (req, res) => {
+  try {
+    const rawCode = (req.body && req.body.gr_code) || "202608071854394103";
+    const cleanMatch = String(rawCode).match(/\d{10,20}/);
+    if (!cleanMatch) {
+      return res.status(400).json({ error: "Invalid GR code. Please enter a valid numerical GR code." });
+    }
+    const grCode = cleanMatch[0];
+
+    const translationsDir = path.join(__dirname, "public", "translations");
+    if (!fs.existsSync(translationsDir)) {
+      fs.mkdirSync(translationsDir, { recursive: true });
+    }
+
+    // Default sample shortcut if present
+    if (grCode === "202608071854394103") {
+      return res.json({
+        success: true,
+        gr_code: grCode,
+        original_pdf_url: `/translations/202608071854394103.pdf`,
+        original_preview_url: `/translations/original_page_1.png`,
+        translated_pdf_url: `/translations/authentic_translated_gr.pdf`,
+        translated_preview_url: `/translations/authentic_page_1.png`,
+        filename: `Maharashtra_GR_${grCode}_Official_English_Translation.pdf`
+      });
+    }
+
+    // Execute python gr_translator.py --code
+    const pythonScript = fs.existsSync(path.join(__dirname, "gr_translator.py"))
+      ? path.join(__dirname, "gr_translator.py")
+      : path.join(__dirname, "..", "gr_translator.py");
+    const pythonCmd = process.platform === "win32" ? "python" : "python3";
+    const { exec } = await import("node:child_process");
+
+    console.log(`[API] Processing GR Code: ${grCode}...`);
+    exec(`${pythonCmd} "${pythonScript}" --code ${grCode} "${translationsDir}"`, (error, stdout, stderr) => {
+      if (error) {
+        console.error("Translation processing error:", stderr || error.message);
+        return res.status(500).json({ error: "Failed to process GR: " + (stderr || error.message) });
+      }
+
+      console.log(`[API] GR ${grCode} processed successfully.`);
+      res.json({
+        success: true,
+        gr_code: grCode,
+        original_pdf_url: `/translations/${grCode}.pdf`,
+        original_preview_url: `/translations/original_${grCode}_page_1.png`,
+        translated_pdf_url: `/translations/translated_${grCode}.pdf`,
+        translated_preview_url: `/translations/translated_${grCode}_page_1.png`,
+        filename: `Maharashtra_GR_${grCode}_Official_English_Translation.pdf`
+      });
+    });
+  } catch (err) {
+    res.status(500).json({ error: err.message || "Server error while processing GR." });
+  }
+});
+
+// 4. Trigger / Re-run Gemini Translation Pipeline (Legacy/Simulated)
+app.post("/api/translation/run", async (req, res) => {
+  try {
+    const { run_live } = req.body || {};
+
+    if (run_live) {
+      const pythonScript = fs.existsSync(path.join(__dirname, "gr_translator.py"))
+        ? path.join(__dirname, "gr_translator.py")
+        : path.join(__dirname, "..", "gr_translator.py");
+      const pythonCmd = process.platform === "win32" ? "python" : "python3";
+      const samplePdf = path.join(__dirname, "public", "translations", "202608071854394103.pdf");
+      const outPdf = path.join(__dirname, "public", "translations", "authentic_translated_gr.pdf");
+
+      const { exec } = await import("node:child_process");
+      exec(`${pythonCmd} "${pythonScript}" "${samplePdf}" "${outPdf}"`, (error, stdout, stderr) => {
+        if (error) {
+          console.error("Python translation error:", stderr || error.message);
+          return res.status(500).json({ error: "Translation execution failed: " + (stderr || error.message) });
+        }
+        res.json({
+          success: true,
+          message: "Translation executed successfully via Gemini!",
+          output: stdout
+        });
+      });
+    } else {
+      res.json({
+        success: true,
+        message: "Translation loaded successfully from verified Gemini model output.",
+        pdf_url: "/translations/authentic_translated_gr.pdf"
+      });
+    }
+  } catch (err) {
+    res.status(500).json({ error: err.message || "Translation execution error." });
   }
 });
 
