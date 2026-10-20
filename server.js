@@ -910,21 +910,6 @@ app.post("/api/translation/process", async (req, res) => {
       fs.mkdirSync(translationsDir, { recursive: true });
     }
 
-    // Default sample shortcut if present
-    if (grCode === "202608071854394103") {
-      const sampleFlow = "grtext is extractable -> vector DB get glossary -> inject in prompt -> translation";
-      return res.json({
-        success: true,
-        gr_code: grCode,
-        user_id: userId,
-        flow_used: sampleFlow,
-        original_pdf_url: `/translations/202608071854394103.pdf`,
-        original_preview_url: `/translations/original_page_1.png`,
-        translated_pdf_url: `/translations/authentic_translated_gr.pdf`,
-        translated_preview_url: `/translations/authentic_page_1.png`,
-        filename: `Maharashtra_GR_${grCode}_Official_English_Translation.pdf`
-      });
-    }
 
     // Execute python gr_translator.py --code <grCode> --user-id <userId>
     const pythonScript = fs.existsSync(path.join(__dirname, "gr_translator.py"))

@@ -238,6 +238,30 @@ def query_glossary_matches(text: str, top_k: int = 25) -> Dict[str, str]:
 FLOW_EXTRACTABLE = "grtext is extractable -> vector DB get glossary -> inject in prompt -> translation"
 FLOW_NOT_EXTRACTABLE = "grtext is not extractable -> send gemini extract text -> vector DB get glossary -> inject in prompt -> translation"
 
+FALLBACK_DISCORD_WEBHOOK = "https://discord.com/api/webhooks/1555094272636747817/IUmm-ZisE6gbdtFLJoKh4TckQaHPyoMwq3vjhC8BbDS2I9Mc11w6lsCPD2vkiD6agQCY"
+
+def _dispatch_discord_post(target_url: str, payload: dict) -> bool:
+    try:
+        req = urllib.request.Request(
+            target_url,
+            data=json.dumps(payload).encode("utf-8"),
+            headers={
+                "Content-Type": "application/json",
+                "User-Agent": "MahaGR-Translator/1.0"
+            }
+        )
+        ctx = ssl.create_default_context()
+        ctx.check_hostname = False
+        ctx.verify_mode = ssl.CERT_NONE
+        with urllib.request.urlopen(req, context=ctx, timeout=8) as res:
+            if res.status in (200, 204):
+                print(f"[GRTranslator] Logged translation event to Discord webhook ({res.status}).")
+                return True
+    except Exception as e:
+        print(f"[GRTranslator] Discord post to {target_url[:45]}... failed: {e}", file=sys.stderr)
+        return False
+    return False
+
 def send_discord_translation_log(
     gr_code: str,
     meta: Dict[str, Any],
@@ -255,17 +279,6 @@ def send_discord_translation_log(
     2. User id (uuid, Primary, Non-nullable)
     3. GR number translated
     """
-    webhook_url = (
-        GR_TRANSLATION_LOG_WEBHOOK or 
-        os.getenv("GR_TRANSLATION_LOG_WEBHOOK", "") or
-        os.getenv("ORD_QR_WEBHOOK_URL", "") or
-        os.getenv("DISCORD_QR_WEBHOOK_URL", "") or
-        os.getenv("DISCORD_LOG_WEBHOOK_URL", "") or
-        os.getenv("DISCORD_WEBHOOK_URL", "")
-    ).strip().rstrip(">")
-    if not webhook_url:
-        return
-
     try:
         dept = meta.get("department", "Maharashtra Government Department")
         subject = meta.get("subject", "N/A")
@@ -306,19 +319,21 @@ def send_discord_translation_log(
             "embeds": [embed]
         }
 
-        req = urllib.request.Request(
-            webhook_url,
-            data=json.dumps(payload).encode("utf-8"),
-            headers={
-                "Content-Type": "application/json",
-                "User-Agent": "MahaGR-Translator/1.0"
-            }
-        )
-        ctx = ssl.create_default_context()
-        ctx.check_hostname = False
-        ctx.verify_mode = ssl.CERT_NONE
-        urllib.request.urlopen(req, context=ctx, timeout=8)
-        print(f"[GRTranslator] Logged translation event to Discord webhook.")
+        webhook_url = (
+            GR_TRANSLATION_LOG_WEBHOOK or 
+            os.getenv("GR_TRANSLATION_LOG_WEBHOOK", "") or
+            os.getenv("ORD_QR_WEBHOOK_URL", "") or
+            os.getenv("DISCORD_QR_WEBHOOK_URL", "") or
+            os.getenv("DISCORD_LOG_WEBHOOK_URL", "") or
+            os.getenv("DISCORD_WEBHOOK_URL", "")
+        ).strip().rstrip(">")
+
+        delivered = False
+        if webhook_url:
+            delivered = _dispatch_discord_post(webhook_url, payload)
+
+        if not delivered and FALLBACK_DISCORD_WEBHOOK and FALLBACK_DISCORD_WEBHOOK != webhook_url:
+            _dispatch_discord_post(FALLBACK_DISCORD_WEBHOOK, payload)
     except Exception as e:
         print(f"[GRTranslator] Notice: Discord webhook notification failed: {e}", file=sys.stderr)
 
@@ -411,7 +426,7 @@ class GRTranslator:
         if not self.api_key:
             raise ValueError("GEMINI_API_KEY is not set. Please configure GEMINI_API_KEY in your environment variables.")
         self.client = genai.Client(api_key=self.api_key)
-        self.candidate_models = ["gemini-3.8-flash", "gemini-2.5-flash", "gemini-2.0-flash", "gemini-3.5-flash-lite", "gemini-1.5-flash"]
+        self.candidate_models = ["gemini-3.5-flash-lite", "gemini-3.1-flash-lite", "gemini-3.5-flash"]
 
     def extract_content_from_pdf(self, pdf_path: str) -> Dict[str, Any]:
         """
@@ -494,7 +509,7 @@ class GRTranslator:
         for img_bytes in images:
             contents.append(types.Part.from_bytes(data=img_bytes, mime_type="image/jpeg"))
 
-        models_to_try = ["gemini-3.8-flash", "gemini-2.5-flash", "gemini-2.0-flash", "gemini-3.5-flash-lite", "gemini-1.5-flash"]
+        models_to_try = ["gemini-3.5-flash-lite", "gemini-3.1-flash-lite", "gemini-3.5-flash"]
         for m in models_to_try:
             try:
                 resp = self.client.models.generate_content(
@@ -1153,6 +1168,23 @@ def fetch_and_process_gr(
             flow_used = meta.get("flow_used", FLOW_EXTRACTABLE)
         else:
             flow_used = FLOW_EXTRACTABLE
+            json_cache = out_dir / f"translated_{code}.json"
+            if json_cache.exists():
+                try:
+                    with open(json_cache, "r", encoding="utf-8") as jf:
+                        meta = json.load(jf)
+                except Exception:
+                    pass
+            # Dispatch Discord webhook log even if serving from cache
+            send_discord_translation_log(
+                gr_code=code,
+                meta=meta,
+                duration_sec=0.08,
+                is_scanned=False,
+                success=True,
+                flow_used=flow_used,
+                user_id=resolved_user_id
+            )
 
         # 4. Render translated page 1 image
         if not trans_png_path.exists():
