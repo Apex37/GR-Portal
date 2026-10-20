@@ -913,23 +913,6 @@ app.post("/api/translation/process", async (req, res) => {
     // Default sample shortcut if present
     if (grCode === "202608071854394103") {
       const sampleFlow = "grtext is extractable -> vector DB get glossary -> inject in prompt -> translation";
-      if (supabase) {
-        try {
-          await supabase.from("translation_logs").insert({
-            user_id: userId,
-            gr_number: grCode,
-            flow_used: sampleFlow,
-            status: "completed",
-            duration_sec: 1.2,
-            department: "General Administration Department",
-            subject: "Official Administrative Terminology Sample",
-            created_at: new Date().toISOString()
-          });
-        } catch (dbErr) {
-          console.warn("[Supabase] translation_logs note:", dbErr.message);
-        }
-      }
-
       return res.json({
         success: true,
         gr_code: grCode,
@@ -951,7 +934,7 @@ app.post("/api/translation/process", async (req, res) => {
     const { exec } = await import("node:child_process");
 
     console.log(`[API] Processing GR Code: ${grCode} for User ID: ${userId}...`);
-    exec(`${pythonCmd} "${pythonScript}" --code ${grCode} --user-id "${userId}" "${translationsDir}"`, async (error, stdout, stderr) => {
+    exec(`${pythonCmd} "${pythonScript}" --code ${grCode} --user-id "${userId}" "${translationsDir}"`, (error, stdout, stderr) => {
       if (error) {
         console.error("Translation processing error:", stderr || error.message);
         return res.status(500).json({ error: "Failed to process GR: " + (stderr || error.message) });
@@ -964,25 +947,6 @@ app.post("/api/translation/process", async (req, res) => {
       } catch {}
 
       const flowUsed = parsedResult.flow_used || "grtext is extractable -> vector DB get glossary -> inject in prompt -> translation";
-
-      // Resilient Supabase database logging into translation_logs table
-      if (supabase) {
-        try {
-          await supabase.from("translation_logs").insert({
-            user_id: userId,
-            gr_number: grCode,
-            flow_used: flowUsed,
-            status: "completed",
-            duration_sec: parsedResult.duration || null,
-            department: parsedResult.department || null,
-            subject: parsedResult.subject || null,
-            created_at: new Date().toISOString()
-          });
-          console.log(`[Supabase] Recorded translation_logs entry: user_id=${userId}, gr=${grCode}`);
-        } catch (dbErr) {
-          console.warn("[Supabase] translation_logs note:", dbErr.message);
-        }
-      }
 
       console.log(`[API] GR ${grCode} processed successfully. Flow: ${flowUsed}`);
       res.json({
