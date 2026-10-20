@@ -1,5 +1,19 @@
 import fs from 'node:fs';
 import path from 'node:path';
+import { execSync } from 'node:child_process';
+
+// Ensure Python dependencies for GR Translation Engine are installed on cloud builders
+try {
+  if (fs.existsSync('requirements.txt')) {
+    console.log('📦 Installing Python dependencies from requirements.txt...');
+    execSync('pip3 install --break-system-packages -r requirements.txt || pip install -r requirements.txt', {
+      stdio: 'inherit',
+    });
+    console.log('✓ Python dependencies installed successfully.');
+  }
+} catch (pyErr) {
+  console.warn('Notice: Python dependencies will also be self-verified at runtime:', pyErr.message);
+}
 
 const distDir = path.resolve('dist');
 if (!fs.existsSync(distDir)) {
