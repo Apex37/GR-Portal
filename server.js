@@ -188,6 +188,16 @@ async function upsertUserRecord(payload) {
     if (missingColMatch && missingColMatch[1]) {
       const missingCol = missingColMatch[1];
       console.warn(`Column '${missingCol}' not found in ${USERS_TABLE}. Stripping and retrying.`);
+      if (missingCol === "pro_sub" && currentPayload.pro_sub !== undefined && currentPayload.pro_sub !== null) {
+        try {
+          let meta = {};
+          if (currentPayload.interests) {
+            meta = typeof currentPayload.interests === "string" ? JSON.parse(currentPayload.interests) : { ...currentPayload.interests };
+          }
+          meta.pro_sub = currentPayload.pro_sub;
+          currentPayload.interests = JSON.stringify(meta);
+        } catch {}
+      }
       delete currentPayload[missingCol];
       continue;
     }
@@ -502,9 +512,11 @@ app.post("/api/preferences", async (req, res) => {
     if (payload.dob || existingUser?.dob) dbPayload.dob = payload.dob || existingUser?.dob;
 
     // Preserve or update Pro Subscription status (pro_sub int2)
-    const proSubCandidate = payload.pro_sub !== undefined ? payload.pro_sub : existingUser?.pro_sub;
+    const proSubCandidate = payload.pro_sub !== undefined ? payload.pro_sub : (existingUser?.pro_sub ?? mergedInterests.pro_sub);
     if (proSubCandidate !== undefined && proSubCandidate !== null) {
       dbPayload.pro_sub = Number(proSubCandidate);
+      mergedInterests.pro_sub = Number(proSubCandidate);
+      dbPayload.interests = JSON.stringify(mergedInterests);
     }
 
     if (!supabase) {
@@ -555,7 +567,28 @@ app.get("/api/profile/:phone", async (req, res) => {
       return res.status(404).json({ error: "Profile not found." });
     }
 
-    res.json({ success: true, user });
+    let proSub = user.pro_sub !== undefined && user.pro_sub !== null ? user.pro_sub : null;
+    let deptIntents = user.department_intents || null;
+    if (user.interests) {
+      try {
+        const meta = typeof user.interests === "string" ? JSON.parse(user.interests) : user.interests;
+        if (proSub === null && meta.pro_sub !== undefined && meta.pro_sub !== null) {
+          proSub = meta.pro_sub;
+        }
+        if (!deptIntents && meta.department_intents) {
+          deptIntents = meta.department_intents;
+        }
+      } catch {}
+    }
+
+    res.json({
+      success: true,
+      user: {
+        ...user,
+        pro_sub: proSub,
+        department_intents: deptIntents,
+      },
+    });
   } catch (err) {
     console.error("Get profile error:", err);
     res.status(500).json({ error: err.message || "Failed to fetch profile." });
@@ -689,13 +722,17 @@ app.get("/api/admin/users", verifyAdminSession, async (req, res) => {
 
     const userList = (users || []).map((u) => {
       let deptIntents = u.department_intents || null;
-      if (!deptIntents && u.interests) {
+      let proSub = u.pro_sub !== undefined && u.pro_sub !== null ? u.pro_sub : null;
+      if (u.interests) {
         try {
           const meta = typeof u.interests === "string" ? JSON.parse(u.interests) : u.interests;
-          if (meta.department_intents) deptIntents = meta.department_intents;
+          if (!deptIntents && meta.department_intents) deptIntents = meta.department_intents;
+          if (proSub === null && meta.pro_sub !== undefined && meta.pro_sub !== null) {
+            proSub = meta.pro_sub;
+          }
         } catch {}
       }
-      return { ...u, department_intents: deptIntents };
+      return { ...u, department_intents: deptIntents, pro_sub: proSub };
     });
     const activeSubscribers = userList.filter((u) => u.is_active !== false).length;
     const pausedSubscribers = userList.filter((u) => u.is_active === false).length;
@@ -791,14 +828,67 @@ app.patch("/api/admin/users/:phone/pro", verifyAdminSession, async (req, res) =>
 
     if (supabase) {
       const phoneVariants = getPhoneVariants(last10);
-      const { data, error } = await supabase
-        .from(USERS_TABLE)
-        .update({ pro_sub: newProVal, updated_at: new Date().toISOString() })
-        .in("phone", phoneVariants)
-        .select();
 
-      if (error) throw error;
-      return res.json({ success: true, pro_sub: newProVal, updated: data });
+      // 1. Attempt direct update on pro_sub column
+      let directError = null;
+      try {
+        const { data, error } = await supabase
+          .from(USERS_TABLE)
+          .update({ pro_sub: newProVal, updated_at: new Date().toISOString() })
+          .in("phone", phoneVariants)
+          .select();
+
+        if (!error) {
+          return res.json({ success: true, pro_sub: newProVal, updated: data });
+        }
+        directError = error;
+      } catch (colErr) {
+        directError = colErr;
+      }
+
+      // 2. If 'pro_sub' column is missing in schema cache, fall back gracefully to interests JSON
+      if (directError && (/Could not find the 'pro_sub' column/i.test(directError.message) || directError.code === "PGRST204")) {
+        console.warn("pro_sub column not found in schema cache. Falling back to updating interests JSON metadata.");
+
+        const { data: userRecord } = await supabase
+          .from(USERS_TABLE)
+          .select("phone, interests")
+          .in("phone", phoneVariants)
+          .maybeSingle();
+
+        let interestsMeta = {};
+        if (userRecord?.interests) {
+          try {
+            interestsMeta = typeof userRecord.interests === "string" ? JSON.parse(userRecord.interests) : { ...userRecord.interests };
+          } catch {}
+        }
+
+        if (newProVal === null) {
+          delete interestsMeta.pro_sub;
+        } else {
+          interestsMeta.pro_sub = newProVal;
+        }
+
+        const { data: fallbackData, error: fallbackError } = await supabase
+          .from(USERS_TABLE)
+          .update({
+            interests: JSON.stringify(interestsMeta),
+            updated_at: new Date().toISOString(),
+          })
+          .in("phone", phoneVariants)
+          .select();
+
+        if (fallbackError) throw fallbackError;
+
+        return res.json({
+          success: true,
+          pro_sub: newProVal,
+          updated: (fallbackData || []).map((u) => ({ ...u, pro_sub: newProVal })),
+          fallbackUsed: "interests_json",
+        });
+      }
+
+      if (directError) throw directError;
     }
 
     res.json({ success: true, pro_sub: newProVal });
