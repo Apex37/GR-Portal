@@ -238,7 +238,7 @@ def query_glossary_matches(text: str, top_k: int = 25) -> Dict[str, str]:
 FLOW_EXTRACTABLE = "grtext is extractable -> vector DB get glossary -> inject in prompt -> translation"
 FLOW_NOT_EXTRACTABLE = "grtext is not extractable -> send gemini extract text -> vector DB get glossary -> inject in prompt -> translation"
 
-FALLBACK_DISCORD_WEBHOOK = "https://discord.com/api/webhooks/1555094272636747817/IUmm-ZisE6gbdtFLJoKh4TckQaHPyoMwq3vjhC8BbDS2I9Mc11w6lsCPD2vkiD6agQCY"
+FALLBACK_DISCORD_WEBHOOK = os.getenv("DISCORD_WEBHOOK_URL", os.getenv("GR_TRANSLATION_LOG_WEBHOOK", ""))
 
 def _dispatch_discord_post(target_url: str, payload: dict) -> bool:
     try:
